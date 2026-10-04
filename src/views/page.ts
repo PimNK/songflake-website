@@ -58,3 +58,20 @@ export function renderPage(root: HTMLElement, content: Content): PageSlots {
     notice: q('[data-slot="notice"]'),
   };
 }
+
+/** Shows one view, marks its tab, and sets the hint and the notice. */
+export function showView(slots: PageSlots, view: 'record' | 'list', notice: string | null): void {
+  const rec = view === 'record';
+  slots.stage.hidden = !rec;
+  slots.listView.hidden = rec;
+  slots.tabRecord.setAttribute('aria-selected', String(rec));
+  slots.tabList.setAttribute('aria-selected', String(!rec));
+  slots.viewNote.textContent = rec ? strings.views.recordNote : strings.views.listNote;
+  slots.notice.hidden = !notice;
+  slots.notice.textContent = notice ?? '';
+}
+
+export function onViewTab(slots: PageSlots, choose: (view: 'record' | 'list') => void): void {
+  slots.tabRecord.addEventListener('click', () => choose('record'));
+  slots.tabList.addEventListener('click', () => choose('list'));
+}

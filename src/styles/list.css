@@ -1,0 +1,66 @@
+/* List view: a responsive grid of tiles. */
+.listview {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+  padding: 14px;
+  min-height: clamp(480px, 80vh, 920px);
+}
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
+}
+.tile {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  padding: 10px 6px;
+  border-radius: 12px;
+  text-align: center;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.tile:hover {
+  background: var(--panel2);
+}
+.tile .flake {
+  /* the largest tile snowflake (total 15) fits, so titles line up */
+  height: 130px;
+  display: grid;
+  place-items: center;
+}
+.tile canvas {
+  max-width: 100%;
+}
+.tile b {
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.25;
+}
+.tile small {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--mist);
+}
+.tile .dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  color: var(--frost);
+}
+.tile .dots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.tile .dots svg {
+  margin-left: 3px;
+}
+.listview .empty {
+  padding: 24px 8px;
+}

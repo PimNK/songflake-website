@@ -40,6 +40,9 @@ export function matches(song: Song, f: FilterState): boolean {
   );
 }
 
+export const countMatching = (songs: readonly Song[], f: FilterState): number =>
+  songs.reduce((n, s) => n + (matches(s, f) ? 1 : 0), 0);
+
 /** Moves one end of the complexity range; the other follows so min never exceeds max. */
 export function setRange(f: FilterState, end: 'min' | 'max', value: number): FilterState {
   const v = Math.min(COMPLEXITY_MAX, Math.max(COMPLEXITY_MIN, Math.round(value)));

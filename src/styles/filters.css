@@ -1,0 +1,140 @@
+/* Filter panel. Option colours are set inline from the taxonomy. */
+.filters {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+  padding: 16px 16px 18px;
+}
+.filters > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.filters > summary::-webkit-details-marker {
+  display: none;
+}
+.filters > summary h3 {
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ice);
+}
+.count {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--frost);
+  background: color-mix(in srgb, var(--ice) 14%, transparent);
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-variant-numeric: tabular-nums;
+}
+.fbody {
+  display: grid;
+  gap: 18px;
+  margin-top: 16px;
+}
+.fgroup {
+  display: grid;
+  gap: 8px;
+}
+.flabel {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mist);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.flabel b {
+  color: var(--frost);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.flabel button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--ice);
+  font: inherit;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  text-transform: none;
+}
+.flist {
+  display: grid;
+  gap: 5px;
+}
+.fopt {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13.5px;
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: var(--panel2);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.fopt:hover {
+  border-color: var(--line);
+}
+.fopt.zero {
+  opacity: 0.45;
+}
+.fopt input {
+  accent-color: var(--ice);
+  margin: 0;
+}
+.fopt .n {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--mist);
+}
+.fopt i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+.fgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+.fgrid .fopt {
+  font-size: 12.5px;
+  padding: 5px 7px;
+  gap: 7px;
+}
+.range {
+  display: grid;
+  gap: 6px;
+  background: var(--panel2);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.range label {
+  display: grid;
+  grid-template-columns: 2.4em 1fr;
+  gap: 8px;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--mist);
+}
+.range input {
+  width: 100%;
+  accent-color: var(--ice);
+}
+.freset {
+  justify-self: start;
+}

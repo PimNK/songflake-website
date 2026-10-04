@@ -283,7 +283,7 @@ fits, propose a new module and update this table in the same change.
 | `content/load.ts` | the two `import.meta.glob` calls, taxonomy and bands import, handing raw input to `parse.ts`, dropping `hidden` songs | validation rules |
 | `content/taxonomy.ts` | taxonomy and bands zod schemas, the `Taxonomy` / `Band` types, `toTaxonomy` / `toBands` validators | hard-coded names or colours, lookups |
 | `content/slug.ts` | **pure**: the slug pattern and `slugify` (Cyrillic transliteration, diacritics and apostrophes stripped), shared by `parse.ts` and `scripts/new-song.ts` | DOM, file system, validation of anything but the slug |
-| `domain/filters.ts` | **pure**: `FilterState`, `matches(song, state)`, counts per option, default state from taxonomy, range clamping, and the filter ⇄ URL-query conversion (`toQuery` / `fromQuery`, keys in §4.5) | DOM, `location`, hash handling (that is `app/router.ts`, which only wires it) |
+| `domain/filters.ts` | **pure**: `FilterState`, `matches(song, state)`, counts per option, `countMatching(songs, state)`, default state from taxonomy, range clamping, and the filter ⇄ URL-query conversion (`toQuery` / `fromQuery`, keys in §4.5) | DOM, `location`, hash handling (that is `app/router.ts`, which only wires it) |
 | `domain/pins.ts` | **pure**: `"m:ss"` ⇄ seconds, sorting, `activePin(pins, t)`, marker position as a fraction of duration | DOM, `<audio>` |
 | `domain/seed.ts` | **pure**: FNV-1a hash of a string (the slug) to [0, 1) and a xorshift generator seeded from it. Anything random-looking is seeded by the slug | `Math.random`, song data, canvas calls |
 | `domain/colour.ts` | **pure**: `rgb`, `rgba` and `mix` on `"#rrggbb"` strings | colour values of its own (they come from the taxonomy) |
@@ -299,15 +299,15 @@ fits, propose a new module and update this table in the same change.
 | `views/record-controls.ts` | the stage DOM around the canvas, the Pause / Spin and zoom buttons with the readout, the hover tooltip | layout or drawing maths |
 | `views/record-motion.ts` | spin state, frame-rate-independent easing of button zoom and reset, reduced motion | layout maths (spin rate and zoom limits come from `domain/record-layout.ts`) |
 | `views/content-overlay.ts` | the dev-only overlay that lists content errors and warnings (`main.ts` calls it under `import.meta.env.DEV`); messages inserted as text | parsing or validation, production use |
-| `views/page.ts` | the static page frame: hero, map section, legend and how-to slots, footer; returns the slots other views fill | filtering, state, drawing |
+| `views/page.ts` | the static page frame: hero, map section, legend and how-to slots, footer; returns the slots other views fill. Also the view switch: `showView` (shows one view, marks its tab, sets hint and notice) and `onViewTab` (tab clicks) | filtering, state, drawing |
 | `views/legend.ts` | the legend under the record and the «How to read a snowflake» rows, drawn from synthetic songs | hard-coded song data, mapping rules |
-| `views/html.ts` | the `esc()` helper for author text interpolated into `innerHTML` | anything else |
+| `views/html.ts` | the `esc()` helper for author text interpolated into `innerHTML`, and `bandRing` (the dashed band ring SVG) | anything else |
 | `views/list.ts` | the tile grid and its empty state | filtering logic |
 | `views/filter-panel.ts` | filter controls generated from taxonomy + counts; collapsible on mobile | filtering logic, hard-coded options |
 | `views/track-card.ts` | the modal (§4.3), focus trap, Esc/backdrop/Back closing, prev/next | audio element management |
 | `views/player.ts` | the one shared `<audio>` element, waveform seek bar, pin markers, active-pin note, pin list, mini-player (§4.6) | time parsing (that is `domain/pins.ts`) |
-| `app/state.ts` | the single app state (filters, view, open song) and change notifications | DOM |
-| `app/router.ts` | URL ⇄ state (§4.5) | rendering |
+| `app/state.ts` | the single app state (`view`, `filters`, `openSlug`, `cue`, `notice`) and change notifications | DOM |
+| `app/router.ts` | URL ⇄ state (§4.5) and the history policy (`historyAction`): opening a card or switching views pushes an entry; closing a card that has its own entry goes back; filter changes replace; a malformed or unknown slug gives the «Track not found» notice | rendering |
 | `app/main.ts` | bootstrap: load content, wire views to state | logic of any kind |
 | `strings.ts` | every user-visible UI string (English) | — |
 
@@ -404,7 +404,9 @@ the current track until its own play is pressed.
 Responsive grid of tiles (`minmax(132px, 1fr)`), display order (§2.1). Each
 tile is one button that opens the card: small static snowflake, title,
 «Style · year» (or «in progress»), a row of instrument colour dots and the
-dashed band ring when recorded with a band.
+dashed band ring when recorded with a band. The snowflake radius is 32 px ×
+the size factor from `complexityTotal`, drawn in a fixed-height box so titles
+line up across tiles.
 
 ### 4.5 URL
 
@@ -429,7 +431,10 @@ The hash holds what is worth sharing:
 
   An empty `style=` or `listen=` means none checked. Unknown values are ignored.
 
-Browser Back closes an open card before it changes views. An unknown slug
+Browser Back closes an open card before it changes views. Opening a card or
+switching views pushes a history entry; closing a card that has its own entry
+goes back, so Back never reopens it; a card opened by a deep link has no such
+entry, so closing it replaces; filter changes replace the current entry. An unknown slug
 opens the view with a short «Track not found» notice, never a broken modal.
 
 ### 4.6 Player and pins
