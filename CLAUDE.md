@@ -283,11 +283,13 @@ fits, propose a new module and update this table in the same change.
 | `content/load.ts` | the two `import.meta.glob` calls, taxonomy and bands import, handing raw input to `parse.ts`, dropping `hidden` songs | validation rules |
 | `content/taxonomy.ts` | taxonomy and bands zod schemas, the `Taxonomy` / `Band` types, `toTaxonomy` / `toBands` validators | hard-coded names or colours, lookups |
 | `content/slug.ts` | **pure**: the slug pattern and `slugify` (Cyrillic transliteration, diacritics and apostrophes stripped), shared by `parse.ts` and `scripts/new-song.ts` | DOM, file system, validation of anything but the slug |
-| `domain/filters.ts` | **pure**: `FilterState`, `matches(song, state)`, counts per option, default state from taxonomy | DOM, URL |
+| `domain/filters.ts` | **pure**: `FilterState`, `matches(song, state)`, counts per option, default state from taxonomy, range clamping, and the filter ⇄ URL-query conversion (`toQuery` / `fromQuery`, keys in §4.5) | DOM, `location`, hash handling (that is `app/router.ts`, which only wires it) |
 | `domain/pins.ts` | **pure**: `"m:ss"` ⇄ seconds, sorting, `activePin(pins, t)`, marker position as a fraction of duration | DOM, `<audio>` |
-| `domain/snowflake.ts` | **pure**: `song → SnowflakeParams` — the whole mapping in §5.1, in one place | canvas calls |
-| `domain/ray-colours.ts` | **pure**: `song → colour per ray` — the rule in §5.2 | canvas calls |
-| `domain/record-layout.ts` | **pure**: sector angles, the groove spiral, year → radius, the collision solve, world ⇄ screen transform for a given zoom/pan/rotation, which ring step applies at a zoom (§5.3) | canvas calls, animation loop |
+| `domain/seed.ts` | **pure**: FNV-1a hash of a string (the slug) to [0, 1) and a xorshift generator seeded from it. Anything random-looking is seeded by the slug | `Math.random`, song data, canvas calls |
+| `domain/colour.ts` | **pure**: `rgb`, `rgba` and `mix` on `"#rrggbb"` strings | colour values of its own (they come from the taxonomy) |
+| `domain/snowflake.ts` | **pure**: `song → SnowflakeParams` — the whole mapping in §5.1, in one place, with the size factor, the line-width and glow rules and the synthetic complexity for the «How to read» rows | canvas calls |
+| `domain/ray-colours.ts` | **pure**: `song → colour per ray` — the rule in §5.2 — and the radial gradient stops | canvas calls |
+| `domain/record-layout.ts` | **pure**: sector angles, the groove spiral, year → radius, the collision solve, world ⇄ screen transform for a given zoom/pan/rotation, which ring step applies at a zoom, the year range and in-progress placement, snowflake size scaling with zoom, spin rate (§5.3) | canvas calls, animation loop |
 | `render/snowflake.ts` | drawing `SnowflakeParams` + ray colours on a 2D context at a given size; sprite cache | deciding parameters from song data |
 | `render/record.ts` | drawing the vinyl: body, sectors, grooves, sheen, year rings, centre label, sector names | layout maths |
 | `render/radar.ts` | the five-axis radar as an SVG string | any chart library |
@@ -407,6 +409,18 @@ The hash holds what is worth sharing:
 - filters as a query only when they differ from the default:
   `#/list?style=Progressive,Ambient&min=9&band=solo`
 
+  Filter keys (`domain/filters.ts`, `toQuery` / `fromQuery`):
+
+  | Key | Value |
+  |---|---|
+  | `style` | checked styles, comma-separated |
+  | `listen` | checked instrument ids, comma-separated |
+  | `min`, `max` | complexity range, 5–15 |
+  | `band` | `band`, `solo` or `none` |
+  | `status` | `ready`, `in-progress` or `none` |
+
+  An empty `style=` or `listen=` means none checked. Unknown values are ignored.
+
 Browser Back closes an open card before it changes views. An unknown slug
 opens the view with a short «Track not found» notice, never a broken modal.
 
@@ -483,7 +497,8 @@ The record view is a canvas drawn every frame from `domain/record-layout.ts`
   whole thing is fitted so the disc plus outside labels fill the stage (≈ min
   side / 2 / 1300 px per unit at zoom 1).
 - **Year → radius** is linear between the first and the last `years.ready` in
-  the data (both derived, not hard-coded).
+  the data (both derived, not hard-coded). In-progress songs (no `years.ready`)
+  are placed at the latest year.
 - **Sectors** — one per style, in taxonomy order, clockwise from the top;
   angular width proportional to the number of songs, with a minimum share
   (~14 % before normalising) so a small style stays usable. Sector boundaries

@@ -1,0 +1,72 @@
+// Song → snowflake parameters: the whole mapping of CLAUDE.md §5.1, in one place. Pure.
+// Lengths are fractions of the flake radius R; render/snowflake.ts multiplies them out.
+import type { Complexity, Song } from '../content/parse';
+
+export type Level = 1 | 2 | 3;
+
+export interface SnowflakeParams {
+  /** structure 1/2/3 → 4/6/8 rays, the first pointing up. */
+  rays: 4 | 6 | 8;
+  /** rhythm 1/2/3 → forks at the tip: none / one / one that forks again. */
+  forkDepth: 0 | 1 | 2;
+  /** Main ray length; shorter when the forks are deeper so they fit. */
+  rayLength: number;
+  /** First fork length, as a fraction of R. Each deeper fork is `FORK_SCALE` of the previous. */
+  forkLength: number;
+  /** melody 1/2/3 → wave amplitude (fraction of R) and number of periods along the ray. */
+  waveAmplitude: number;
+  wavePeriods: number;
+  /** technique 1/2/3 → offshoots from mid-ray: none / two / two that branch outward. */
+  offshoots: 0 | 1 | 2;
+  /** instruments 1/2/3 → inner polygon rings. */
+  rings: Level;
+  /** Recorded with a band → dashed halo. */
+  halo: boolean;
+}
+
+export const FORK_SPREAD = 0.55; // rad, each side
+export const FORK_SCALE = 0.62;
+export const OFFSHOOT_ANGLE = 0.78; // rad from the local tangent
+export const OFFSHOOT_LENGTH = 0.46; // × ray length
+export const BRANCH_AT = 0.55; // along the offshoot
+export const BRANCH_ANGLE = 0.8; // rad, turning outward
+export const BRANCH_LENGTH = 0.5; // × offshoot length
+export const HALO_RADIUS = 1.12;
+export const RING_SPAN = 0.72;
+export const RING_ALPHA = 0.35;
+export const RAY_START = 0.05;
+
+const RAY_LENGTH = [0.82, 0.58, 0.47] as const;
+const WAVE_AMPLITUDE = [0, 0.035, 0.06] as const;
+const WAVE_PERIODS = [0, 1.5, 2.5] as const;
+
+export type SnowflakeInput = Pick<Song, 'complexity' | 'band'>;
+
+export function snowflakeParams({ complexity: c, band }: SnowflakeInput): SnowflakeParams {
+  const rayLength = RAY_LENGTH[c.rhythm - 1]!;
+  return {
+    rays: (c.structure * 2 + 2) as 4 | 6 | 8,
+    forkDepth: (c.rhythm - 1) as 0 | 1 | 2,
+    rayLength,
+    forkLength: rayLength * 0.6,
+    waveAmplitude: WAVE_AMPLITUDE[c.melody - 1]!,
+    wavePeriods: WAVE_PERIODS[c.melody - 1]!,
+    offshoots: (c.technique - 1) as 0 | 1 | 2,
+    rings: c.instruments as Level,
+    halo: band !== null,
+  };
+}
+
+/** Every line has the same thin width, so the pattern does not clog at small sizes. */
+export const lineWidth = (R: number): number => Math.max(0.6, 0.021 * R);
+export const glowBlur = (R: number): number => Math.min(6, Math.max(1, 0.06 * R));
+export const tipDotRadius = (R: number): number => Math.max(0.7, lineWidth(R) * 1.25);
+export const centreDotRadius = (R: number): number => Math.max(1.4, 0.045 * R);
+
+/** complexityTotal (5–15) → size factor, 1 at the middle total of 10. */
+export const sizeFactor = (complexityTotal: number): number => (6 + complexityTotal) / 16;
+
+/** A synthetic song for the "How to read a snowflake" rows: all axes at 2 unless overridden. */
+export function sampleComplexity(over: Partial<Complexity> = {}): Complexity {
+  return { rhythm: 2, melody: 2, technique: 2, instruments: 2, structure: 2, ...over };
+}
