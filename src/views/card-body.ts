@@ -1,6 +1,7 @@
-// The track card's sections (CLAUDE.md §4.3): what to listen for with the band marker, story,
-// idea → recording, and the large snowflake with the radar. DOM only; rules come from domain/.
-import type { Song } from '../content/parse';
+// The track card's sections (CLAUDE.md §4.3): what to listen for with the band marker,
+// idea → recording, story, and the large turning snowflake with the radar. DOM only; rules come
+// from domain/.
+import { AXES, type Song } from '../content/parse';
 import type { Bands, Taxonomy } from '../content/taxonomy';
 import { rgba } from '../domain/colour';
 import { FROST_LINE } from '../domain/ray-colours';
@@ -9,7 +10,7 @@ import { timeline, type Station } from '../domain/timeline';
 import { radarSvg } from '../render/radar';
 import { paintSnowflake } from '../render/snowflake';
 import { strings } from '../strings';
-import { bandRing, esc } from './html';
+import { bandRing, esc, turnStyle } from './html';
 import { renderMarkdown } from './markdown';
 
 const c = strings.card;
@@ -29,6 +30,20 @@ function listenChips(song: Song, taxonomy: Taxonomy): string {
     })
     .join('');
 }
+
+/** An ⓘ that explains the block on hover or focus. */
+const info = (bubble: string): string =>
+  `<span class="qi" tabindex="0" aria-label="${c.aboutBlock}">i<span class="bubble" role="tooltip">${bubble}</span></span>`;
+
+const timelineInfo = (): string =>
+  (['idea', 'concept', 'ready'] as const)
+    .map((k) => `<span class="term"><b>${c[k]}</b> — ${c.timelineInfo[k]}</span>`)
+    .join('');
+
+const totalInfo = (): string =>
+  AXES.map((a) => `<span class="term"><b>${strings.axes[a]}</b> — ${c.totalInfo[a]}</span>`).join(
+    '',
+  ) + `<small>${c.totalInfoNote}</small>`;
 
 function bandMarker(song: Song, bands: Bands): string {
   if (song.band === null) return `<span class="bandchip solo">${c.soloRecording}</span>`;
@@ -69,17 +84,18 @@ export function renderCardBody(
   el.innerHTML = `
     <div class="mleft">
       <section class="spot" aria-labelledby="spot-h">
-        <div class="spot-h"><h3 id="spot-h">${c.listen}</h3>
-          <span class="qi" tabindex="0" aria-label="${c.aboutBlock}">i<span class="bubble" role="tooltip">${c.listenInfo}</span></span></div>
+        <div class="spot-h"><h3 id="spot-h">${c.listen}</h3>${info(c.listenInfo)}</div>
         <div class="spot-row">${listenChips(song, taxonomy)}</div>
         <div>${bandMarker(song, bands)}</div>
       </section>
+      <section class="blk"><div class="spot-h"><h3>${c.timeline}</h3>${info(timelineInfo())}</div>
+        <div class="stations">${stations(song, colour)}</div></section>
       <section class="blk"><h3>${c.story}</h3><div class="story">${story}</div></section>
-      <section class="blk"><h3>${c.timeline}</h3><div class="stations">${stations(song, colour)}</div></section>
     </div>
     <div class="mright">
-      <div class="flake-box"><canvas></canvas>
-        <div class="radar-box">${radarSvg(song.complexity, colour)}<div class="total">${c.total(song.complexityTotal)}</div></div>
+      <div class="flake-box"><div class="flake-clip"><canvas class="turn" style="${turnStyle(song)}"></canvas></div>
+        <div class="radar-box">${radarSvg(song.complexity, colour)}
+          <div class="spot-h total">${c.total(song.complexityTotal)}${info(totalInfo())}</div></div>
       </div>
     </div>`;
   const flake = flakeOf(song, taxonomy);

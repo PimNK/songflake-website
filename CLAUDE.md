@@ -18,6 +18,9 @@ browser before building any view: the record, the snowflake, the colours, the
 filter panel, the card and the list are all there and approved. It is a single
 throwaway file, not code to copy wholesale — reimplement it along the module map
 in §3. Its demo-only parts are listed in §4.7 and must not be carried over.
+Where this file and the mockup differ, this file wins: the author's later
+changes (page frame, record placement and interaction, card order) supersede
+the mockup.
 
 **UI language: English.** Every user-visible string lives in `src/strings.ts`.
 Song titles and stories are the author's and stay in whatever language they are
@@ -70,8 +73,8 @@ docs/
   source/songs.xlsx               the original spreadsheet, corrected; archive only
 src/
   content/                   reading and validating songs
-  domain/                    pure logic: filters, pins, snowflake params, record layout
-  render/                    drawing: snowflake (canvas), record (canvas), radar (SVG)
+  domain/                    pure logic: filters, pins, snowflake params, record layout and placement
+  render/                    drawing: snowflake (canvas), record (canvas), star sky (canvas), radar (SVG)
   views/                     DOM: record, list, filter panel, track card, player
   app/                       state, URL router, bootstrap
   strings.ts                 every UI string (English)
@@ -79,7 +82,7 @@ src/
 scripts/
   new-song.ts                scaffolds a song folder (§2.5)
   check-content.ts           validates every song; part of `build` and `test`
-tests/                       vitest unit tests (*.test.ts) for content/parse.ts and domain/
+tests/                       vitest unit tests (*.test.ts) for content/parse.ts and domain/; fixtures.ts holds shared sample songs and sampleComplexity
 public/                      favicon and nothing else
 ```
 
@@ -197,7 +200,7 @@ accents:           # id → display name + colour; the only place these exist
   Electric: { name: Electronics, colour: "#2979ff" }
 ```
 
-Filter checkboxes, legends, chips, ray colours and record sectors are
+Filter checkboxes, chips, ray colours and record sectors are
 **generated from this file plus the songs**. Nothing in HTML, CSS or TS
 hard-codes a style name, an instrument or a colour. Adding one line here and
 using it in a song is the whole of introducing a new instrument or style.
@@ -289,29 +292,30 @@ fits, propose a new module and update this table in the same change.
 | `domain/waveform.ts` | **pure**: peaks from decoded channels (normalised), about 1 bar per 4 px, resample stored peaks to a given width | DOM, Web Audio, `<audio>` |
 | `domain/seed.ts` | **pure**: FNV-1a hash of a string (the slug) to [0, 1) and a xorshift generator seeded from it. Anything random-looking is seeded by the slug | `Math.random`, song data, canvas calls |
 | `domain/colour.ts` | **pure**: `rgb`, `rgba` and `mix` on `"#rrggbb"` strings | colour values of its own (they come from the taxonomy) |
-| `domain/snowflake.ts` | **pure**: `song → SnowflakeParams` — the whole mapping in §5.1, in one place, with the size factor, the line-width and glow rules, `sampleComplexity` (synthetic complexity for the «How to read» rows) and `flakeOf` (params and per-ray colours together, the one call renderers make) | canvas calls |
+| `domain/snowflake.ts` | **pure**: `song → SnowflakeParams` — the whole mapping in §5.1, in one place, with the size factor, the line-width and glow rules, the snowflake's own turn (`turnRate`, `turnOffset`, `flakeTurn`, and `turnTiming` for the CSS animation) and `flakeOf` (params and per-ray colours together, the one call renderers make) | canvas calls |
 | `domain/ray-colours.ts` | **pure**: `song → colour per ray` — the rule in §5.2 — and the radial gradient stops | canvas calls |
-| `domain/record-layout.ts` | **pure**: sector angles, the groove spiral, year → radius, the collision solve, world ⇄ screen transform for a given zoom/pan/rotation, which ring step applies at a zoom, the year range and in-progress placement, snowflake size scaling with zoom, spin rate, collision radius (snowflake and title), per-flake turn, hit radius (§5.3) | canvas calls, animation loop |
+| `domain/record-layout.ts` | **pure**: equal sector angles, the groove spiral, year → radius, `YEAR_DRIFT`, world ⇄ screen transform for a given zoom/pan/rotation, `rotateBy` (drag turns the disc), `zoomAt`, `clampPan`, the exported `clamp`, which ring step applies at a zoom, the year range and in-progress placement, snowflake size scaling with zoom, spin rate, collision radius (snowflake and title), `visibleTitles` (which titles are drawn), hit radius (§5.3) | canvas calls, animation loop, the placement solve |
+| `domain/record-solve.ts` | **pure**: `solveLayout` — the placement solver (§5.3), returns `Placement` (x, y) per slug | canvas calls, geometry constants (those are in `record-layout.ts`) |
 | `render/snowflake.ts` | drawing `SnowflakeParams` + ray colours on a 2D context at a given size; `paintSnowflake` (sizes a canvas for a static snowflake, halo and glow included, and draws it); `SpriteCache` (pre-rendered snowflakes for the record, 4 px size buckets) | deciding parameters from song data |
-| `render/record.ts` | drawing the vinyl: body, sectors, grooves, sheen, year rings, centre label, sector names; also exports the canvas font stacks (`MONO`, `DISPLAY`) | layout maths |
-| `render/record-flakes.ts` | the seeded star field behind the stage, and the snowflakes with their titles on the record | layout maths, deciding snowflake parameters |
+| `render/record.ts` | drawing the vinyl: body, sectors, grooves, sheen, year rings, centre label, sector names, the fading rim glow; also exports the canvas font stacks (`MONO`, `DISPLAY`) | layout maths |
+| `render/record-flakes.ts` | the snowflakes with their titles on the record; draws only the titles `visibleTitles` allows (all on hover) | layout maths, deciding snowflake parameters |
+| `render/sky.ts` | the seeded star field drawn on the page's fixed background canvas | layout maths, song data |
 | `render/radar.ts` | the five-axis radar as an SVG string | any chart library |
 | `views/record.ts` | the record canvas: DPR sizing, animation loop, composing the input, controls and motion modules, click → card. Mounted once for the page's lifetime: its observers and listeners are never released | layout or drawing maths |
-| `views/record-input.ts` | pointer input on the canvas: wheel and pinch zoom, drag to pan, hover, click; a drag over 4 px is not a click | layout or drawing maths |
-| `views/record-controls.ts` | the stage DOM around the canvas, the Pause / Spin and zoom buttons with the readout, the hover tooltip | layout or drawing maths |
-| `views/record-motion.ts` | spin state, frame-rate-independent easing of button zoom and reset, reduced motion | layout maths (spin rate and zoom limits come from `domain/record-layout.ts`) |
+| `views/record-input.ts` | pointer input on the canvas: wheel and pinch zoom anchored at the pointer, drag turns the disc (never pans), hover, click; a drag over 4 px is not a click | layout or drawing maths |
+| `views/record-controls.ts` | the stage DOM around the canvas, the round play / pause button, the hover tooltip | layout or drawing maths |
+| `views/record-motion.ts` | spin state (disc and snowflake turn), reduced motion | layout maths (spin rate comes from `domain/record-layout.ts`) |
 | `views/content-overlay.ts` | the dev-only overlay: one panel at the top listing content errors and warnings, each message shown once per page load; also used for the dev «pin past the end» warning (`main.ts` calls it under `import.meta.env.DEV`); messages inserted as text | parsing or validation, production use |
-| `views/page.ts` | the static page frame: hero, map section, legend and how-to slots, footer; returns the slots other views fill. Also the view switch: `showView` (shows one view, marks its tab, sets hint and notice) and `onViewTab` (tab clicks; roving tabindex, ← / → move between tabs) | filtering, state, drawing |
-| `views/legend.ts` | the legend under the record and the «How to read a snowflake» rows, drawn from synthetic songs | hard-coded song data, mapping rules |
-| `views/html.ts` | the `esc()` helper for author text interpolated into `innerHTML`, and `bandRing` (the dashed band ring SVG) | anything else |
-| `views/list.ts` | the tile grid and its empty state | filtering logic |
+| `views/page.ts` | the static page frame: the star sky canvas (mounts `render/sky.ts`, redrawn on resize), hero, map section with the filter, view switch and view slots; returns the slots other views fill. Also the view switch: `showView` (shows one view, marks its tab, sets the notice) and `onViewTab` (tab clicks; roving tabindex, ← / → move between tabs) | filtering, state, drawing maths |
+| `views/html.ts` | the `esc()` helper for author text interpolated into `innerHTML`, `bandRing` (the dashed band ring SVG) and `turnStyle` (inline style that starts a snowflake's CSS turn) | anything else |
+| `views/list.ts` | the tile grid (snowflakes turn via CSS) and its empty state | filtering logic |
 | `views/filter-panel.ts` | filter controls generated from taxonomy + counts; collapsible on mobile | filtering logic, hard-coded options |
 | `views/track-card.ts` | the modal shell (§4.3): title and ← → ✕, the player slot («Recording coming soon» when there is no audio, otherwise a hook to `views/player.ts`), focus trap and focus return, scroll lock, key handling (Esc, ← / →; arrows ignore modified keys) | the card's sections, audio element management |
-| `views/card-body.ts` | the card sections: what to listen for with the band marker, story, idea → recording, snowflake with radar | rules (those are in `domain/`), audio |
+| `views/card-body.ts` | the card sections: what to listen for with the band marker, idea → recording, story, the turning snowflake with radar; the ⓘ bubbles | rules (those are in `domain/`), audio |
 | `views/markdown.ts` | story Markdown → HTML; raw HTML is shown as text; only http(s), mailto and relative links are kept | anything else |
-| `views/player.ts` | the card's player UI: play/pause, time, waveform seek slider (click/drag and keyboard), active-pin note, pin list with copy link, hiding pins past the end of the recording (§4.6) | the `<audio>` element, pin markers, the mini-player, time parsing (that is `domain/pins.ts`) |
+| `views/player.ts` | the card's player UI: play/pause, time, waveform seek slider (click/drag and keyboard), the Download link, active-pin note, pin list with copy link, hiding pins past the end of the recording (§4.6) | the `<audio>` element, pin markers, the mini-player, time parsing (that is `domain/pins.ts`) |
 | `views/playback.ts` | the one shared `<audio>` element; pending positions for songs that are not loaded; per-song waveform and duration cache, falling back to a metadata probe when decoding fails; failures are not cached | DOM beyond the audio element, rendering |
-| `views/pin-markers.ts` | pin diamonds and popovers; markers under 12 px apart merge; on touch the first tap shows the popover and the second seeks; a merged marker seeks to its first pin | audio, time parsing, grouping maths (that is `domain/pins.ts`) |
+| `views/pin-markers.ts` | pin diamonds and popovers (near either end of the bar they open inwards); markers under 12 px apart merge; on touch the first tap shows the popover and the second seeks; a merged marker seeks to its first pin | audio, time parsing, grouping maths (that is `domain/pins.ts`) |
 | `views/mini-player.ts` | the bottom bar shown while a track plays and its card is closed: title (opens the card), play/pause, close, pin ticks on the progress line | the audio element, waveform |
 | `app/state.ts` | the single app state (`view`, `filters`, `openSlug`, `cue`, `notice`) and change notifications | DOM |
 | `app/router.ts` | URL ⇄ state (§4.5), `songHash` (the shareable card-at-time hash used by copy link) and the history policy (`historyAction`): opening a card or switching views pushes an entry; closing a card that has its own entry goes back; filter changes replace; a malformed or unknown slug gives the «Track not found» notice | rendering |
@@ -333,12 +337,12 @@ split. Say so when you cross it.
 - Hero: eyebrow «Music diary · N tracks · first year — last year» (derived),
   title, one-paragraph intro. Text in `strings.ts`.
 - Below it: **filter panel on the left (≈ 290 px), view on the right**. Above
-  the view, a segmented switch **◉ Record / ☰ List** and a short hint for the
-  active view. Under the record, a three-column legend: the record, the
-  snowflake, the colour.
-- Then a section **How to read a snowflake**: one row per parameter at levels
-  1 / 2 / 3 with the others at 2, plus a band row (solo / band). Generated from
-  the same drawing code with a synthetic song — not images.
+  the view, a segmented switch **◉ Record / ☰ List**. That is the whole page:
+  no view hint, no legend, no «How to read a snowflake» section, no footer.
+- **One background** for the page, the record and the list: a radial glow plus
+  a fixed star canvas (`render/sky.ts`, mounted by `views/page.ts`). The record
+  and the list have no borders or panels; the filter panel and the view switch
+  are translucent blocks on that background.
 - **Mobile (< 900 px)**: one column; the filter panel is a collapsible block
   above the view, collapsed by default, its header showing «N / total». No
   horizontal scroll anywhere. The track card becomes a full-height sheet with
@@ -387,16 +391,20 @@ Opened from the record, a tile, or a deep link. Top to bottom:
        with name, description and years from `bands.yaml` on hover/focus;
        `band: ""` → «Recorded with a band» and a hint that the name is not filled
        in; no band → a muted «Solo recording» chip.
-     - **Story** — the Markdown body (raw HTML disabled).
-     - **From idea to recording** — three stations Idea → Concept → Ready with
+     - **From idea to recording** with an ⓘ: Idea = the main melody or idea
+       appears; Concept = the song has a structure for the main instruments;
+       Ready = recorded, you can listen. Three stations Idea → Concept → Ready with
        years; dots in the lead colour (hollow, half, full); connecting line
        segments proportional to the years between them (minimum length for 0),
        labelled «1 year» / «same year». No summary sentence. A missing
        `years.concept` shows «—», a missing `years.ready` shows «not yet».
-   - right: the **snowflake** large and static, and directly beneath it the
+     - **Story** — the Markdown body (raw HTML disabled), under the timeline.
+   - right: the **snowflake** large, turning slowly on its own axis as on the
+     record (static under `prefers-reduced-motion`), and directly beneath it the
      **radar** of the five axes (scale 0–3, grid rings at 1/2/3, polygon in the
-     lead colour, axis labels with values) and «Total complexity N / 15». No
-     mapping legend in the card.
+     lead colour, axis labels with values) and «Total complexity N / 15» with an
+     ⓘ explaining each axis (`strings.card.totalInfo`). No mapping legend in
+     the card.
 
 Closing: ✕, Esc, click on the backdrop, browser Back. ← / → keys = prev / next.
 Focus is trapped while open and returned to the element that opened it. Page
@@ -410,11 +418,14 @@ the current track until its own play is pressed.
 ### 4.4 List
 
 Responsive grid of tiles (`minmax(132px, 1fr)`), display order (§2.1). Each
-tile is one button that opens the card: small static snowflake, title,
+tile is one button that opens the card: small snowflake, title,
 «Style · year» (or «in progress»), a row of instrument colour dots and the
 dashed band ring when recorded with a band. The snowflake radius is 32 px ×
 the size factor from `complexityTotal`, drawn in a fixed-height box so titles
-line up across tiles.
+line up across tiles. Tile snowflakes turn on their own axis by a CSS
+animation: timing from `turnTiming` in `domain/snowflake.ts`, applied as an
+inline style by `turnStyle` in `views/html.ts`; off under
+`prefers-reduced-motion`. Tiles sit on the page background.
 
 ### 4.5 URL
 
@@ -447,7 +458,8 @@ opens the view with a short «Track not found» notice, never a broken modal.
 
 ### 4.6 Player and pins
 
-- Round play/pause button in the lead colour; `m:ss / m:ss` time.
+- Round play/pause button in the lead colour; `m:ss / m:ss` time, with a
+  **Download** link next to it (file named `<title>.<ext>`; only with audio).
 - **Waveform seek bar**: bars from the real audio (decode on first open with
   Web Audio, reduce to ~1 bar per 4 px, cache per song in memory); played part
   in the lead colour, the rest `--frost` at ~22 %. Click/drag seeks. If decoding
@@ -456,7 +468,7 @@ opens the view with a short «Track not found» notice, never a broken modal.
   through the waveform, at `at / duration`. Hover/focus shows a popover with
   time and text; click seeks there and plays. On touch: first tap shows the
   popover, second seeks. Markers closer than ~12 px merge into one whose popover
-  lists both.
+  lists both. Popovers near either end of the bar open inwards.
 - **Active-pin note** under the bar during playback: the most recent pin
   passed, shown until the next pin or ~8 s; seeking updates it.
 - **Pin list** under the player: `0:42  text`, each a button that seeks and
@@ -513,7 +525,9 @@ R`, capped) in each ray's colour.
 ### 5.3 The record
 
 The record view is a canvas drawn every frame from `domain/record-layout.ts`
-(reference: `drawRecord`, `solve` in the mockup).
+and `domain/record-solve.ts` (reference: `drawRecord` in the mockup; the
+placement and the interaction below supersede it). The stars are the page
+background (§4.1), not part of the stage.
 
 - **World units:** grooves from radius 300 (the year of the earliest song) to
   1000 (the latest); the disc edge at 1070; the paper label radius ≈ 186. The
@@ -523,37 +537,42 @@ The record view is a canvas drawn every frame from `domain/record-layout.ts`
   the data (both derived, not hard-coded). In-progress songs (no `years.ready`)
   are placed at the latest year.
 - **Sectors** — one per style, in taxonomy order, clockwise from the top;
-  angular width proportional to the number of songs, with a minimum share
-  (~14 % before normalising) so a small style stays usable. Sector boundaries
-  follow the **groove spiral** `θ = u + 0.85 · ln(r / 300)`; each sector has a
-  faint tint (stronger towards the rim) and a thick **rim band in the style
-  colour** at the edge. Style name and «N tracks» sit outside the disc at ~1.17×
+  all sectors the same width (the song count is still shown). Sector
+  boundaries follow the **groove spiral** `θ = u + 0.85 · ln(r / 300)` and fade
+  out before the edge; each sector has a faint tint (stronger towards the rim)
+  and a **rim band that is a soft glow in the style colour** at the edge. Style name and «N tracks» sit outside the disc at ~1.17×
   the edge radius, never touching it.
-- **Vinyl:** near-black body with a thin light edge; ~110 concentric grooves at
+- **Vinyl:** near-black body with no outline — it fades into the page at the edge; ~110 concentric grooves at
   2–5 % white; a **fixed sheen** (two soft light wedges in a conic gradient
   that do **not** rotate with the disc); a smooth run-out ring before the label.
   The **centre label** spins with the disc: dark blue paper, a thin ice ring,
   four short arcs in the style colours at the sectors' mid-angles, **«REGULARNIK»**
   in the display face, «SIDE A · first — last year» and «N TRACKS · 33⅓ RPM» (only
   the short line when the label is small), black spindle hole.
-- **Placement and no overlaps:** each song starts at its year radius inside its
-  sector, then a relaxation pushes overlapping songs apart. The collision radius
-  covers the snowflake **and its title** (≈ max(1.3 × flake radius, half the
-  label width)). Constraints each iteration: stay inside the sector (angular
-  margin), stay within ±1.7 years of the true radius, spring back towards it.
-  Solve once per viewport size, not per frame.
-- **Zoom and pan:** wheel / pinch / «+ − Reset» buttons, ×1 to ×8, zoom anchored
-  at the cursor or pinch centre; drag to pan, clamped so the disc cannot be lost.
-  Snowflakes grow as `zoom^0.45` — slower than the map — so zooming only ever
-  adds space between them. A drag over 4 px is not a click.
+- **Placement and no overlaps:** each song sits at its exact year radius.
+  Songs of one style and year spread evenly along the groove spiral between the
+  sector borders: the k-th of n at (k + 1) / (n + 1), so a lone song sits
+  mid-sector and a column of songs repeats the border shape. A relaxation then
+  pushes overlapping songs apart, mostly along the groove, the earlier one
+  counterclockwise, with radial drift capped at `YEAR_DRIFT` = 0.45 year, so
+  different years never swap order. The collision radius covers the snowflake
+  **and its title** (≈ max(1.3 × flake radius, half the label width)). Solve
+  once per viewport size, not per frame. Titles that would collide with another
+  title or snowflake are hidden (`visibleTitles`); they appear when zooming in
+  or on hover.
+- **Zoom and rotation:** wheel / pinch, ×1 to ×8, anchored at the pointer or
+  pinch centre. Dragging turns the disc round its centre (`rotateBy`); it never
+  pans. Pan comes only from zoom anchoring and is zero at ×1. No + − Reset
+  buttons, no zoom readout. Snowflakes grow as `zoom^0.45` — slower than the
+  map — so zooming only ever adds space between them. A drag over 4 px is not a
+  click.
 - **Year rings** (brighter grooves with labels): every **5 years** below ×1.7,
-  every **3 years** below ×3, **every year** from ×3. Labels sit on a dark chip
-  along the line from the disc centre towards the middle of the viewport, so
-  they stay visible when zoomed in. A readout shows «×2.4 · rings every 3
-  years».
+  every **3 years** below ×3, **every year** from ×3. Rings and labels are quiet: thin,
+  faint lines and a small chip. Labels sit along the line from the disc centre
+  towards the middle of the viewport, so they stay visible when zoomed in.
 - **Motion:** the disc rotates slowly (≈ 0.03 rad/s, divided by `zoom^1.5` so a
   zoomed-in region does not drift away); each snowflake also turns slowly on its
-  own. «Pause / Spin» button. Under `prefers-reduced-motion`, nothing moves. The
+  own. A round play / pause button (❚❚ / ▶) stops and starts both. Under `prefers-reduced-motion`, nothing moves. The
   loop does no drawing while the record is hidden (List view, off-screen, tab
   hidden).
 - **Hover:** the snowflake grows ×1.18, its title brightens, a tooltip shows

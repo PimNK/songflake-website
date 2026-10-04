@@ -1,9 +1,5 @@
-/* List view: a responsive grid of tiles. */
+/* List view: a responsive grid of tiles straight on the page background. */
 .listview {
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--panel);
-  padding: 14px;
   min-height: clamp(480px, 80vh, 920px);
 }
 .gallery {
@@ -24,9 +20,11 @@
   cursor: pointer;
 }
 .tile:hover {
-  background: var(--panel2);
+  background: color-mix(in srgb, var(--panel2) 70%, transparent);
 }
 .tile .flake {
+  overflow: hidden;
+  max-width: 100%;
   /* the largest tile snowflake (total 15) fits, so titles line up */
   height: 130px;
   display: grid;

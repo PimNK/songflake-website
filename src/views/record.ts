@@ -1,42 +1,32 @@
-// The record canvas: DPR sizing, animation loop, zoom buttons, hover tooltip, click → card.
+// The record canvas: DPR sizing, animation loop, play / pause, hover tooltip, click → card.
 // Layout comes from domain/record-layout.ts, drawing from render/record*.ts.
 import type { Content } from '../content/load';
 import type { Song } from '../content/parse';
 import {
   clampPan,
   collisionRadius,
-  flakeTurn,
   hitRadius,
   fitScale,
   flakeRadius,
   ringStep,
   ringYears,
+  rotateBy,
   sectors,
-  solveLayout,
   stageFlakeScale,
   toScreen,
   transform,
   yearRange,
   zoomAt,
-  type Placement,
   type Sector,
   type Transform,
   type Viewport,
   type YearRange,
 } from '../domain/record-layout';
-import { hash01 } from '../domain/seed';
-import { flakeOf, sizeFactor, type Flake } from '../domain/snowflake';
-import {
-  drawFlakes,
-  drawStars,
-  flakeTitleFont,
-  starField,
-  type FlakeNode,
-  type Star,
-} from '../render/record-flakes';
+import { solveLayout, type Placement } from '../domain/record-solve';
+import { flakeOf, flakeTurn, sizeFactor, turnOffset, type Flake } from '../domain/snowflake';
+import { drawFlakes, flakeTitleFont, type FlakeNode } from '../render/record-flakes';
 import { drawCentreLabel, drawDisc, drawSectorNames, drawYearRings } from '../render/record';
 import { devicePixelRatioCapped, SpriteCache } from '../render/snowflake';
-import { strings } from '../strings';
 import { recordTemplate, showTooltip, wireRecordControls } from './record-controls';
 import { attachRecordInput } from './record-input';
 import { RecordMotion } from './record-motion';
@@ -49,7 +39,6 @@ export interface RecordView {
 type Node = FlakeNode & { song: Song };
 
 const HOVER_SCALE = 1.18;
-const r = strings.record;
 
 /** Mounted once for the page's lifetime: observers and listeners are never released. */
 export function mountRecord(
@@ -64,16 +53,13 @@ class RecordStage implements RecordView {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private tip: HTMLElement;
-  private readout: HTMLElement;
   private range: YearRange;
   private secs: Sector[];
   private flakes: Map<string, Flake>;
-  private spinOffset: Map<string, number>;
   private sprites = new SpriteCache();
   private motion = new RecordMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   private vp: Viewport = { width: 1, height: 1, zoom: 1, panX: 0, panY: 0, phi: -0.15 };
   private placed = new Map<string, Placement>();
-  private stars: Star[] = [];
   private dpr = 1;
   private flakeScale = 1;
   private hover: string | null = null;
@@ -94,12 +80,10 @@ class RecordStage implements RecordView {
     this.canvas = stage.querySelector('canvas')!;
     this.ctx = this.canvas.getContext('2d')!;
     this.tip = stage.querySelector<HTMLElement>('.tip')!;
-    this.readout = stage.querySelector<HTMLElement>('.zread')!;
     const { songs, taxonomy } = content;
     this.range = yearRange(songs);
     this.secs = sectors(taxonomy.styles, songs);
     this.flakes = new Map(songs.map((s) => [s.slug, flakeOf(s, taxonomy)]));
-    this.spinOffset = new Map(songs.map((s) => [s.slug, hash01(s.slug) * 6]));
     this.wireControls();
     this.wireInput();
     this.observe();
@@ -145,7 +129,6 @@ class RecordStage implements RecordView {
     this.canvas.width = Math.round(this.vp.width * this.dpr);
     this.canvas.height = Math.round(this.vp.height * this.dpr);
     this.flakeScale = stageFlakeScale(this.vp.width, this.vp.height);
-    this.stars = starField(this.vp.width, this.vp.height);
     this.sprites.clear();
     this.solve();
     this.invalidate();
@@ -157,7 +140,6 @@ class RecordStage implements RecordView {
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     ctx.clearRect(0, 0, vp.width, vp.height);
     ctx.shadowBlur = 0;
-    drawStars(ctx, this.stars, this.motion.time);
     const t = transform(vp);
     drawDisc(ctx, t, secs, taxonomy);
     drawYearRings(ctx, t, vp.width, vp.height, ringYears(range, ringStep(vp.zoom)), range);
@@ -165,7 +147,6 @@ class RecordStage implements RecordView {
     drawSectorNames(ctx, t, secs, taxonomy, vp.zoom);
     this.nodes = this.layoutNodes(t);
     drawFlakes(ctx, this.nodes, vp.zoom);
-    this.readout.textContent = r.readout(vp.zoom, ringStep(vp.zoom));
   }
 
   private layoutNodes(t: Transform): Node[] {
@@ -181,7 +162,7 @@ class RecordStage implements RecordView {
       if (x < -R * 2 || y < -R * 2 || x > vp.width + R * 2 || y > vp.height + R * 2) continue;
       const f = this.flakes.get(song.slug)!;
       const sprite = this.sprites.get(song.slug, f.params, f.colours, R, this.dpr);
-      const offset = this.spinOffset.get(song.slug)!;
+      const offset = turnOffset(song.slug);
       const rotation = flakeTurn(song.complexity.structure, this.motion.time, offset);
       out.push({ song, x, y, R, rotation, sprite, on, hovered, title: song.title });
     }
@@ -227,13 +208,11 @@ class RecordStage implements RecordView {
     attachRecordInput(this.canvas, {
       zoom: () => this.vp.zoom,
       zoomAt: (z, x, y) => {
-        this.motion.interrupt();
         this.vp = zoomAt(this.vp, z, x, y);
         this.invalidate();
       },
-      pan: (dx, dy) => {
-        this.motion.interrupt();
-        this.vp = clampPan({ ...this.vp, panX: this.vp.panX + dx, panY: this.vp.panY + dy });
+      drag: (x0, y0, x1, y1) => {
+        this.vp = rotateBy(this.vp, x0, y0, x1, y1);
         this.invalidate();
       },
       hover: (x, y, touch) => {
@@ -268,14 +247,6 @@ class RecordStage implements RecordView {
       spinning: () => this.motion.spinning,
       toggleSpin: () => {
         this.motion.spinning = !this.motion.spinning;
-        this.wake();
-      },
-      zoom: (factor) => {
-        this.motion.zoomBy(this.vp, factor);
-        this.wake();
-      },
-      reset: () => {
-        this.motion.reset();
         this.wake();
       },
     });

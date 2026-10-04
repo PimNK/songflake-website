@@ -1,8 +1,9 @@
 // Song → snowflake parameters: the whole mapping of CLAUDE.md §5.1, in one place. Pure.
 // Lengths are fractions of the flake radius R; render/snowflake.ts multiplies them out.
-import type { Complexity, Song } from '../content/parse';
+import type { Song } from '../content/parse';
 import type { Taxonomy } from '../content/taxonomy';
 import { rayColours } from './ray-colours';
+import { hash01 } from './seed';
 
 export type Level = 1 | 2 | 3;
 
@@ -68,9 +69,23 @@ export const centreDotRadius = (R: number): number => Math.max(1.4, 0.045 * R);
 /** complexityTotal (5–15) → size factor, 1 at the middle total of 10. */
 export const sizeFactor = (complexityTotal: number): number => (6 + complexityTotal) / 16;
 
-/** A synthetic song for the "How to read a snowflake" rows: all axes at 2 unless overridden. */
-export function sampleComplexity(over: Partial<Complexity> = {}): Complexity {
-  return { rhythm: 2, melody: 2, technique: 2, instruments: 2, structure: 2, ...over };
+/** Each snowflake turns slowly on its own, in rad/s; more rays turn a little faster. */
+export const turnRate = (structure: number): number => 0.08 * (1 + structure * 0.3);
+
+/** A snowflake's starting angle, seeded by the slug so neighbours do not turn in step. */
+export const turnOffset = (slug: string): number => hash01(slug) * 6;
+
+/** The snowflake's own angle after `time` seconds of turning. */
+export const flakeTurn = (structure: number, time: number, offset: number): number =>
+  time * turnRate(structure) + offset;
+
+/** The same turn as a CSS animation: one full turn in `period` s, started `delay` s ago. */
+export function turnTiming(song: Pick<Song, 'slug' | 'complexity'>): {
+  period: number;
+  delay: number;
+} {
+  const rate = turnRate(song.complexity.structure);
+  return { period: (Math.PI * 2) / rate, delay: -turnOffset(song.slug) / rate };
 }
 
 export interface Flake {

@@ -1,4 +1,4 @@
-/* Page frame: hero, map grid, view switch, legend, "How to read", footer. */
+/* Page frame: hero, map grid, view switch. */
 .eyebrow {
   font-family: var(--mono);
   font-size: 12px;
@@ -59,7 +59,8 @@
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 3px;
-  background: var(--panel);
+  background: color-mix(in srgb, var(--panel) 82%, transparent);
+  backdrop-filter: blur(4px);
 }
 .vseg button {
   background: none;
@@ -76,12 +77,6 @@
   background: var(--frost);
   color: var(--void);
 }
-.vnote {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--mist);
-  white-space: pre;
-}
 .notice {
   font-family: var(--mono);
   font-size: 12px;
@@ -97,137 +92,11 @@
   }
 }
 
-.legend {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px 32px;
-  padding-block: 18px 8px;
-}
-.legend h3 {
-  font-family: var(--mono);
-  font-weight: 400;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--mist);
-  margin-bottom: 8px;
-}
-.legend ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 4px;
-  font-size: 13.5px;
-}
-.legend li {
-  display: grid;
-  grid-template-columns: 7.5em 1fr;
-  gap: 10px;
-}
-.legend li span:first-child {
-  color: var(--ice);
-}
-.sw {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-  margin-top: 10px;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--mist);
-}
-.sw i {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  margin-right: 5px;
-  vertical-align: -1px;
-}
-@media (max-width: 860px) {
-  .legend {
-    grid-template-columns: 1fr;
-  }
-}
-
-.study {
-  padding-block: clamp(40px, 6vw, 72px) 8px;
-  display: grid;
-  gap: 22px;
-}
-.study > header {
-  display: grid;
-  gap: 10px;
-}
-.study h2 {
-  font-size: clamp(24px, 3.4vw, 38px);
-}
-.study .lead {
-  font-size: 15px;
-}
-.kicker {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ice);
-}
-.howto {
-  border: 1px solid var(--line);
-  border-radius: 14px;
-}
-.howto-row {
-  display: grid;
-  grid-template-columns: 13em 1fr;
-  gap: 14px;
-  align-items: center;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--line);
-}
-.howto-row:last-child {
-  border-bottom: 0;
-}
-.howto-name b {
-  font-weight: 500;
-  font-size: 14px;
-  display: block;
-}
-.howto-name small {
-  display: block;
-  color: var(--mist);
-  font-size: 12px;
-  margin-top: 2px;
-}
-.trio {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.trio figure {
-  margin: 0;
-  display: grid;
-  justify-items: center;
-  gap: 2px;
-}
-.trio figcaption {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--mist);
-}
-@media (max-width: 560px) {
-  .howto-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-footer {
-  padding-block: 48px 40px;
-  color: var(--mist);
-  font-size: 13px;
-}
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
   }
+}
+main {
+  padding-bottom: clamp(32px, 6vw, 64px);
 }

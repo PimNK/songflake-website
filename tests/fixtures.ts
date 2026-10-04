@@ -1,4 +1,4 @@
-import type { Song } from '../src/content/parse';
+import type { Complexity, Song } from '../src/content/parse';
 import type { Bands, Taxonomy } from '../src/content/taxonomy';
 
 export const taxonomy: Taxonomy = {
@@ -59,4 +59,9 @@ export function song(over: Partial<Song> = {}): Song {
     pins: [],
     ...over,
   };
+}
+
+/** Complexity with every axis at 2 unless overridden. */
+export function sampleComplexity(over: Partial<Complexity> = {}): Complexity {
+  return { rhythm: 2, melody: 2, technique: 2, instruments: 2, structure: 2, ...over };
 }

@@ -2,3 +2,4 @@ node_modules/
 dist/
 .claude/.tests-green
 .claude/settings.local.json
+*:Zone.Identifier

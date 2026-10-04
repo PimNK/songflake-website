@@ -24,7 +24,9 @@ export function renderMarkers(
   for (const group of groupMarkers(pins, duration, width)) {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'pin';
+    // Near either end of the bar the popover opens inwards, so it never sticks out of the card.
+    const side = group.fraction < 0.3 ? ' start' : group.fraction > 0.7 ? ' end' : '';
+    b.className = `pin${side}`;
     b.style.left = `${group.fraction * 100}%`;
     b.setAttribute(
       'aria-label',

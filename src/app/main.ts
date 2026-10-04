@@ -12,10 +12,8 @@ import '../styles/overlay.css';
 import { loadContent } from '../content/load';
 import type { Song } from '../content/parse';
 import { countMatching, defaultFilters, matches, neighbour } from '../domain/filters';
-import { yearRange } from '../domain/record-layout';
 import { showContentOverlay } from '../views/content-overlay';
 import { mountFilterPanel } from '../views/filter-panel';
-import { renderHowTo, renderLegend } from '../views/legend';
 import { mountList } from '../views/list';
 import { onViewTab, renderPage, showView } from '../views/page';
 import { mountRecord } from '../views/record';
@@ -68,8 +66,6 @@ const card = mountTrackCard(content, {
     }),
 });
 onViewTab(slots, (view) => store.set({ view, notice: null }));
-renderLegend(slots.legend, taxonomy, yearRange(songs));
-renderHowTo(slots.howTo, taxonomy);
 
 store.subscribe((s, prev) => {
   if (s.openSlug !== prev.openSlug || s.cue !== prev.cue) {

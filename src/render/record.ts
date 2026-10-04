@@ -8,6 +8,7 @@ import {
   R_GROOVE_IN,
   R_GROOVE_OUT,
   R_LABEL,
+  R_MAX,
   toScreen,
   wind,
   yearRadius,
@@ -54,14 +55,31 @@ function sectorTints(ctx: Ctx, t: Transform, secs: readonly Sector[], taxonomy: 
     g.addColorStop(1, rgba(hue, 0.1));
     ctx.fillStyle = g;
     ctx.fill();
-    // thick rim band in the style colour at the edge
-    ctx.beginPath();
-    const pad = (w.a1 - w.a0) * 0.004;
-    arcPath(ctx, t, R_DISC * 0.985, w.a0 + pad, w.a1 - pad, true);
-    ctx.strokeStyle = rgba(hue, 0.85);
-    ctx.lineWidth = Math.max(3, 20 * S);
-    ctx.stroke();
+    rimBand(ctx, t, w, hue);
   }
+}
+
+/** The rim band in the style colour: a soft glow that fades out on both sides, no hard edge. */
+function rimBand(ctx: Ctx, t: Transform, w: Sector, hue: string): void {
+  const [r0, r1] = [R_DISC * 0.93, R_DISC * 1.02];
+  ctx.beginPath();
+  arcPath(ctx, t, r0, w.a0, w.a1, true);
+  arcPath(ctx, t, r1, w.a1, w.a0, false);
+  ctx.closePath();
+  const g = ctx.createRadialGradient(t.cx, t.cy, r0 * t.scale, t.cx, t.cy, r1 * t.scale);
+  g.addColorStop(0, rgba(hue, 0));
+  g.addColorStop(0.6, rgba(hue, 0.38));
+  g.addColorStop(1, rgba(hue, 0));
+  ctx.fillStyle = g;
+  ctx.fill();
+}
+
+/** A radial stroke style that fades from `alpha` at R_MAX to nothing at the disc edge. */
+function fadeToEdge(ctx: Ctx, t: Transform, rgb: string, alpha: number): CanvasGradient {
+  const g = ctx.createRadialGradient(t.cx, t.cy, R_MAX * t.scale, t.cx, t.cy, R_DISC * t.scale);
+  g.addColorStop(0, `rgba(${rgb},${alpha})`);
+  g.addColorStop(1, `rgba(${rgb},0)`);
+  return g;
 }
 
 function circle(ctx: Ctx, t: Transform, r: number): void {
@@ -80,7 +98,7 @@ function drawGrooves(ctx: Ctx, t: Transform, secs: readonly Sector[]): void {
   for (const w of secs) {
     ctx.beginPath();
     spiralPath(ctx, t, w.a0, R_GROOVE_IN, R_DISC);
-    ctx.strokeStyle = 'rgba(210,222,255,.22)';
+    ctx.strokeStyle = fadeToEdge(ctx, t, '210,222,255', 0.22);
     ctx.lineWidth = 1;
     ctx.stroke();
   }
@@ -95,14 +113,13 @@ export function drawDisc(
 ): void {
   const S = t.scale;
   circle(ctx, t, R_DISC);
+  // The body fades into the page at the edge: no outline that would cut through the titles.
   const body = ctx.createRadialGradient(t.cx, t.cy, R_LABEL * S, t.cx, t.cy, R_DISC * S);
   body.addColorStop(0, '#0d0f17');
-  body.addColorStop(1, '#08090e');
+  body.addColorStop(0.9, 'rgba(8,9,14,.96)');
+  body.addColorStop(1, 'rgba(8,9,14,0)');
   ctx.fillStyle = body;
   ctx.fill();
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = 'rgba(200,215,255,.14)';
-  ctx.stroke();
   sectorTints(ctx, t, secs, taxonomy);
   drawGrooves(ctx, t, secs);
   // Sheen: a fixed light source — two soft wedges that do not rotate with the disc.
@@ -119,7 +136,7 @@ export function drawDisc(
     sheen.addColorStop(o!, `rgba(255,255,255,${a})`);
   }
   ctx.beginPath();
-  ctx.arc(t.cx, t.cy, R_DISC * S, 0, Math.PI * 2);
+  ctx.arc(t.cx, t.cy, R_GROOVE_OUT * S, 0, Math.PI * 2);
   ctx.arc(t.cx, t.cy, R_LABEL * S, 0, Math.PI * 2, true);
   ctx.fillStyle = sheen;
   ctx.fill();
@@ -134,8 +151,9 @@ function letterSpacing(ctx: Ctx, value: string): void {
 }
 
 /**
- * Year rings with labels on a dark chip, placed along the line from the disc centre towards the
- * middle of the viewport so they stay visible when zoomed in.
+ * Year rings, kept quiet — the snowflakes are the point — with small labels on a soft chip,
+ * placed along the line from the disc centre towards the middle of the viewport so they stay
+ * visible when zoomed in.
  */
 export function drawYearRings(
   ctx: Ctx,
@@ -150,12 +168,12 @@ export function drawYearRings(
   const angle = Math.hypot(dx, dy) > 40 ? Math.atan2(dy, dx) : -Math.PI / 2;
   const [lc, ls] = [Math.cos(angle), Math.sin(angle)];
   ctx.textAlign = 'center';
-  ctx.font = `500 10.5px ${MONO}`;
+  ctx.font = `400 9.5px ${MONO}`;
   for (const y of years) {
     const r = yearRadius(y, range) * t.scale;
     ctx.beginPath();
     ctx.arc(t.cx, t.cy, r, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(190,205,255,.2)';
+    ctx.strokeStyle = 'rgba(190,205,255,.09)';
     ctx.lineWidth = 1;
     ctx.stroke();
     const lx = t.cx + lc * r;
@@ -163,10 +181,10 @@ export function drawYearRings(
     if (lx < -20 || lx > width + 20 || ly < 14 || ly > height - 6) continue;
     const label = String(y);
     const tw = ctx.measureText(label).width;
-    ctx.fillStyle = 'rgba(8,9,14,.88)';
-    ctx.fillRect(lx - tw / 2 - 4, ly - 8, tw + 8, 15);
-    ctx.fillStyle = 'rgba(200,212,245,.85)';
-    ctx.fillText(label, lx, ly + 4);
+    ctx.fillStyle = 'rgba(8,9,14,.5)';
+    ctx.fillRect(lx - tw / 2 - 3, ly - 7, tw + 6, 13);
+    ctx.fillStyle = 'rgba(190,205,240,.45)';
+    ctx.fillText(label, lx, ly + 3.5);
   }
 }
 

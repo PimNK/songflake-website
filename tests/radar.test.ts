@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { radarSvg } from '../src/render/radar';
-import { sampleComplexity } from '../src/domain/snowflake';
+import { sampleComplexity } from './fixtures';
 
 describe('radarSvg', () => {
   const svg = radarSvg(sampleComplexity({ rhythm: 3, melody: 1 }), '#ff9100');

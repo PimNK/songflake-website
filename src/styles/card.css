@@ -102,7 +102,7 @@ body.locked {
   border-radius: 14px;
   padding: 16px;
 }
-.flake-box canvas {
+.flake-clip canvas {
   max-width: 100%;
   height: auto !important;
 }
@@ -144,4 +144,11 @@ body.locked {
   .mgrid {
     grid-template-columns: 1fr;
   }
+}
+/* The turning snowflake's square canvas would stick out at the corners; they are transparent. */
+.flake-clip {
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  max-width: 100%;
 }

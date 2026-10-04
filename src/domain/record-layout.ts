@@ -1,7 +1,6 @@
 // Geometry of the record (CLAUDE.md §5.3). Pure — no canvas, no animation loop.
 // World units: grooves from R_MIN (earliest year) to R_MAX (latest), disc edge at R_DISC.
 import type { Song } from '../content/parse';
-import { hash01 } from './seed';
 
 export const R_MIN = 300;
 export const R_MAX = 1000;
@@ -10,11 +9,10 @@ export const R_LABEL = 186;
 export const R_GROOVE_IN = R_MIN * 0.9;
 export const R_GROOVE_OUT = R_MAX * 1.03;
 export const SPIRAL = 0.85;
-export const MIN_SHARE = 0.14;
 export const LABEL_DISTANCE = 1.17; // style names, × R_DISC
 export const ZOOM_MIN = 1;
 export const ZOOM_MAX = 8;
-export const YEAR_BAND = 1.7; // a song may drift this many years from its true radius
+export const YEAR_DRIFT = 0.45; // under half a year: songs of different years never swap order
 
 export interface Sector {
   style: string;
@@ -47,25 +45,20 @@ export function yearRadius(year: number, range: YearRange): number {
   return R_MIN + ((year - range.first) / (range.last - range.first)) * (R_MAX - R_MIN);
 }
 
-/** Radial units per year (for the ±YEAR_BAND constraint). */
+/** Radial units per year (for the ±YEAR_DRIFT constraint). */
 export const yearUnit = (range: YearRange): number =>
   (R_MAX - R_MIN) / Math.max(1, range.last - range.first);
 
-/** One sector per style in taxonomy order, width ∝ song count with a minimum share. */
+/** One sector per style in taxonomy order, all the same width, the first centred on the top. */
 export function sectors(styles: readonly string[], songs: readonly Song[]): Sector[] {
-  if (!styles.length) return [];
-  const counts = styles.map((st) => songs.filter((s) => s.style === st).length);
-  const total = Math.max(1, songs.length);
-  const raw = counts.map((n) => Math.max(MIN_SHARE, n / total));
-  const sum = raw.reduce((a, b) => a + b, 0);
-  const shares = raw.map((x) => x / sum);
-  let a = -Math.PI / 2 - shares[0]! * Math.PI; // first sector centred on the top
-  return styles.map((style, i) => {
-    const w = shares[i]! * Math.PI * 2;
-    const sector = { style, a0: a, a1: a + w, count: counts[i]! };
-    a += w;
-    return sector;
-  });
+  const w = (Math.PI * 2) / Math.max(1, styles.length);
+  const start = -Math.PI / 2 - w / 2;
+  return styles.map((style, i) => ({
+    style,
+    a0: start + i * w,
+    a1: start + (i + 1) * w,
+    count: songs.filter((s) => s.style === style).length,
+  }));
 }
 
 /** Point at radius r on the groove spiral that starts at angle u on R_MIN. */
@@ -87,66 +80,7 @@ export function nearAngle(u: number, centre: number): number {
   return u;
 }
 
-const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
-
-export interface Placement {
-  x: number;
-  y: number;
-}
-
-/**
- * Each song starts at its year radius inside its sector, then relaxation pushes overlapping
- * songs apart. `radiusOf` is the collision radius in world units (flake and title together).
- */
-export function solveLayout(
-  songs: readonly Song[],
-  secs: readonly Sector[],
-  range: YearRange,
-  radiusOf: (song: Song) => number,
-  iterations = 600,
-): Map<string, Placement> {
-  const band = yearUnit(range) * YEAR_BAND;
-  const nodes = secs.flatMap((sec) =>
-    songs
-      .filter((s) => s.style === sec.style)
-      .map((s) => ({ s, h: hash01(s.slug), rt: yearRadius(placementYear(s, range), range) }))
-      .sort((a, b) => a.rt - b.rt || a.h - b.h)
-      .map((n, j) => {
-        const u = sec.a0 + (sec.a1 - sec.a0) * (0.12 + 0.76 * ((j * 0.618) % 1));
-        const [x, y] = wind(n.rt, u);
-        return { ...n, sec, cw: radiusOf(n.s), x, y };
-      }),
-  );
-  for (let it = 0; it < iterations; it++) {
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const a = nodes[i]!;
-        const b = nodes[j]!;
-        let dx = b.x - a.x;
-        let dy = b.y - a.y;
-        let d = Math.hypot(dx, dy);
-        const m = a.cw + b.cw;
-        if (d >= m) continue;
-        if (d < 1e-3) [dx, dy, d] = [Math.cos(i + j), Math.sin(i + j), 1];
-        const p = (m - d) / 2 / d;
-        a.x -= dx * p;
-        a.y -= dy * p;
-        b.x += dx * p;
-        b.y += dy * p;
-      }
-    }
-    for (const n of nodes) {
-      let [r, u] = unwind(n.x, n.y);
-      u = nearAngle(u, (n.sec.a0 + n.sec.a1) / 2);
-      r += (n.rt - r) * 0.05;
-      r = clamp(r, Math.max(R_MIN * 0.86, n.rt - band), Math.min(R_MAX * 1.02, n.rt + band));
-      const margin = Math.min((n.cw * 1.05) / r, (n.sec.a1 - n.sec.a0) * 0.45);
-      u = clamp(u, n.sec.a0 + margin, n.sec.a1 - margin);
-      [n.x, n.y] = wind(r, u);
-    }
-  }
-  return new Map(nodes.map((n) => [n.s.slug, { x: n.x, y: n.y }]));
-}
+export const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 
 // ---- viewport -------------------------------------------------------------------------------
 
@@ -174,10 +108,6 @@ export const stageFlakeScale = (width: number, height: number): number =>
  */
 export const collisionRadius = (flakePx: number, halfLabelPx: number, fit: number): number =>
   (Math.max(flakePx * 1.3, halfLabelPx * 0.92) + 7) / fit;
-
-/** Each snowflake turns slowly on its own; more rays turn a little faster. */
-export const flakeTurn = (structure: number, time: number, offset: number): number =>
-  time * 0.08 * (1 + structure * 0.3) + offset;
 
 /** How close a pointer must be to a snowflake to hit it, in px. */
 export const hitRadius = (flakePx: number): number => Math.max(12, flakePx * 1.1);
@@ -213,13 +143,18 @@ export function toWorld(t: Transform, sx: number, sy: number): [number, number] 
   return [dx * t.cos + dy * t.sin, -dx * t.sin + dy * t.cos];
 }
 
-/** Pan limited so the disc can never be lost off-screen. */
+/** Pan limited so the disc can never be lost off-screen; at ×1 the disc is centred. */
 export function clampPan(v: Viewport): Viewport {
-  const lim = Math.max(
-    0,
-    R_MAX * fitScale(v.width, v.height) * v.zoom * 1.05 - Math.min(v.width, v.height) * 0.3,
-  );
+  const lim = Math.max(0, R_MAX * fitScale(v.width, v.height) * (v.zoom - ZOOM_MIN) * 1.05);
   return { ...v, panX: clamp(v.panX, -lim, lim), panY: clamp(v.panY, -lim, lim) };
+}
+
+/** Dragging turns the disc round its centre by the angle swept from (x0, y0) to (x1, y1). */
+export function rotateBy(v: Viewport, x0: number, y0: number, x1: number, y1: number): Viewport {
+  const cx = v.width / 2 + v.panX;
+  const cy = v.height / 2 + v.panY;
+  const swept = nearAngle(Math.atan2(y1 - cy, x1 - cx) - Math.atan2(y0 - cy, x0 - cx), 0);
+  return { ...v, phi: v.phi + swept };
 }
 
 /** Zoom to `zoom`, keeping the screen point (mx, my) over the same spot of the disc. */
@@ -246,3 +181,33 @@ export function ringYears(range: YearRange, step: 1 | 3 | 5): number[] {
 
 /** Disc spin speed, slowed when zoomed so a zoomed-in region does not drift away. */
 export const spinRate = (zoom: number): number => 0.03 / Math.pow(zoom, 1.5);
+
+/** A title's box (centre x, top y, width, height) under its snowflake (centre, radius), in px. */
+export interface Labelled {
+  box: { x: number; y: number; w: number; h: number };
+  flake: { x: number; y: number; r: number };
+}
+
+/**
+ * Which titles are drawn: greedily in the given (priority) order, a title is shown unless it
+ * would cover a title already shown or another snowflake. Zooming in makes room for the rest.
+ */
+export function visibleTitles(items: readonly Labelled[]): boolean[] {
+  const shown: Labelled['box'][] = [];
+  return items.map((it, i) => {
+    const b = it.box;
+    const [left, right, top, bottom] = [b.x - b.w / 2, b.x + b.w / 2, b.y, b.y + b.h];
+    const hitsBox = shown.some(
+      (o) => left < o.x + o.w / 2 && right > o.x - o.w / 2 && top < o.y + o.h && bottom > o.y,
+    );
+    const hitsFlake = items.some((o, j) => {
+      if (j === i) return false;
+      const nx = clamp(o.flake.x, left, right);
+      const ny = clamp(o.flake.y, top, bottom);
+      return Math.hypot(o.flake.x - nx, o.flake.y - ny) < o.flake.r * 0.8;
+    });
+    if (hitsBox || hitsFlake) return false;
+    shown.push(b);
+    return true;
+  });
+}

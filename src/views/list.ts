@@ -1,11 +1,11 @@
-// The tile grid and its empty state (CLAUDE.md §4.4). No filtering logic — a match function
-// comes from the caller.
+// The tile grid and its empty state (CLAUDE.md §4.4); each tile's snowflake turns on its own
+// axis. No filtering logic — a match function comes from the caller.
 import type { Content } from '../content/load';
 import type { Song } from '../content/parse';
 import { flakeOf, sizeFactor } from '../domain/snowflake';
 import { paintSnowflake } from '../render/snowflake';
 import { strings } from '../strings';
-import { bandRing, esc } from './html';
+import { bandRing, esc, turnStyle } from './html';
 
 export interface ListView {
   update(match: (song: Song) => boolean): void;
@@ -20,6 +20,8 @@ function tile(song: Song, content: Content): HTMLButtonElement {
   b.dataset.slug = song.slug;
   const flake = flakeOf(song, taxonomy);
   const canvas = document.createElement('canvas');
+  canvas.className = 'turn';
+  canvas.style.cssText = turnStyle(song);
   paintSnowflake(
     canvas,
     flake.params,

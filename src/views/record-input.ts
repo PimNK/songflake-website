@@ -1,10 +1,11 @@
-// Pointer input on the record canvas: wheel and pinch zoom anchored at the pointer, drag to pan,
-// hover, and click/tap. A drag over 4 px is not a click. Wiring only — no layout maths.
+// Pointer input on the record canvas: wheel and pinch zoom anchored at the pointer, drag to turn
+// the disc, hover, and click/tap. A drag over 4 px is not a click. Wiring only — no layout maths.
 
 export interface RecordInputHandlers {
   zoom(): number;
   zoomAt(zoom: number, x: number, y: number): void;
-  pan(dx: number, dy: number): void;
+  /** The pointer moved from (x0, y0) to (x1, y1) while pressed, in canvas px. */
+  drag(x0: number, y0: number, x1: number, y1: number): void;
   hover(x: number, y: number, touch: boolean): void;
   leave(): void;
   click(x: number, y: number): void;
@@ -53,13 +54,13 @@ function attachPointers(canvas: HTMLCanvasElement, h: RecordInputHandlers, local
       h.hover(x, y, e.pointerType === 'touch');
       return;
     }
-    const dx = e.clientX - p.x;
-    const dy = e.clientY - p.y;
+    const [x0, y0] = local({ clientX: p.x, clientY: p.y });
+    const [x1, y1] = local(e);
     p.x = e.clientX;
     p.y = e.clientY;
     if (pointers.size === 1) {
-      h.pan(dx, dy);
-      moved += Math.abs(dx) + Math.abs(dy);
+      h.drag(x0, y0, x1, y1);
+      moved += Math.abs(x1 - x0) + Math.abs(y1 - y0);
       if (moved > CLICK_SLOP) h.dragging(true);
     } else if (pointers.size === 2 && pinch) {
       const [a, b] = [...pointers.values()];

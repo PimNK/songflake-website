@@ -1,49 +1,33 @@
-// The record stage's DOM around the canvas: hint, Pause/Spin, zoom buttons with the readout,
-// and the hover tooltip. Wiring only.
+// The record stage's DOM around the canvas: the round play / pause button and the hover
+// tooltip. Wiring only.
 import type { Song } from '../content/parse';
 import { strings } from '../strings';
 import { esc } from './html';
 
 const r = strings.record;
-const BUTTON_ZOOM = 1.6;
 
 export const recordTemplate = (): string => `
   <canvas aria-label="${r.canvasLabel}"></canvas>
-  <div class="hint">${r.hint}</div>
-  <button class="btn pause" type="button"></button>
-  <div class="zoom">
-    <span class="zread"></span>
-    <button class="btn" type="button" data-z="out" aria-label="${r.zoomOut}">−</button>
-    <button class="btn" type="button" data-z="in" aria-label="${r.zoomIn}">+</button>
-    <button class="btn" type="button" data-z="reset">${r.reset}</button>
-  </div>
+  <button class="spin" type="button"></button>
   <div class="tip" hidden></div>`;
 
 export interface RecordControlHandlers {
   spinning(): boolean;
   toggleSpin(): void;
-  /** Multiply the zoom target by `factor`. */
-  zoom(factor: number): void;
-  reset(): void;
 }
 
 export function wireRecordControls(stage: HTMLElement, h: RecordControlHandlers): void {
-  const pause = stage.querySelector<HTMLButtonElement>('.pause')!;
+  const spin = stage.querySelector<HTMLButtonElement>('.spin')!;
   const label = (): void => {
-    pause.textContent = h.spinning() ? r.pause : r.spin;
+    const on = h.spinning();
+    spin.textContent = on ? r.pauseGlyph : r.spinGlyph;
+    spin.setAttribute('aria-label', on ? r.pause : r.spin);
   };
   label();
-  pause.addEventListener('click', () => {
+  spin.addEventListener('click', () => {
     h.toggleSpin();
     label();
   });
-  stage.querySelectorAll<HTMLButtonElement>('[data-z]').forEach((b) =>
-    b.addEventListener('click', () => {
-      if (b.dataset.z === 'in') h.zoom(BUTTON_ZOOM);
-      else if (b.dataset.z === 'out') h.zoom(1 / BUTTON_ZOOM);
-      else h.reset();
-    }),
-  );
 }
 
 /** Title, style · band/solo · year · complexity, kept inside the stage. */

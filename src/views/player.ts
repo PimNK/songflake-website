@@ -1,5 +1,5 @@
-// The card's player (CLAUDE.md §4.6): round play/pause in the lead colour, m:ss / m:ss,
-// the waveform seek bar with pin markers, the active-pin note and the pin list.
+// The card's player (CLAUDE.md §4.6): round play/pause in the lead colour, m:ss / m:ss, the
+// download link, the waveform seek bar with pin markers, the active-pin note and the pin list.
 // The <audio> element lives in views/playback.ts; time maths lives in domain/pins.ts.
 import type { Song } from '../content/parse';
 import { activePin, formatTime, type Pin } from '../domain/pins';
@@ -21,6 +21,13 @@ const p = strings.player;
 const SEEK_STEP = 5;
 const PLAYED_REST = 'rgba(232,238,255,.22)';
 
+/** The saved file is named after the track, keeping the recording's own extension. */
+function downloadLink(song: Song): string {
+  const ext = /\.(mp3|m4a|ogg)(?:[?#]|$)/i.exec(song.audioSrc!)?.[1] ?? 'mp3';
+  const name = `${song.title}.${ext.toLowerCase()}`;
+  return `<a class="btn dl" href="${esc(song.audioSrc!)}" download="${esc(name)}" aria-label="${esc(p.downloadLabel(song.title))}">${p.download}</a>`;
+}
+
 function template(song: Song, colour: string): string {
   const list = song.pins
     .map(
@@ -35,7 +42,7 @@ function template(song: Song, colour: string): string {
     <div class="player">
       <button class="play" type="button" style="background:${esc(colour)}"></button>
       <div class="pmain">
-        <div class="ptop"><span><b data-now>0:00</b> / <span data-dur>–:––</span></span></div>
+        <div class="ptop"><span><b data-now>0:00</b> / <span data-dur>–:––</span></span>${downloadLink(song)}</div>
         <div class="wave-wrap">
           <div class="wave" role="slider" tabindex="0" aria-label="${p.seek}" aria-valuemin="0"><canvas></canvas></div>
           <div class="pins-layer"></div>

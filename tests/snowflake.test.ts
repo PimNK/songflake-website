@@ -4,12 +4,13 @@ import { rayColours, rayGradientStops } from '../src/domain/ray-colours';
 import { hash01, rng } from '../src/domain/seed';
 import {
   flakeOf,
+  flakeTurn,
   lineWidth,
-  sampleComplexity,
   sizeFactor,
   snowflakeParams,
+  turnTiming,
 } from '../src/domain/snowflake';
-import { song, taxonomy } from './fixtures';
+import { sampleComplexity, song, taxonomy } from './fixtures';
 
 describe('snowflakeParams (§5.1)', () => {
   const at = (axis: string, v: number) =>
@@ -82,5 +83,21 @@ describe('flakeOf', () => {
     expect(f.colours).toEqual(['#00e5ff', '#d500f9', '#00e5ff', '#d500f9']);
     const odd = flakeOf(song({ accents: ['Guitar', 'Vox', 'Keys'] }), taxonomy);
     expect(odd.colours.filter((c) => c === '#ff9100')).toHaveLength(2);
+  });
+});
+
+describe('own turn', () => {
+  it('more rays turn faster; the offset is the starting angle', () => {
+    expect(flakeTurn(2, 0, 1.5)).toBe(1.5);
+    expect(flakeTurn(3, 10, 0)).toBeGreaterThan(flakeTurn(1, 10, 0));
+  });
+
+  it('the CSS timing makes the same turn as the record', () => {
+    const s = song({ slug: 'lady', complexity: sampleComplexity({ structure: 3 }) });
+    const { period, delay } = turnTiming(s);
+    const rate = (Math.PI * 2) / period;
+    expect(flakeTurn(3, 1, 0)).toBeCloseTo(rate);
+    expect(delay).toBeLessThanOrEqual(0);
+    expect(-delay * rate).toBeCloseTo(hash01('lady') * 6);
   });
 });

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   clampPan,
   collisionRadius,
-  flakeTurn,
   hitRadius,
   flakeRadius,
   placementYear,
@@ -13,7 +12,6 @@ import {
   ringStep,
   ringYears,
   sectors,
-  solveLayout,
   toScreen,
   toWorld,
   transform,
@@ -22,10 +20,13 @@ import {
   yearRadius,
   yearRange,
   yearUnit,
-  YEAR_BAND,
+  YEAR_DRIFT,
   zoomAt,
+  rotateBy,
+  visibleTitles,
   type Viewport,
 } from '../src/domain/record-layout';
+import { solveLayout } from '../src/domain/record-solve';
 import { song } from './fixtures';
 
 const styles = ['Alternative', 'Progressive', 'Electronic', 'Ambient'];
@@ -58,13 +59,12 @@ describe('years and sectors', () => {
     expect(yearRadius(2020, { first: 2020, last: 2020 })).toBe((R_MIN + R_MAX) / 2);
   });
 
-  it('sectors cover the circle in taxonomy order, with a minimum share', () => {
+  it('sectors cover the circle in taxonomy order, all the same width', () => {
     const secs = sectors([...styles, 'Empty'], songs);
     expect(secs.map((s) => s.style)).toEqual([...styles, 'Empty']);
+    expect(secs.map((s) => s.count)).toEqual([9, 7, 4, 1, 0]);
     expect(secs.at(-1)!.a1 - secs[0]!.a0).toBeCloseTo(Math.PI * 2);
-    const width = (i: number) => secs[i]!.a1 - secs[i]!.a0;
-    expect(width(4)).toBeGreaterThan(0.3); // empty style still gets a usable sector
-    expect(width(0)).toBeGreaterThan(width(1));
+    for (const s of secs) expect(s.a1 - s.a0).toBeCloseTo((Math.PI * 2) / 5);
     expect((secs[0]!.a0 + secs[0]!.a1) / 2).toBeCloseTo(-Math.PI / 2); // first centred on top
   });
 
@@ -102,8 +102,43 @@ describe('solveLayout', () => {
       expect(u).toBeGreaterThanOrEqual(sec.a0 - 1e-6);
       expect(u).toBeLessThanOrEqual(sec.a1 + 1e-6);
       const drift = Math.abs(r - yearRadius(s.years.ready!, range)) / yearUnit(range);
-      expect(drift).toBeLessThanOrEqual(YEAR_BAND + 1e-6);
+      expect(drift).toBeLessThanOrEqual(YEAR_DRIFT + 1e-6);
     }
+  });
+
+  it('spreads same-year songs of a style evenly between the sector borders', () => {
+    const sec = { style: 'Ambient', a0: 0, a1: 1.2, count: 3 };
+    const trio = ['a', 'b', 'c'].map((t) =>
+      song({ title: t, slug: t, style: 'Ambient', years: { idea: 2012, ready: 2012 } }),
+    );
+    const one = { first: 2011, last: 2026 };
+    const res = solveLayout(trio, [sec], one, () => 1);
+    const us = trio.map((s) => unwind(res.get(s.slug)!.x, res.get(s.slug)!.y)[1]);
+    us.forEach((u, k) => expect(u).toBeCloseTo((1.2 * (k + 1)) / 4));
+  });
+
+  it('a lone song sits mid-sector, on the spiral, at its exact year', () => {
+    const sec = { style: 'Ambient', a0: 0, a1: 1.2, count: 2 };
+    const pair = [2012, 2020].map((y) =>
+      song({ slug: `s${y}`, style: 'Ambient', years: { idea: y, ready: y } }),
+    );
+    const res = solveLayout(pair, [sec], { first: 2011, last: 2026 }, () => 1);
+    for (const s of pair) {
+      const [r, u] = unwind(res.get(s.slug)!.x, res.get(s.slug)!.y);
+      expect(u).toBeCloseTo(0.6);
+      expect(r).toBeCloseTo(yearRadius(s.years.ready!, { first: 2011, last: 2026 }));
+    }
+  });
+
+  it('pushes the earlier of two colliding songs counterclockwise', () => {
+    const sec = { style: 'Ambient', a0: 0, a1: 1.2, count: 2 };
+    const pair = [2020, 2021].map((y) =>
+      song({ slug: `s${y}`, style: 'Ambient', years: { idea: y, ready: y } }),
+    );
+    const res = solveLayout(pair, [sec], { first: 2011, last: 2026 }, () => 60);
+    const [early, late] = pair.map((s) => unwind(res.get(s.slug)!.x, res.get(s.slug)!.y)[1]);
+    expect(early!).toBeLessThan(0.6);
+    expect(late!).toBeGreaterThan(0.6);
   });
 
   it('is deterministic', () => {
@@ -133,10 +168,17 @@ describe('viewport', () => {
     expect(zoomAt(v, 0.2, 0, 0).zoom).toBe(1);
   });
 
-  it('pan is clamped so the disc stays reachable', () => {
-    const atOne = clampPan({ ...v, panX: 1e6 }).panX;
-    expect(atOne).toBeLessThan(150);
-    expect(clampPan({ ...v, zoom: 4, panX: 1e6 }).panX).toBeGreaterThan(atOne);
+  it('pan is clamped: none at ×1, more room when zoomed in', () => {
+    expect(clampPan({ ...v, panX: 1e6 }).panX).toBe(0);
+    expect(clampPan({ ...v, zoom: 4, panX: 1e6 }).panX).toBeGreaterThan(0);
+  });
+
+  it('dragging turns the disc by the angle swept round its centre', () => {
+    const turned = rotateBy(v, 600, 400, 500, 500); // from right of centre to below it
+    expect(turned.phi - v.phi).toBeCloseTo(Math.PI / 2);
+    expect(turned.panX).toBe(v.panX);
+    // across the ±π seam, the short way round
+    expect(rotateBy(v, 400, 399, 400, 401).phi - v.phi).toBeCloseTo(-0.02, 3);
   });
 
   it('flakes grow slower than the map; spin slows when zoomed', () => {
@@ -158,10 +200,34 @@ describe('flake rules on the record', () => {
     expect(collisionRadius(20, 10, 0.5)).toBe((20 * 1.3 + 7) / 0.5);
     expect(collisionRadius(10, 60, 1)).toBeCloseTo(60 * 0.92 + 7);
   });
-  it('turn and hit radius', () => {
-    expect(flakeTurn(2, 0, 1.5)).toBe(1.5);
-    expect(flakeTurn(3, 10, 0)).toBeGreaterThan(flakeTurn(1, 10, 0));
+  it('hit radius', () => {
     expect(hitRadius(5)).toBe(12);
     expect(hitRadius(40)).toBe(44);
+  });
+});
+
+describe('visibleTitles', () => {
+  const at = (x: number, y: number) => ({
+    box: { x, y: y + 22, w: 60, h: 12 },
+    flake: { x, y, r: 20 },
+  });
+  it('keeps the first of two colliding titles and every title with room', () => {
+    expect(visibleTitles([at(0, 0), at(30, 4), at(300, 0)])).toEqual([true, false, true]);
+  });
+  it('hides a title that would cover another snowflake', () => {
+    expect(visibleTitles([at(0, 0), at(0, -40)])).toEqual([true, false]);
+  });
+});
+
+describe('solveLayout on a small stage', () => {
+  it('stays finite and inside the year band when the collision radii are huge', () => {
+    const range = yearRange(songs);
+    const placed = solveLayout(songs, sectors(styles, songs), range, () => 400);
+    for (const s of songs) {
+      const p = placed.get(s.slug)!;
+      expect(Number.isFinite(p.x) && Number.isFinite(p.y)).toBe(true);
+      const drift = Math.abs(Math.hypot(p.x, p.y) - yearRadius(s.years.ready!, range));
+      expect(drift / yearUnit(range)).toBeLessThanOrEqual(YEAR_DRIFT + 1e-6);
+    }
   });
 });
