@@ -1,0 +1,16 @@
+/* Design tokens. Values from docs/design/regularnik-mockup.html.
+   Style and instrument colours come from content/taxonomy.yaml at runtime, never from here. */
+:root {
+  --void: #05070f; /* page ground */
+  --deep: #0a1020; /* stage centre */
+  --panel: #0d1428; /* raised surfaces */
+  --panel2: #111a33; /* nested surfaces */
+  --line: #1c2542; /* hairlines */
+  --frost: #e8eeff; /* main text */
+  --mist: #8f9aba; /* secondary text */
+  --ice: #a6dcff; /* UI accent */
+  --display: 'Unbounded', 'Arial Black', system-ui, sans-serif;
+  --body: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  color-scheme: dark;
+}

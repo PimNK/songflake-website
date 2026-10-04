@@ -1,0 +1,38 @@
+{
+  "name": "regularnik",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "A personal music diary published as a static website.",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run check-content && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run && npm run check-content",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write . && eslint --fix .",
+    "typecheck": "tsc --noEmit",
+    "check-content": "tsx scripts/check-content.ts",
+    "new-song": "tsx scripts/new-song.ts"
+  },
+  "dependencies": {
+    "marked": "^18.0.14",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.4",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "vite": "^8.3.2",
+    "vitest": "^5.0.3"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); [ -f \"$f\" ] || exit 0; cd \"$CLAUDE_PROJECT_DIR\" 2>/dev/null || exit 0; [ -x node_modules/.bin/prettier ] || exit 0; case \"$f\" in */node_modules/*|*/dist/*|*/docs/*|*/songs/*|*/.claude/*) exit 0;; esac; case \"$f\" in *.ts|*.js) node_modules/.bin/prettier --write \"$f\" >/dev/null 2>&1; node_modules/.bin/eslint --fix \"$f\" >/dev/null 2>&1;; *.css|*.html|*.json) node_modules/.bin/prettier --write \"$f\" >/dev/null 2>&1;; esac; case \"$f\" in */src/*.ts|*/scripts/*.ts) n=$(wc -l < \"$f\"); if [ \"$n\" -gt 300 ]; then echo \"$f is now $n lines, over the 300-line budget in CLAUDE.md section 3. Split it along the module map, or state explicitly why it should stay whole.\" >&2; exit 2; fi;; esac; exit 0",
+            "timeout": 45,
+            "statusMessage": "Formatting"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "c=$(jq -r '.tool_input.command // empty'); case \"$c\" in *vitest*|*'npm test'*|*'npm run test'*) mkdir -p \"$CLAUDE_PROJECT_DIR/.claude\" && : > \"$CLAUDE_PROJECT_DIR/.claude/.tests-green\";; esac; exit 0",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" 2>/dev/null || exit 0; M=.claude/.tests-green; [ -f \"$M\" ] || exit 0; rm -f \"$M\"; n() { find \"$@\" -type f \\( -name '*.ts' -o -name '*.css' -o -name '*.html' -o -name '*.yaml' -o -name '*.md' -o -name '*.json' \\) -not -path '*/node_modules/*' -printf '%T@\\n' 2>/dev/null | sort -rn | head -1; }; code=$(n src scripts content index.html package.json); docs=$(n README.md CLAUDE.md); [ -n \"$code\" ] && [ -n \"$docs\" ] || exit 0; awk -v c=\"$code\" -v d=\"$docs\" 'BEGIN{exit !(c>d)}' || exit 0; echo \"Tests are green and code is newer than the docs. Run the doc-writer subagent before calling this step done: it re-syncs README.md, the CLAUDE.md module map (section 3) and the new-song template against section 2.1. If nothing needs changing, say so explicitly.\" >&2; exit 2",
+            "timeout": 20,
+            "statusMessage": "Checking doc freshness"
+          }
+        ]
+      }
+    ]
+  },
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "deny": ["Read(./.env)", "Bash(rm -rf:*)"],
+    "ask": ["Bash(git push:*)"],
+    "defaultMode": "acceptEdits"
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
+  }
+}
