@@ -283,7 +283,8 @@ fits, propose a new module and update this table in the same change.
 | `content/load.ts` | the two `import.meta.glob` calls, taxonomy and bands import, handing raw input to `parse.ts`, dropping `hidden` songs | validation rules |
 | `content/taxonomy.ts` | taxonomy and bands zod schemas, the `Taxonomy` / `Band` types, `toTaxonomy` / `toBands` validators | hard-coded names or colours, lookups |
 | `content/slug.ts` | **pure**: the slug pattern and `slugify` (Cyrillic transliteration, diacritics and apostrophes stripped), shared by `parse.ts` and `scripts/new-song.ts` | DOM, file system, validation of anything but the slug |
-| `domain/filters.ts` | **pure**: `FilterState`, `matches(song, state)`, counts per option, `countMatching(songs, state)`, default state from taxonomy, range clamping, and the filter ⇄ URL-query conversion (`toQuery` / `fromQuery`, keys in §4.5) | DOM, `location`, hash handling (that is `app/router.ts`, which only wires it) |
+| `domain/filters.ts` | **pure**: `FilterState`, `matches(song, state)`, counts per option, `countMatching(songs, state)`, default state from taxonomy, range clamping, the filter ⇄ URL-query conversion (`toQuery` / `fromQuery`, keys in §4.5), and `neighbour` (the card's prev/next over the filtered order, wrapping; falls back to the full order when the open song is filtered out) | DOM, `location`, hash handling (that is `app/router.ts`, which only wires it) |
+| `domain/timeline.ts` | **pure**: the three stations (idea, concept, ready) with their fill, and the gaps between them, proportional to the years with a minimum length for 0 or unknown | DOM |
 | `domain/pins.ts` | **pure**: `"m:ss"` ⇄ seconds, sorting, `activePin(pins, t)`, marker position as a fraction of duration | DOM, `<audio>` |
 | `domain/seed.ts` | **pure**: FNV-1a hash of a string (the slug) to [0, 1) and a xorshift generator seeded from it. Anything random-looking is seeded by the slug | `Math.random`, song data, canvas calls |
 | `domain/colour.ts` | **pure**: `rgb`, `rgba` and `mix` on `"#rrggbb"` strings | colour values of its own (they come from the taxonomy) |
@@ -304,7 +305,9 @@ fits, propose a new module and update this table in the same change.
 | `views/html.ts` | the `esc()` helper for author text interpolated into `innerHTML`, and `bandRing` (the dashed band ring SVG) | anything else |
 | `views/list.ts` | the tile grid and its empty state | filtering logic |
 | `views/filter-panel.ts` | filter controls generated from taxonomy + counts; collapsible on mobile | filtering logic, hard-coded options |
-| `views/track-card.ts` | the modal (§4.3), focus trap, Esc/backdrop/Back closing, prev/next | audio element management |
+| `views/track-card.ts` | the modal shell (§4.3): title and ← → ✕, the player slot («Recording coming soon» when there is no audio, otherwise a hook to `views/player.ts`), focus trap and focus return, scroll lock, key handling (Esc, ← / →; arrows ignore modified keys) | the card's sections, audio element management |
+| `views/card-body.ts` | the card sections: what to listen for with the band marker, story, idea → recording, snowflake with radar | rules (those are in `domain/`), audio |
+| `views/markdown.ts` | story Markdown → HTML; raw HTML is shown as text; only http(s), mailto and relative links are kept | anything else |
 | `views/player.ts` | the one shared `<audio>` element, waveform seek bar, pin markers, active-pin note, pin list, mini-player (§4.6) | time parsing (that is `domain/pins.ts`) |
 | `app/state.ts` | the single app state (`view`, `filters`, `openSlug`, `cue`, `notice`) and change notifications | DOM |
 | `app/router.ts` | URL ⇄ state (§4.5) and the history policy (`historyAction`): opening a card or switching views pushes an entry; closing a card that has its own entry goes back; filter changes replace; a malformed or unknown slug gives the «Track not found» notice | rendering |
@@ -384,7 +387,8 @@ Opened from the record, a tile, or a deep link. Top to bottom:
      - **From idea to recording** — three stations Idea → Concept → Ready with
        years; dots in the lead colour (hollow, half, full); connecting line
        segments proportional to the years between them (minimum length for 0),
-       labelled «1 year» / «same year». No summary sentence.
+       labelled «1 year» / «same year». No summary sentence. A missing
+       `years.concept` shows «—», a missing `years.ready` shows «not yet».
    - right: the **snowflake** large and static, and directly beneath it the
      **radar** of the five axes (scale 0–3, grid rings at 1/2/3, polygon in the
      lead colour, axis labels with values) and «Total complexity N / 15». No

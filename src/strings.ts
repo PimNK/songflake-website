@@ -122,7 +122,6 @@ export const strings = {
   },
 
   card: {
-    dialogLabel: 'Track',
     prev: 'Previous track',
     next: 'Next track',
     close: 'Close',

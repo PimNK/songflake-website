@@ -6,10 +6,11 @@ import '../styles/filters.css';
 import '../styles/record.css';
 import '../styles/list.css';
 import '../styles/card.css';
+import '../styles/card-body.css';
 import '../styles/overlay.css';
 import { loadContent } from '../content/load';
 import type { Song } from '../content/parse';
-import { countMatching, defaultFilters, matches } from '../domain/filters';
+import { countMatching, defaultFilters, matches, neighbour } from '../domain/filters';
 import { yearRange } from '../domain/record-layout';
 import { showContentOverlay } from '../views/content-overlay';
 import { mountFilterPanel } from '../views/filter-panel';
@@ -17,6 +18,7 @@ import { renderHowTo, renderLegend } from '../views/legend';
 import { mountList } from '../views/list';
 import { onViewTab, renderPage, showView } from '../views/page';
 import { mountRecord } from '../views/record';
+import { mountTrackCard } from '../views/track-card';
 import { startRouter } from './router';
 import { Store } from './state';
 
@@ -42,11 +44,25 @@ const panel = mountFilterPanel(
   () => store.get().filters,
   (filters) => store.set({ filters }),
 );
+const card = mountTrackCard(content, {
+  close: () => store.set({ openSlug: null, cue: null }),
+  step: (direction) => {
+    const s = store.get();
+    const slug = s.openSlug && neighbour(songs, s.filters, s.openSlug, direction);
+    if (slug) store.set({ openSlug: slug, cue: null });
+  },
+  player: () => {},
+});
 onViewTab(slots, (view) => store.set({ view, notice: null }));
 renderLegend(slots.legend, taxonomy, yearRange(songs));
 renderHowTo(slots.howTo, taxonomy);
 
-store.subscribe((s) => {
+store.subscribe((s, prev) => {
+  if (s.openSlug !== prev.openSlug || s.cue !== prev.cue) {
+    const song = songs.find((x) => x.slug === s.openSlug);
+    if (song) card.show(song, s.cue);
+    else card.hide();
+  }
   const match = (song: Song): boolean => matches(song, s.filters);
   record.setMatch(match);
   record.setActive(s.view === 'record');

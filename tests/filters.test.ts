@@ -5,6 +5,7 @@ import {
   fromQuery,
   isDefault,
   matches,
+  neighbour,
   setRange,
   toggle,
   toQuery,
@@ -83,5 +84,23 @@ describe('filters ⇄ query (§4.5)', () => {
     const f = fromQuery(new URLSearchParams('style=Nope,Ambient&min=abc&x=1'), taxonomy);
     expect([...f.styles]).toEqual(['Ambient']);
     expect(f.min).toBe(5);
+  });
+});
+
+describe('neighbour (card prev / next)', () => {
+  const a = song({ style: 'Ambient' });
+  const b = song({ style: 'Alternative' });
+  const c = song({ style: 'Ambient' });
+  const all = [a, b, c];
+  it('walks the filtered order and wraps', () => {
+    const f = { ...d, styles: new Set(['Ambient']) };
+    expect(neighbour(all, f, a.slug, 1)).toBe(c.slug);
+    expect(neighbour(all, f, c.slug, 1)).toBe(a.slug);
+    expect(neighbour(all, f, a.slug, -1)).toBe(c.slug);
+  });
+  it('falls back to the full order when the open song is filtered out', () => {
+    const f = { ...d, styles: new Set(['Ambient']) };
+    expect(neighbour(all, f, b.slug, 1)).toBe(c.slug);
+    expect(neighbour(all, d, 'missing', 1)).toBeNull();
   });
 });

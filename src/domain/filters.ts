@@ -151,3 +151,20 @@ export function fromQuery(q: URLSearchParams, taxonomy: Taxonomy): FilterState {
   }
   return f;
 }
+
+/**
+ * The next or previous song for the card's ← / →, walking the filtered order (wrapping).
+ * When the open song is itself filtered out, the full order is walked instead.
+ */
+export function neighbour(
+  songs: readonly Song[],
+  f: FilterState,
+  slug: string,
+  direction: -1 | 1,
+): string | null {
+  const filtered = songs.filter((s) => matches(s, f));
+  const list = filtered.some((s) => s.slug === slug) ? filtered : songs;
+  const i = list.findIndex((s) => s.slug === slug);
+  if (i < 0 || !list.length) return null;
+  return list[(i + direction + list.length) % list.length]!.slug;
+}
