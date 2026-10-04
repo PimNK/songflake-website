@@ -29,8 +29,17 @@ npm run dev                        # check it looks right
 git add songs/winter-girl && git commit -m "Add Winter girl" && git push
 ```
 
+Audio files go in the song folder (.mp3, .m4a or .ogg, about 192 kbps). If the
+repo grows past a few hundred MB, use `audio_url` or Git LFS (CLAUDE.md §2.1).
+
 A brand-new style or instrument goes in `content/taxonomy.yaml`; a band that has
 never appeared before goes in `content/bands.yaml`.
+
+## What you see while developing
+
+In `npm run dev`, content errors and warnings appear in a panel at the top of
+the page. A pin past the end of a recording is warned about there once its audio
+loads. Production builds show none of this; `npm run build` fails on errors.
 
 ## Commands
 
@@ -51,3 +60,12 @@ never appeared before goes in `content/bands.yaml`.
 `main` and publishes `dist/` to GitHub Pages. In the repository settings, set
 **Pages → Source** to **GitHub Actions**. The site uses relative paths and hash
 URLs, so it works under any repository name.
+
+### Publishing for the first time
+
+The local repository already exists, on branch `main`.
+
+1. Create a GitHub repository.
+2. `git remote add origin <url>` and `git push -u origin main`.
+3. In Settings → Pages → Source, choose "GitHub Actions".
+4. Each push to `main` then lints, tests, builds and deploys.

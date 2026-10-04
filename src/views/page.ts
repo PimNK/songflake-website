@@ -66,6 +66,9 @@ export function showView(slots: PageSlots, view: 'record' | 'list', notice: stri
   slots.listView.hidden = rec;
   slots.tabRecord.setAttribute('aria-selected', String(rec));
   slots.tabList.setAttribute('aria-selected', String(!rec));
+  // Roving tabindex: only the active tab is a Tab stop; ← / → reach the other.
+  slots.tabRecord.tabIndex = rec ? 0 : -1;
+  slots.tabList.tabIndex = rec ? -1 : 0;
   slots.viewNote.textContent = rec ? strings.views.recordNote : strings.views.listNote;
   slots.notice.hidden = !notice;
   slots.notice.textContent = notice ?? '';
@@ -74,4 +77,16 @@ export function showView(slots: PageSlots, view: 'record' | 'list', notice: stri
 export function onViewTab(slots: PageSlots, choose: (view: 'record' | 'list') => void): void {
   slots.tabRecord.addEventListener('click', () => choose('record'));
   slots.tabList.addEventListener('click', () => choose('list'));
+  // Tablist keys: ← / → move between the two tabs.
+  for (const [tab, other, view] of [
+    [slots.tabRecord, slots.tabList, 'list'],
+    [slots.tabList, slots.tabRecord, 'record'],
+  ] as const) {
+    tab.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      choose(view);
+      other.focus();
+    });
+  }
 }

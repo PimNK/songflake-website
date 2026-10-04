@@ -66,7 +66,7 @@ export const strings = {
     tooltip: (style: string, band: boolean, year: string, total: number) =>
       `${style} · ${band ? 'band' : 'solo'} · ${year} · complexity ${total}/15`,
     labelSide: (first: number, last: number) => `SIDE A · ${first} — ${last}`,
-    labelTracks: (n: number) => `${plural(n, 'TRACK')} · 33⅓ RPM`,
+    labelTracks: (n: number) => `${plural(n, 'TRACK', 'TRACKS')} · 33⅓ RPM`,
     labelShort: '33⅓ RPM',
     labelName: 'REGULARNIK',
   },

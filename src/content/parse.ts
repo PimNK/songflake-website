@@ -53,7 +53,7 @@ const year = z.number(yearMsg).int(yearMsg).min(1900, yearMsg).max(2100, yearMsg
 const frontmatterSchema = z.object({
   title: z.string({ error: 'must be a quoted string, e.g. title: "98"' }).min(1),
   style: z.string({ error: 'is required — one style from content/taxonomy.yaml' }),
-  accents: z.array(z.string(), { error: 'must be a list, e.g. [Guitar, Vox]' }).min(1),
+  accents: z.array(z.string(), { error: 'must be a list of instruments from content/taxonomy.yaml, e.g. [A, B]' }).min(1),
   band: z.string({ error: 'must be a quoted band name, or "" if not known yet' }).optional(),
   complexity: z.object(Object.fromEntries(AXES.map((a) => [a, level])) as Record<Axis, typeof level>),
   years: z.object({ idea: year, concept: year.optional(), ready: year.optional() }),

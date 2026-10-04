@@ -301,7 +301,7 @@ fits, propose a new module and update this table in the same change.
 | `views/record-controls.ts` | the stage DOM around the canvas, the Pause / Spin and zoom buttons with the readout, the hover tooltip | layout or drawing maths |
 | `views/record-motion.ts` | spin state, frame-rate-independent easing of button zoom and reset, reduced motion | layout maths (spin rate and zoom limits come from `domain/record-layout.ts`) |
 | `views/content-overlay.ts` | the dev-only overlay: one panel at the top listing content errors and warnings, each message shown once per page load; also used for the dev «pin past the end» warning (`main.ts` calls it under `import.meta.env.DEV`); messages inserted as text | parsing or validation, production use |
-| `views/page.ts` | the static page frame: hero, map section, legend and how-to slots, footer; returns the slots other views fill. Also the view switch: `showView` (shows one view, marks its tab, sets hint and notice) and `onViewTab` (tab clicks) | filtering, state, drawing |
+| `views/page.ts` | the static page frame: hero, map section, legend and how-to slots, footer; returns the slots other views fill. Also the view switch: `showView` (shows one view, marks its tab, sets hint and notice) and `onViewTab` (tab clicks; roving tabindex, ← / → move between tabs) | filtering, state, drawing |
 | `views/legend.ts` | the legend under the record and the «How to read a snowflake» rows, drawn from synthetic songs | hard-coded song data, mapping rules |
 | `views/html.ts` | the `esc()` helper for author text interpolated into `innerHTML`, and `bandRing` (the dashed band ring SVG) | anything else |
 | `views/list.ts` | the tile grid and its empty state | filtering logic |
