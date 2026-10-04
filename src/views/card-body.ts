@@ -15,7 +15,7 @@ import { renderMarkdown } from './markdown';
 const c = strings.card;
 const CARD_FLAKE_RADIUS = 92;
 
-const leadColour = (song: Song, taxonomy: Taxonomy): string =>
+export const leadColour = (song: Song, taxonomy: Taxonomy): string =>
   taxonomy.accents.find((a) => a.id === song.accents[0])?.colour ?? FROST_LINE;
 
 function listenChips(song: Song, taxonomy: Taxonomy): string {

@@ -7,6 +7,7 @@ import '../styles/record.css';
 import '../styles/list.css';
 import '../styles/card.css';
 import '../styles/card-body.css';
+import '../styles/player.css';
 import '../styles/overlay.css';
 import { loadContent } from '../content/load';
 import type { Song } from '../content/parse';
@@ -19,7 +20,11 @@ import { mountList } from '../views/list';
 import { onViewTab, renderPage, showView } from '../views/page';
 import { mountRecord } from '../views/record';
 import { mountTrackCard } from '../views/track-card';
-import { startRouter } from './router';
+import { mountMiniPlayer } from '../views/mini-player';
+import { Playback } from '../views/playback';
+import { mountPlayer } from '../views/player';
+import { leadColour } from '../views/card-body';
+import { songHash, startRouter } from './router';
 import { Store } from './state';
 
 const content = loadContent();
@@ -44,6 +49,8 @@ const panel = mountFilterPanel(
   () => store.get().filters,
   (filters) => store.set({ filters }),
 );
+const playback = new Playback();
+const mini = mountMiniPlayer(playback, open);
 const card = mountTrackCard(content, {
   close: () => store.set({ openSlug: null, cue: null }),
   step: (direction) => {
@@ -51,7 +58,14 @@ const card = mountTrackCard(content, {
     const slug = s.openSlug && neighbour(songs, s.filters, s.openSlug, direction);
     if (slug) store.set({ openSlug: slug, cue: null });
   },
-  player: () => {},
+  player: (slot, song, cue) =>
+    mountPlayer(slot, song, cue, leadColour(song, taxonomy), playback, {
+      linkFor: (slug, at) =>
+        `${location.origin}${location.pathname}${songHash(slug, at, taxonomy)}`,
+      warn: (message) => {
+        if (import.meta.env.DEV) showContentOverlay([], [message]);
+      },
+    }),
 });
 onViewTab(slots, (view) => store.set({ view, notice: null }));
 renderLegend(slots.legend, taxonomy, yearRange(songs));
@@ -62,6 +76,7 @@ store.subscribe((s, prev) => {
     const song = songs.find((x) => x.slug === s.openSlug);
     if (song) card.show(song, s.cue);
     else card.hide();
+    mini.setCardSlug(song ? song.slug : null);
   }
   const match = (song: Song): boolean => matches(song, s.filters);
   record.setMatch(match);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { historyAction, parseHash, stateToHash } from '../src/app/router';
+import { historyAction, parseHash, songHash, stateToHash } from '../src/app/router';
 import type { AppState } from '../src/app/state';
 import { defaultFilters } from '../src/domain/filters';
 import { taxonomy } from './fixtures';
@@ -39,6 +39,7 @@ describe('router (§4.5)', () => {
   });
 
   it('a song card with a cue time', () => {
+    expect(songHash('dd', 135, taxonomy)).toBe('#/song/dd?t=2:15');
     expect(stateToHash({ ...base, openSlug: 'dd', cue: 135 }, taxonomy)).toBe('#/song/dd?t=2:15');
     expect(stateToHash({ ...base, openSlug: 'dd' }, taxonomy)).toBe('#/song/dd');
   });

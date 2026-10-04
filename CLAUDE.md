@@ -286,6 +286,7 @@ fits, propose a new module and update this table in the same change.
 | `domain/filters.ts` | **pure**: `FilterState`, `matches(song, state)`, counts per option, `countMatching(songs, state)`, default state from taxonomy, range clamping, the filter ⇄ URL-query conversion (`toQuery` / `fromQuery`, keys in §4.5), and `neighbour` (the card's prev/next over the filtered order, wrapping; falls back to the full order when the open song is filtered out) | DOM, `location`, hash handling (that is `app/router.ts`, which only wires it) |
 | `domain/timeline.ts` | **pure**: the three stations (idea, concept, ready) with their fill, and the gaps between them, proportional to the years with a minimum length for 0 or unknown | DOM |
 | `domain/pins.ts` | **pure**: `"m:ss"` ⇄ seconds, sorting, `activePin(pins, t)`, marker position as a fraction of duration | DOM, `<audio>` |
+| `domain/waveform.ts` | **pure**: peaks from decoded channels (normalised), about 1 bar per 4 px, resample stored peaks to a given width | DOM, Web Audio, `<audio>` |
 | `domain/seed.ts` | **pure**: FNV-1a hash of a string (the slug) to [0, 1) and a xorshift generator seeded from it. Anything random-looking is seeded by the slug | `Math.random`, song data, canvas calls |
 | `domain/colour.ts` | **pure**: `rgb`, `rgba` and `mix` on `"#rrggbb"` strings | colour values of its own (they come from the taxonomy) |
 | `domain/snowflake.ts` | **pure**: `song → SnowflakeParams` — the whole mapping in §5.1, in one place, with the size factor, the line-width and glow rules, `sampleComplexity` (synthetic complexity for the «How to read» rows) and `flakeOf` (params and per-ray colours together, the one call renderers make) | canvas calls |
@@ -299,7 +300,7 @@ fits, propose a new module and update this table in the same change.
 | `views/record-input.ts` | pointer input on the canvas: wheel and pinch zoom, drag to pan, hover, click; a drag over 4 px is not a click | layout or drawing maths |
 | `views/record-controls.ts` | the stage DOM around the canvas, the Pause / Spin and zoom buttons with the readout, the hover tooltip | layout or drawing maths |
 | `views/record-motion.ts` | spin state, frame-rate-independent easing of button zoom and reset, reduced motion | layout maths (spin rate and zoom limits come from `domain/record-layout.ts`) |
-| `views/content-overlay.ts` | the dev-only overlay that lists content errors and warnings (`main.ts` calls it under `import.meta.env.DEV`); messages inserted as text | parsing or validation, production use |
+| `views/content-overlay.ts` | the dev-only overlay: one panel at the top listing content errors and warnings, each message shown once per page load; also used for the dev «pin past the end» warning (`main.ts` calls it under `import.meta.env.DEV`); messages inserted as text | parsing or validation, production use |
 | `views/page.ts` | the static page frame: hero, map section, legend and how-to slots, footer; returns the slots other views fill. Also the view switch: `showView` (shows one view, marks its tab, sets hint and notice) and `onViewTab` (tab clicks) | filtering, state, drawing |
 | `views/legend.ts` | the legend under the record and the «How to read a snowflake» rows, drawn from synthetic songs | hard-coded song data, mapping rules |
 | `views/html.ts` | the `esc()` helper for author text interpolated into `innerHTML`, and `bandRing` (the dashed band ring SVG) | anything else |
@@ -308,9 +309,12 @@ fits, propose a new module and update this table in the same change.
 | `views/track-card.ts` | the modal shell (§4.3): title and ← → ✕, the player slot («Recording coming soon» when there is no audio, otherwise a hook to `views/player.ts`), focus trap and focus return, scroll lock, key handling (Esc, ← / →; arrows ignore modified keys) | the card's sections, audio element management |
 | `views/card-body.ts` | the card sections: what to listen for with the band marker, story, idea → recording, snowflake with radar | rules (those are in `domain/`), audio |
 | `views/markdown.ts` | story Markdown → HTML; raw HTML is shown as text; only http(s), mailto and relative links are kept | anything else |
-| `views/player.ts` | the one shared `<audio>` element, waveform seek bar, pin markers, active-pin note, pin list, mini-player (§4.6) | time parsing (that is `domain/pins.ts`) |
+| `views/player.ts` | the card's player UI: play/pause, time, waveform seek slider (click/drag and keyboard), active-pin note, pin list with copy link, hiding pins past the end of the recording (§4.6) | the `<audio>` element, pin markers, the mini-player, time parsing (that is `domain/pins.ts`) |
+| `views/playback.ts` | the one shared `<audio>` element; pending positions for songs that are not loaded; per-song waveform and duration cache, falling back to a metadata probe when decoding fails; failures are not cached | DOM beyond the audio element, rendering |
+| `views/pin-markers.ts` | pin diamonds and popovers; markers under 12 px apart merge; on touch the first tap shows the popover and the second seeks; a merged marker seeks to its first pin | audio, time parsing, grouping maths (that is `domain/pins.ts`) |
+| `views/mini-player.ts` | the bottom bar shown while a track plays and its card is closed: title (opens the card), play/pause, close, pin ticks on the progress line | the audio element, waveform |
 | `app/state.ts` | the single app state (`view`, `filters`, `openSlug`, `cue`, `notice`) and change notifications | DOM |
-| `app/router.ts` | URL ⇄ state (§4.5) and the history policy (`historyAction`): opening a card or switching views pushes an entry; closing a card that has its own entry goes back; filter changes replace; a malformed or unknown slug gives the «Track not found» notice | rendering |
+| `app/router.ts` | URL ⇄ state (§4.5), `songHash` (the shareable card-at-time hash used by copy link) and the history policy (`historyAction`): opening a card or switching views pushes an entry; closing a card that has its own entry goes back; filter changes replace; a malformed or unknown slug gives the «Track not found» notice | rendering |
 | `app/main.ts` | bootstrap: load content, wire views to state | logic of any kind |
 | `strings.ts` | every user-visible UI string (English) | — |
 
@@ -458,6 +462,8 @@ opens the view with a short «Track not found» notice, never a broken modal.
 - **Pin list** under the player: `0:42  text`, each a button that seeks and
   plays — the accessible form of the markers.
 - In the mini-player the markers are ticks on its thin progress line.
+- A `?t=` cue never jumps a track that is already playing, and switching
+  tracks keeps the previous track's position.
 
 ### 4.7 Demo-only parts of the mockup — do not carry over
 

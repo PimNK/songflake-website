@@ -9,8 +9,8 @@ import { renderCardBody } from './card-body';
 export interface CardHooks {
   close(): void;
   step(direction: -1 | 1): void;
-  /** Fills the player slot for a song with audio. */
-  player(slot: HTMLElement, song: Song, cue: number | null): void;
+  /** Fills the player slot for a song with audio; returns a cleanup function. */
+  player(slot: HTMLElement, song: Song, cue: number | null): () => void;
 }
 
 export interface TrackCard {
@@ -28,6 +28,12 @@ export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
   const body = modal.querySelector<HTMLElement>('.mgrid')!;
   const sheet = modal.querySelector<HTMLElement>('.sheet')!;
   let opener: HTMLElement | null = null;
+  let disposePlayer: (() => void) | null = null;
+  const clearPlayer = (): void => {
+    disposePlayer?.();
+    disposePlayer = null;
+    playerSlot.replaceChildren();
+  };
 
   wireEvents(modal, sheet, hooks);
 
@@ -35,8 +41,8 @@ export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
     show(song, cue) {
       if (modal.hidden) opener = document.activeElement as HTMLElement | null;
       title.textContent = song.title;
-      playerSlot.replaceChildren();
-      if (song.audioSrc) hooks.player(playerSlot, song, cue);
+      clearPlayer();
+      if (song.audioSrc) disposePlayer = hooks.player(playerSlot, song, cue);
       else playerSlot.innerHTML = `<p class="no-audio">${strings.player.noAudio}</p>`;
       renderCardBody(body, song, content.taxonomy, content.bands);
       const opening = modal.hidden;
@@ -50,6 +56,7 @@ export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
     hide() {
       if (modal.hidden) return;
       modal.hidden = true;
+      clearPlayer();
       document.body.classList.remove('locked');
       opener?.focus({ preventScroll: true });
       opener = null;
@@ -112,7 +119,10 @@ function wireEvents(modal: HTMLElement, sheet: HTMLElement, hooks: CardHooks): v
     if (modal.hidden) return;
     // Arrow shortcuts leave modified keys alone (Alt+← is the browser's Back).
     const typing =
-      (e.target as HTMLElement).closest('input, textarea') || e.altKey || e.ctrlKey || e.metaKey;
+      (e.target as HTMLElement).closest('input, textarea, [role="slider"]') ||
+      e.altKey ||
+      e.ctrlKey ||
+      e.metaKey;
     if (e.key === 'Escape') hooks.close();
     else if (e.key === 'ArrowLeft' && !typing) hooks.step(-1);
     else if (e.key === 'ArrowRight' && !typing) hooks.step(1);
