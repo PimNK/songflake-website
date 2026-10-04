@@ -168,6 +168,20 @@ export const fitScale = (width: number, height: number): number =>
 export const stageFlakeScale = (width: number, height: number): number =>
   clamp(Math.min(width, height) / 760, 0.72, 1.35);
 
+/**
+ * Collision radius in world units: covers the snowflake and its title (§5.3) —
+ * max(1.3 × flake radius, half the label width), plus a small gap.
+ */
+export const collisionRadius = (flakePx: number, halfLabelPx: number, fit: number): number =>
+  (Math.max(flakePx * 1.3, halfLabelPx * 0.92) + 7) / fit;
+
+/** Each snowflake turns slowly on its own; more rays turn a little faster. */
+export const flakeTurn = (structure: number, time: number, offset: number): number =>
+  time * 0.08 * (1 + structure * 0.3) + offset;
+
+/** How close a pointer must be to a snowflake to hit it, in px. */
+export const hitRadius = (flakePx: number): number => Math.max(12, flakePx * 1.1);
+
 export const flakeRadius = (sizeFactor: number, flakeScale: number, zoom: number): number =>
   16 * sizeFactor * flakeScale * Math.pow(zoom, 0.45);
 

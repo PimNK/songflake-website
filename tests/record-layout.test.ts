@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   clampPan,
+  collisionRadius,
+  flakeTurn,
+  hitRadius,
   flakeRadius,
   placementYear,
   spinRate,
@@ -147,5 +150,18 @@ describe('viewport', () => {
     expect([1, 1.69, 1.7, 2.99, 3, 8].map(ringStep)).toEqual([5, 5, 3, 3, 1, 1]);
     expect(ringYears({ first: 2011, last: 2026 }, 5)).toEqual([2015, 2020, 2025]);
     expect(ringYears({ first: 2011, last: 2020 }, 3)).toEqual([2011, 2014, 2017, 2020]);
+  });
+});
+
+describe('flake rules on the record', () => {
+  it('collision radius covers the flake or half the title, whichever is larger', () => {
+    expect(collisionRadius(20, 10, 0.5)).toBe((20 * 1.3 + 7) / 0.5);
+    expect(collisionRadius(10, 60, 1)).toBeCloseTo(60 * 0.92 + 7);
+  });
+  it('turn and hit radius', () => {
+    expect(flakeTurn(2, 0, 1.5)).toBe(1.5);
+    expect(flakeTurn(3, 10, 0)).toBeGreaterThan(flakeTurn(1, 10, 0));
+    expect(hitRadius(5)).toBe(12);
+    expect(hitRadius(40)).toBe(44);
   });
 });

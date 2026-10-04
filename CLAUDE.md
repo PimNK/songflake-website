@@ -289,11 +289,15 @@ fits, propose a new module and update this table in the same change.
 | `domain/colour.ts` | **pure**: `rgb`, `rgba` and `mix` on `"#rrggbb"` strings | colour values of its own (they come from the taxonomy) |
 | `domain/snowflake.ts` | **pure**: `song → SnowflakeParams` — the whole mapping in §5.1, in one place, with the size factor, the line-width and glow rules, `sampleComplexity` (synthetic complexity for the «How to read» rows) and `flakeOf` (params and per-ray colours together, the one call renderers make) | canvas calls |
 | `domain/ray-colours.ts` | **pure**: `song → colour per ray` — the rule in §5.2 — and the radial gradient stops | canvas calls |
-| `domain/record-layout.ts` | **pure**: sector angles, the groove spiral, year → radius, the collision solve, world ⇄ screen transform for a given zoom/pan/rotation, which ring step applies at a zoom, the year range and in-progress placement, snowflake size scaling with zoom, spin rate (§5.3) | canvas calls, animation loop |
+| `domain/record-layout.ts` | **pure**: sector angles, the groove spiral, year → radius, the collision solve, world ⇄ screen transform for a given zoom/pan/rotation, which ring step applies at a zoom, the year range and in-progress placement, snowflake size scaling with zoom, spin rate, collision radius (snowflake and title), per-flake turn, hit radius (§5.3) | canvas calls, animation loop |
 | `render/snowflake.ts` | drawing `SnowflakeParams` + ray colours on a 2D context at a given size; `paintSnowflake` (sizes a canvas for a static snowflake, halo and glow included, and draws it); `SpriteCache` (pre-rendered snowflakes for the record, 4 px size buckets) | deciding parameters from song data |
-| `render/record.ts` | drawing the vinyl: body, sectors, grooves, sheen, year rings, centre label, sector names | layout maths |
+| `render/record.ts` | drawing the vinyl: body, sectors, grooves, sheen, year rings, centre label, sector names; also exports the canvas font stacks (`MONO`, `DISPLAY`) | layout maths |
+| `render/record-flakes.ts` | the seeded star field behind the stage, and the snowflakes with their titles on the record | layout maths, deciding snowflake parameters |
 | `render/radar.ts` | the five-axis radar as an SVG string | any chart library |
-| `views/record.ts` | the record canvas: DPR sizing, animation loop, zoom (wheel, pinch, buttons), drag, hover tooltip, click → card | layout or drawing maths |
+| `views/record.ts` | the record canvas: DPR sizing, animation loop, composing the input, controls and motion modules, click → card. Mounted once for the page's lifetime: its observers and listeners are never released | layout or drawing maths |
+| `views/record-input.ts` | pointer input on the canvas: wheel and pinch zoom, drag to pan, hover, click; a drag over 4 px is not a click | layout or drawing maths |
+| `views/record-controls.ts` | the stage DOM around the canvas, the Pause / Spin and zoom buttons with the readout, the hover tooltip | layout or drawing maths |
+| `views/record-motion.ts` | spin state, frame-rate-independent easing of button zoom and reset, reduced motion | layout maths (spin rate and zoom limits come from `domain/record-layout.ts`) |
 | `views/content-overlay.ts` | the dev-only overlay that lists content errors and warnings (`main.ts` calls it under `import.meta.env.DEV`); messages inserted as text | parsing or validation, production use |
 | `views/page.ts` | the static page frame: hero, map section, legend and how-to slots, footer; returns the slots other views fill | filtering, state, drawing |
 | `views/legend.ts` | the legend under the record and the «How to read a snowflake» rows, drawn from synthetic songs | hard-coded song data, mapping rules |
