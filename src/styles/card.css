@@ -1,0 +1,22 @@
+/* Track card. The radar's grid and labels are styled here; its polygon takes the lead colour. */
+.radar-grid {
+  fill: none;
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+.radar-scale {
+  fill: var(--mist);
+  font-family: var(--mono);
+  font-size: 9px;
+}
+.radar-axis {
+  fill: var(--frost);
+  font-family: var(--body);
+  font-size: 12px;
+}
+.radar-value {
+  font-family: var(--mono);
+}
+.radar-dot {
+  fill: var(--frost);
+}

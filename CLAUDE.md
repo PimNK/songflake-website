@@ -287,14 +287,17 @@ fits, propose a new module and update this table in the same change.
 | `domain/pins.ts` | **pure**: `"m:ss"` ⇄ seconds, sorting, `activePin(pins, t)`, marker position as a fraction of duration | DOM, `<audio>` |
 | `domain/seed.ts` | **pure**: FNV-1a hash of a string (the slug) to [0, 1) and a xorshift generator seeded from it. Anything random-looking is seeded by the slug | `Math.random`, song data, canvas calls |
 | `domain/colour.ts` | **pure**: `rgb`, `rgba` and `mix` on `"#rrggbb"` strings | colour values of its own (they come from the taxonomy) |
-| `domain/snowflake.ts` | **pure**: `song → SnowflakeParams` — the whole mapping in §5.1, in one place, with the size factor, the line-width and glow rules and the synthetic complexity for the «How to read» rows | canvas calls |
+| `domain/snowflake.ts` | **pure**: `song → SnowflakeParams` — the whole mapping in §5.1, in one place, with the size factor, the line-width and glow rules, `sampleComplexity` (synthetic complexity for the «How to read» rows) and `flakeOf` (params and per-ray colours together, the one call renderers make) | canvas calls |
 | `domain/ray-colours.ts` | **pure**: `song → colour per ray` — the rule in §5.2 — and the radial gradient stops | canvas calls |
 | `domain/record-layout.ts` | **pure**: sector angles, the groove spiral, year → radius, the collision solve, world ⇄ screen transform for a given zoom/pan/rotation, which ring step applies at a zoom, the year range and in-progress placement, snowflake size scaling with zoom, spin rate (§5.3) | canvas calls, animation loop |
-| `render/snowflake.ts` | drawing `SnowflakeParams` + ray colours on a 2D context at a given size; sprite cache | deciding parameters from song data |
+| `render/snowflake.ts` | drawing `SnowflakeParams` + ray colours on a 2D context at a given size; `paintSnowflake` (sizes a canvas for a static snowflake, halo and glow included, and draws it); `SpriteCache` (pre-rendered snowflakes for the record, 4 px size buckets) | deciding parameters from song data |
 | `render/record.ts` | drawing the vinyl: body, sectors, grooves, sheen, year rings, centre label, sector names | layout maths |
 | `render/radar.ts` | the five-axis radar as an SVG string | any chart library |
 | `views/record.ts` | the record canvas: DPR sizing, animation loop, zoom (wheel, pinch, buttons), drag, hover tooltip, click → card | layout or drawing maths |
 | `views/content-overlay.ts` | the dev-only overlay that lists content errors and warnings (`main.ts` calls it under `import.meta.env.DEV`); messages inserted as text | parsing or validation, production use |
+| `views/page.ts` | the static page frame: hero, map section, legend and how-to slots, footer; returns the slots other views fill | filtering, state, drawing |
+| `views/legend.ts` | the legend under the record and the «How to read a snowflake» rows, drawn from synthetic songs | hard-coded song data, mapping rules |
+| `views/html.ts` | the `esc()` helper for author text interpolated into `innerHTML` | anything else |
 | `views/list.ts` | the tile grid and its empty state | filtering logic |
 | `views/filter-panel.ts` | filter controls generated from taxonomy + counts; collapsible on mobile | filtering logic, hard-coded options |
 | `views/track-card.ts` | the modal (§4.3), focus trap, Esc/backdrop/Back closing, prev/next | audio element management |
@@ -332,7 +335,8 @@ split. Say so when you cross it.
 - **Single dark theme.** Tokens in `styles/tokens.css`, values from the mockup:
   `--void #05070f` (page), `--deep #0a1020`, `--panel #0d1428`, `--panel2
   #111a33`, `--line #1c2542`, `--frost #e8eeff` (text), `--mist #8f9aba`
-  (secondary), `--ice #a6dcff` (UI accent). Fonts from Google Fonts:
+  (secondary), `--ice #a6dcff` (UI accent), `--alert #ff8a80` (content errors in the
+  dev overlay), `--grid #2a3558` (radar grid lines). Fonts from Google Fonts:
   **Unbounded** (display), **Golos Text** (body), **JetBrains Mono** (labels,
   numbers), each with a system fallback. Style and instrument colours come from
   the taxonomy at runtime, never from CSS.

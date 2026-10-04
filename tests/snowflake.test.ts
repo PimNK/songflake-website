@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { mix, rgba } from '../src/domain/colour';
 import { rayColours, rayGradientStops } from '../src/domain/ray-colours';
 import { hash01, rng } from '../src/domain/seed';
-import { lineWidth, sampleComplexity, sizeFactor, snowflakeParams } from '../src/domain/snowflake';
+import {
+  flakeOf,
+  lineWidth,
+  sampleComplexity,
+  sizeFactor,
+  snowflakeParams,
+} from '../src/domain/snowflake';
 import { song, taxonomy } from './fixtures';
 
 describe('snowflakeParams (§5.1)', () => {
@@ -63,5 +69,18 @@ describe('colour and seed', () => {
     const a = rng(0.3);
     const b = rng(0.3);
     expect([a(), a(), a()]).toEqual([b(), b(), b()]);
+  });
+});
+
+describe('flakeOf', () => {
+  it('one colour per ray, lead takes the extra ray', () => {
+    const f = flakeOf(
+      song({ accents: ['Vox', 'Keys'], complexity: sampleComplexity({ structure: 1 }) }),
+      taxonomy,
+    );
+    expect(f.params.rays).toBe(4);
+    expect(f.colours).toEqual(['#00e5ff', '#d500f9', '#00e5ff', '#d500f9']);
+    const odd = flakeOf(song({ accents: ['Guitar', 'Vox', 'Keys'] }), taxonomy);
+    expect(odd.colours.filter((c) => c === '#ff9100')).toHaveLength(2);
   });
 });

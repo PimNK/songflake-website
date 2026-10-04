@@ -1,6 +1,8 @@
 // Song → snowflake parameters: the whole mapping of CLAUDE.md §5.1, in one place. Pure.
 // Lengths are fractions of the flake radius R; render/snowflake.ts multiplies them out.
 import type { Complexity, Song } from '../content/parse';
+import type { Taxonomy } from '../content/taxonomy';
+import { rayColours } from './ray-colours';
 
 export type Level = 1 | 2 | 3;
 
@@ -69,4 +71,19 @@ export const sizeFactor = (complexityTotal: number): number => (6 + complexityTo
 /** A synthetic song for the "How to read a snowflake" rows: all axes at 2 unless overridden. */
 export function sampleComplexity(over: Partial<Complexity> = {}): Complexity {
   return { rhythm: 2, melody: 2, technique: 2, instruments: 2, structure: 2, ...over };
+}
+
+export interface Flake {
+  params: SnowflakeParams;
+  /** One colour per ray. */
+  colours: string[];
+}
+
+/** Everything the renderer needs for one song's snowflake. */
+export function flakeOf(
+  song: Pick<Song, 'complexity' | 'band' | 'accents'>,
+  taxonomy: Taxonomy,
+): Flake {
+  const params = snowflakeParams(song);
+  return { params, colours: rayColours(song, params.rays, taxonomy) };
 }
