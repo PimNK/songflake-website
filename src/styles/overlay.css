@@ -1,0 +1,46 @@
+.content-overlay {
+  position: fixed;
+  inset: auto 16px 16px 16px;
+  max-height: 60vh;
+  overflow: auto;
+  z-index: 100;
+  background: var(--void);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 13px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+.content-overlay > button {
+  float: right;
+}
+.content-overlay h2 {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 4px 0 8px;
+}
+.content-overlay h2.err {
+  color: var(--alert);
+}
+.content-overlay h2.warn {
+  color: var(--ice);
+}
+.content-overlay ul {
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.content-overlay pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--frost);
+}
+.content-overlay p {
+  color: var(--mist);
+}

@@ -21,8 +21,6 @@ npm run dev        # local site with hot reload
 
 Adding a song means adding one folder. Nothing else changes.
 
-`npm run new-song` is not available until Phase 1. Until then, create the folder by hand.
-
 ```bash
 npm run new-song "Winter girl"     # creates songs/winter-girl/index.md from a template
 # drop the recording (.mp3, .m4a or .ogg) into songs/winter-girl/
@@ -39,8 +37,8 @@ never appeared before goes in `content/bands.yaml`.
 | Command | What it does |
 |---|---|
 | `npm run dev` | Local site with hot reload |
-| `npm run new-song "Title"` | Scaffold a song folder. Declared in `package.json`, but `scripts/new-song.ts` does not exist yet (Phase 1) |
-| `npm run check-content` | Validate all songs without building. For now it only checks that each folder has an `index.md` |
+| `npm run new-song "Title"` | Scaffold a song folder from a template |
+| `npm run check-content` | Validate all songs without building. Errors fail the command |
 | `npm test` | Unit tests, then `check-content` |
 | `npm run lint` | ESLint and Prettier check |
 | `npm run typecheck` | TypeScript, no output |

@@ -9,6 +9,7 @@
   --frost: #e8eeff; /* main text */
   --mist: #8f9aba; /* secondary text */
   --ice: #a6dcff; /* UI accent */
+  --alert: #ff8a80; /* content errors (dev overlay) */
   --display: 'Unbounded', 'Arial Black', system-ui, sans-serif;
   --body: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;

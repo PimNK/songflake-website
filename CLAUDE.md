@@ -281,7 +281,8 @@ fits, propose a new module and update this table in the same change.
 |---|---|---|
 | `content/parse.ts` | **pure**: frontmatter split, YAML parse, zod schema, cross-field rules, derived fields, errors and warnings | DOM, `import.meta.glob`, file system |
 | `content/load.ts` | the two `import.meta.glob` calls, taxonomy and bands import, handing raw input to `parse.ts`, dropping `hidden` songs | validation rules |
-| `content/taxonomy.ts` | taxonomy and bands schemas, lookups by id | hard-coded names or colours |
+| `content/taxonomy.ts` | taxonomy and bands zod schemas, the `Taxonomy` / `Band` types, `toTaxonomy` / `toBands` validators | hard-coded names or colours, lookups |
+| `content/slug.ts` | **pure**: the slug pattern and `slugify` (Cyrillic transliteration, diacritics and apostrophes stripped), shared by `parse.ts` and `scripts/new-song.ts` | DOM, file system, validation of anything but the slug |
 | `domain/filters.ts` | **pure**: `FilterState`, `matches(song, state)`, counts per option, default state from taxonomy | DOM, URL |
 | `domain/pins.ts` | **pure**: `"m:ss"` ⇄ seconds, sorting, `activePin(pins, t)`, marker position as a fraction of duration | DOM, `<audio>` |
 | `domain/snowflake.ts` | **pure**: `song → SnowflakeParams` — the whole mapping in §5.1, in one place | canvas calls |
@@ -291,6 +292,7 @@ fits, propose a new module and update this table in the same change.
 | `render/record.ts` | drawing the vinyl: body, sectors, grooves, sheen, year rings, centre label, sector names | layout maths |
 | `render/radar.ts` | the five-axis radar as an SVG string | any chart library |
 | `views/record.ts` | the record canvas: DPR sizing, animation loop, zoom (wheel, pinch, buttons), drag, hover tooltip, click → card | layout or drawing maths |
+| `views/content-overlay.ts` | the dev-only overlay that lists content errors and warnings (`main.ts` calls it under `import.meta.env.DEV`); messages inserted as text | parsing or validation, production use |
 | `views/list.ts` | the tile grid and its empty state | filtering logic |
 | `views/filter-panel.ts` | filter controls generated from taxonomy + counts; collapsible on mobile | filtering logic, hard-coded options |
 | `views/track-card.ts` | the modal (§4.3), focus trap, Esc/backdrop/Back closing, prev/next | audio element management |
@@ -572,8 +574,8 @@ you skipped:
 ```bash
 npm install
 npm run dev              # local site with hot reload; new song folders appear live
-npm run new-song "Title" # scaffold a song folder (script arrives in Phase 1; not built yet)
-npm run check-content    # validate all songs without building (Phase 0: only checks each folder has index.md)
+npm run new-song "Title" # scaffold a song folder
+npm run check-content    # validate all songs without building
 npm test                 # vitest + check-content
 npm run lint && npm run typecheck
 npm run build            # check-content, tsc --noEmit, then vite build → dist/
