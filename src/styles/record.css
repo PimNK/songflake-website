@@ -1,7 +1,14 @@
 /* Record stage: the canvas straight on the page background, and the controls laid over it. */
 .stage {
   position: relative;
-  height: clamp(480px, 80vh, 920px);
+  /* as tall as the screen below the bar: the disc is sized by the shorter side */
+  height: max(420px, calc(100svh - 64px));
+}
+/* Narrow screens: the disc is sized by the width, so the stage is about square. */
+@media (max-width: 899.98px) {
+  .stage {
+    height: min(calc(100svh - 64px), calc(100vw + 40px));
+  }
 }
 .stage canvas {
   position: absolute;
@@ -14,23 +21,6 @@
 }
 .stage canvas.dragging {
   cursor: grabbing;
-}
-.spin {
-  position: absolute;
-  right: 12px;
-  top: 10px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 0;
-  background: var(--ice);
-  color: var(--void);
-  font-size: 15px;
-  cursor: pointer;
-  box-shadow: 0 0 22px color-mix(in srgb, var(--ice) 35%, transparent);
-}
-.spin:hover {
-  filter: brightness(1.1);
 }
 .tip {
   position: absolute;

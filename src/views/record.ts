@@ -25,7 +25,8 @@ import {
 import { solveLayout, type Placement } from '../domain/record-solve';
 import { flakeOf, flakeTurn, sizeFactor, turnOffset, type Flake } from '../domain/snowflake';
 import { drawFlakes, flakeTitleFont, type FlakeNode } from '../render/record-flakes';
-import { drawCentreLabel, drawDisc, drawSectorNames, drawYearRings } from '../render/record';
+import { drawDisc, drawSectorNames, drawYearRings } from '../render/record';
+import { drawCentreLabel } from '../render/record-label';
 import { devicePixelRatioCapped, SpriteCache } from '../render/snowflake';
 import { recordTemplate, showTooltip, wireRecordControls } from './record-controls';
 import { attachRecordInput } from './record-input';
@@ -43,10 +44,11 @@ const HOVER_SCALE = 1.18;
 /** Mounted once for the page's lifetime: observers and listeners are never released. */
 export function mountRecord(
   stage: HTMLElement,
+  spin: HTMLElement,
   content: Content,
   onOpen: (slug: string) => void,
 ): RecordView {
-  return new RecordStage(stage, content, onOpen);
+  return new RecordStage(stage, spin, content, onOpen);
 }
 
 class RecordStage implements RecordView {
@@ -73,6 +75,7 @@ class RecordStage implements RecordView {
 
   constructor(
     private stage: HTMLElement,
+    private spin: HTMLElement,
     private content: Content,
     private onOpen: (slug: string) => void,
   ) {
@@ -144,7 +147,7 @@ class RecordStage implements RecordView {
     drawDisc(ctx, t, secs, taxonomy);
     drawYearRings(ctx, t, vp.width, vp.height, ringYears(range, ringStep(vp.zoom)), range);
     drawCentreLabel(ctx, t, vp.phi, secs, taxonomy, range, songs.length);
-    drawSectorNames(ctx, t, secs, taxonomy, vp.zoom);
+    drawSectorNames(ctx, t, secs, taxonomy, vp.zoom, vp.width);
     this.nodes = this.layoutNodes(t);
     drawFlakes(ctx, this.nodes, vp.zoom);
   }
@@ -243,7 +246,7 @@ class RecordStage implements RecordView {
   }
 
   private wireControls(): void {
-    wireRecordControls(this.stage, {
+    wireRecordControls(this.spin, {
       spinning: () => this.motion.spinning,
       toggleSpin: () => {
         this.motion.spinning = !this.motion.spinning;

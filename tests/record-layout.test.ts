@@ -24,6 +24,8 @@ import {
   zoomAt,
   rotateBy,
   visibleTitles,
+  labelLineSize,
+  clampToStage,
   type Viewport,
 } from '../src/domain/record-layout';
 import { solveLayout } from '../src/domain/record-solve';
@@ -229,5 +231,21 @@ describe('solveLayout on a small stage', () => {
       const drift = Math.abs(Math.hypot(p.x, p.y) - yearRadius(s.years.ready!, range));
       expect(drift / yearUnit(range)).toBeLessThanOrEqual(YEAR_DRIFT + 1e-6);
     }
+  });
+});
+
+describe('centre label and style names', () => {
+  it('a label line keeps its size when it fits, shrinks to the chord, or is left out', () => {
+    expect(labelLineSize(-20, 10, 100, 50)).toBe(10);
+    const shrunk = labelLineSize(-20, 10, 100, 200)!;
+    const chord = 2 * Math.sqrt(80 * 80 - 30 * 30);
+    expect(shrunk).toBeCloseTo((10 * chord) / 200);
+    expect(labelLineSize(-20, 10, 100, 4000)).toBeNull(); // under 5 px
+    expect(labelLineSize(85, 10, 100, 10)).toBeNull(); // outside the inner circle
+  });
+  it('style names are kept on the stage near ×1 only', () => {
+    expect(clampToStage(-30, 50, 400, 1)).toBe(50);
+    expect(clampToStage(390, 50, 400, 1)).toBe(350);
+    expect(clampToStage(-30, 50, 400, 2)).toBe(-30);
   });
 });

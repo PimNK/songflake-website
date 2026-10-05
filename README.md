@@ -1,4 +1,4 @@
-# Regularnik
+# OBYCHNO_
 
 A personal music diary published as a static website. Every track gets an audio
 player with pinned notes, a written story, a few facts and a generated snowflake

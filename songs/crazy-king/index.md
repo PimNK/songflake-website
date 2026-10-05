@@ -12,17 +12,13 @@ years:
   idea: 2020
   concept: 2020
   ready: 2020
-pins:                  # example pins — rewrite the text, move or delete them
-  - at: "0:12"
-    text: "Example pin: the opening riff that sets the mood"
-  - at: "0:48"
-    text: "Example pin: the drums come in"
-  - at: "1:31"
-    text: "Example pin: a turn in the structure worth waiting for"
-  - at: "2:20"
-    text: "Example pin: the guitar solo"
-  - at: "3:05"
-    text: "Example pin: how it all ends"
+pins:
+  - at: "0:51"
+    text: "Listen to the floor tom sound with high-frequency compression."
+  - at: "1:46"
+    text: "Try to follow each guitar line and the drums. They have totally different accents and melodic directions. It gives me a real brain tickle. Follow how the theme develops until 2:18."
+  - at: "2:24"
+    text: "Groovy drums that I like very much."
 ---
 
-COVID recording. Star Wars.
+I was in a dreamy mood, with an earworm melody stuck in my head after watching The Mandalorian series. I created the guitar parts quite fast (the melody and the sequences), but the drum section drove me crazy before I got close to what I heard in my head.

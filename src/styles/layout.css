@@ -1,11 +1,4 @@
 /* Page frame: hero, map grid, view switch. */
-.eyebrow {
-  font-family: var(--mono);
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--mist);
-}
 .hero {
   padding-block: clamp(28px, 5vw, 52px) 18px;
   display: grid;
@@ -36,22 +29,21 @@
   border-color: var(--mist);
 }
 
+/* The map runs the full page width so the record can be as large as the screen allows. */
 .map {
-  display: grid;
-  grid-template-columns: 290px minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
+  padding-inline: clamp(8px, 2vw, 24px);
 }
 .pane {
   display: grid;
   gap: 10px;
   min-width: 0;
 }
+/* One bar: Record / List, Filters, Play / Pause — all the same segmented style, at the right. */
 .viewbar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .vseg {
@@ -73,7 +65,9 @@
   color: var(--mist);
   cursor: pointer;
 }
-.vseg button[aria-selected='true'] {
+.vseg button[aria-selected='true'],
+.vseg button[aria-expanded='true'],
+.vseg button[aria-pressed='true'] {
   background: var(--frost);
   color: var(--void);
 }
@@ -86,11 +80,6 @@
   border-radius: 10px;
   padding: 8px 12px;
 }
-@media (max-width: 899.98px) {
-  .map {
-    grid-template-columns: 1fr;
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -99,4 +88,16 @@
 }
 main {
   padding-bottom: clamp(32px, 6vw, 64px);
+}
+/* Phones: a compact bar; Play / Pause show their icons only. */
+@media (max-width: 599.98px) {
+  .viewbar {
+    gap: 6px;
+  }
+  .vseg button {
+    padding: 6px 10px;
+  }
+  .spinseg .word {
+    display: none;
+  }
 }

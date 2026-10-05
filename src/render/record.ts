@@ -3,6 +3,7 @@
 import type { Taxonomy } from '../content/taxonomy';
 import { rgba } from '../domain/colour';
 import {
+  clampToStage,
   LABEL_DISTANCE,
   R_DISC,
   R_GROOVE_IN,
@@ -146,7 +147,7 @@ export function drawDisc(
   ctx.stroke();
 }
 
-function letterSpacing(ctx: Ctx, value: string): void {
+export function letterSpacing(ctx: Ctx, value: string): void {
   if ('letterSpacing' in ctx) (ctx as Ctx & { letterSpacing: string }).letterSpacing = value;
 }
 
@@ -188,68 +189,6 @@ export function drawYearRings(
   }
 }
 
-function labelText(ctx: Ctx, LR: number, range: YearRange, trackCount: number): void {
-  const fs = Math.max(7, LR * 0.15);
-  const r = strings.record;
-  ctx.fillStyle = '#e8eeff';
-  ctx.textAlign = 'center';
-  ctx.font = `500 ${fs * 1.15}px ${DISPLAY}`;
-  letterSpacing(ctx, '1px');
-  ctx.fillText(r.labelName, 0, -LR * 0.28);
-  ctx.font = `400 ${fs * 0.68}px ${MONO}`;
-  letterSpacing(ctx, '1.5px');
-  ctx.fillStyle = 'rgba(200,212,245,.8)';
-  if (LR > 80) {
-    ctx.fillText(r.labelSide(range.first, range.last), 0, LR * 0.36);
-    ctx.fillText(r.labelTracks(trackCount), 0, LR * 0.52);
-  } else {
-    ctx.fillText(r.labelShort, 0, LR * 0.42);
-  }
-  letterSpacing(ctx, '0px');
-}
-
-/** The centre label spins with the disc: paper, ice ring, style arcs, name, side and count. */
-export function drawCentreLabel(
-  ctx: Ctx,
-  t: Transform,
-  phi: number,
-  secs: readonly Sector[],
-  taxonomy: Taxonomy,
-  range: YearRange,
-  trackCount: number,
-): void {
-  const LR = R_LABEL * t.scale;
-  ctx.save();
-  ctx.translate(t.cx, t.cy);
-  ctx.rotate(phi);
-  const paper = ctx.createRadialGradient(0, 0, 0, 0, 0, LR);
-  paper.addColorStop(0, '#1b2647');
-  paper.addColorStop(1, '#131b35');
-  ctx.beginPath();
-  ctx.arc(0, 0, LR, 0, Math.PI * 2);
-  ctx.fillStyle = paper;
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(0, 0, LR * 0.93, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(166,220,255,.35)';
-  ctx.lineWidth = 1;
-  ctx.stroke();
-  for (const w of secs) {
-    const a = (w.a0 + w.a1) / 2;
-    ctx.beginPath();
-    ctx.arc(0, 0, LR * 0.86, a - 0.18, a + 0.18);
-    ctx.strokeStyle = rgba(taxonomy.styleColours[w.style] ?? '#ffffff', 0.9);
-    ctx.lineWidth = Math.max(2, LR * 0.04);
-    ctx.stroke();
-  }
-  labelText(ctx, LR, range, trackCount);
-  ctx.beginPath();
-  ctx.arc(0, 0, Math.max(2.5, LR * 0.07), 0, Math.PI * 2);
-  ctx.fillStyle = '#05070f';
-  ctx.fill();
-  ctx.restore();
-}
-
 /** Style name and track count outside the disc edge, never touching it. */
 export function drawSectorNames(
   ctx: Ctx,
@@ -257,12 +196,14 @@ export function drawSectorNames(
   secs: readonly Sector[],
   taxonomy: Taxonomy,
   zoom: number,
+  width: number,
 ): void {
   for (const w of secs) {
-    const [x, y] = toScreen(t, ...wind(R_DISC * LABEL_DISTANCE, (w.a0 + w.a1) / 2));
+    const [sx, y] = toScreen(t, ...wind(R_DISC * LABEL_DISTANCE, (w.a0 + w.a1) / 2));
     ctx.textAlign = 'center';
     ctx.font = `500 ${zoom > 2 ? 12 : 11}px ${MONO}`;
     letterSpacing(ctx, '2px');
+    const x = clampToStage(sx, ctx.measureText(w.style.toUpperCase()).width / 2 + 4, width, zoom);
     ctx.fillStyle = rgba(taxonomy.styleColours[w.style] ?? '#ffffff', 0.95);
     ctx.fillText(w.style.toUpperCase(), x, y);
     letterSpacing(ctx, '0px');

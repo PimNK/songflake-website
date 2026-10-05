@@ -38,11 +38,12 @@ const store = new Store({
 });
 const open = (slug: string): void => store.set({ openSlug: slug, cue: null, notice: null });
 
-const slots = renderPage(document.querySelector<HTMLElement>('#app')!, content);
-const record = mountRecord(slots.stage, content, open);
+const slots = renderPage(document.querySelector<HTMLElement>('#app')!);
+const record = mountRecord(slots.stage, slots.spin, content, open);
 const list = mountList(slots.listView, content, open);
 const panel = mountFilterPanel(
   slots.filters,
+  slots.filterToggle,
   content,
   () => store.get().filters,
   (filters) => store.set({ filters }),

@@ -1,43 +1,81 @@
-/* Filter panel. Option colours are set inline from the taxonomy. */
-.filters {
+/* Filter panel: a dropdown under the bar. Over the record it floats (anchored at the right,
+   opening left and down); in the List view it takes its own room so no tile is covered.
+   Option colours are set inline from the taxonomy. */
+.fanchor {
+  position: relative;
+  height: 0;
+  z-index: 6;
+}
+.fpanel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 310px;
+  max-height: calc(100svh - 140px);
+  overflow: auto;
+  overscroll-behavior: contain;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: color-mix(in srgb, var(--panel) 82%, transparent);
-  backdrop-filter: blur(4px);
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+  backdrop-filter: blur(6px);
   padding: 16px 16px 18px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
 }
-.filters > summary {
-  list-style: none;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
+.pane[data-view='list'] {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'bar bar' 'notice notice' 'list filters';
+  align-items: start;
 }
-.filters > summary::-webkit-details-marker {
-  display: none;
+.pane[data-view='list'] .viewbar {
+  grid-area: bar;
 }
-.filters > summary h3 {
-  font-family: var(--mono);
-  font-weight: 500;
-  font-size: 11.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ice);
+.pane[data-view='list'] .notice {
+  grid-area: notice;
+}
+.pane[data-view='list'] .listview {
+  grid-area: list;
+}
+.pane[data-view='list'] .fanchor {
+  grid-area: filters;
+  height: auto;
+  position: sticky;
+  top: 12px;
+}
+.pane[data-view='list'] .fpanel {
+  position: static;
+  max-height: calc(100svh - 24px);
+  box-shadow: none;
+}
+@media (max-width: 899.98px) {
+  .fpanel {
+    left: 0;
+    width: auto;
+  }
+  .pane[data-view='list'] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'bar' 'notice' 'filters' 'list';
+  }
+  .pane[data-view='list'] .fanchor {
+    position: static;
+  }
 }
 .count {
   font-family: var(--mono);
-  font-size: 12px;
-  color: var(--frost);
-  background: color-mix(in srgb, var(--ice) 14%, transparent);
+  font-size: 11px;
   border-radius: 999px;
-  padding: 2px 9px;
+  padding: 1px 7px;
+  margin-left: 4px;
+  background: color-mix(in srgb, var(--ice) 14%, transparent);
+  color: var(--frost);
   font-variant-numeric: tabular-nums;
+}
+[aria-expanded='true'] .count {
+  background: color-mix(in srgb, var(--void) 12%, transparent);
+  color: var(--void);
 }
 .fbody {
   display: grid;
   gap: 18px;
-  margin-top: 16px;
 }
 .fgroup {
   display: grid;

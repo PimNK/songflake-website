@@ -211,3 +211,29 @@ export function visibleTitles(items: readonly Labelled[]): boolean[] {
     return true;
   });
 }
+
+export const LABEL_INNER = 0.8; // centre-label text stays inside this fraction of its radius
+export const LABEL_MIN_PX = 5; // smaller than this, a label line is left out rather than spill over
+
+/**
+ * Font size for one line of the centre label, its baseline at `y` from the label centre, shrunk
+ * to fit the chord of the label's inner circle; null when it would be too small to read.
+ * `measuredWidth` is the line's width at `size`.
+ */
+export function labelLineSize(
+  y: number,
+  size: number,
+  labelRadius: number,
+  measuredWidth: number,
+): number | null {
+  const edge = Math.max(Math.abs(y), Math.abs(y - size)); // the text's farthest edge
+  const room = labelRadius * LABEL_INNER;
+  if (edge >= room) return null;
+  const chord = 2 * Math.sqrt(room * room - edge * edge);
+  const px = size * Math.min(1, chord / Math.max(1, measuredWidth));
+  return px < LABEL_MIN_PX ? null : px;
+}
+
+/** Near ×1 the whole record is in view: a style name is kept on the stage instead of cut off. */
+export const clampToStage = (x: number, half: number, width: number, zoom: number): number =>
+  zoom < 1.3 ? clamp(x, half, width - half) : x;

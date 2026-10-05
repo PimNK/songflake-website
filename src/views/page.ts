@@ -1,13 +1,15 @@
-// The static page frame: the star sky behind everything, the hero, and the map section (filter
-// panel + view switch + views). Returns the slots other views fill in.
-import type { Content } from '../content/load';
-import { yearRange } from '../domain/record-layout';
+// The static page frame: the star sky behind everything, the hero, and the map section: one bar
+// (Record / List switch, Filters toggle, Play / Pause), the filter panel under it, the views.
+// Returns the slots other views fill in.
 import { drawSky } from '../render/sky';
 import { devicePixelRatioCapped } from '../render/snowflake';
 import { strings } from '../strings';
 
 export interface PageSlots {
+  pane: HTMLElement;
+  filterToggle: HTMLButtonElement;
   filters: HTMLElement;
+  spin: HTMLElement;
   tabRecord: HTMLButtonElement;
   tabList: HTMLButtonElement;
   stage: HTMLElement;
@@ -15,26 +17,26 @@ export interface PageSlots {
   notice: HTMLElement;
 }
 
-export function renderPage(root: HTMLElement, content: Content): PageSlots {
-  const range = yearRange(content.songs);
+export function renderPage(root: HTMLElement): PageSlots {
   const v = strings.views;
   root.innerHTML = `
     <canvas class="sky" aria-hidden="true"></canvas>
     <header class="wrap hero">
-      <div class="eyebrow">${strings.hero.eyebrow(content.songs.length, range.first, range.last)}</div>
       <h1>${strings.hero.title}</h1>
       <p class="lead">${strings.hero.intro}</p>
     </header>
     <main>
-      <section class="wrap map" aria-label="${v.mapLabel}">
-        <div data-slot="filters"></div>
-        <div class="pane">
+      <section class="map" aria-label="${v.mapLabel}">
+        <div class="pane" data-view="record">
           <div class="viewbar">
             <div class="vseg" role="tablist" aria-label="${v.label}">
               <button type="button" role="tab" id="tab-record" aria-controls="stage">${v.record}</button>
               <button type="button" role="tab" id="tab-list" aria-controls="listview">${v.list}</button>
             </div>
+            <div class="vseg"><button type="button" class="ftoggle" aria-expanded="false" aria-controls="filters"></button></div>
+            <div class="vseg spinseg" role="group" aria-label="${strings.record.spinLabel}" data-slot="spin"></div>
           </div>
+          <div class="fanchor"><div class="fpanel" id="filters" data-slot="filters" hidden></div></div>
           <p class="notice" role="status" data-slot="notice" hidden></p>
           <div class="stage" id="stage" role="tabpanel" aria-labelledby="tab-record"></div>
           <div class="listview" id="listview" role="tabpanel" aria-labelledby="tab-list" hidden></div>
@@ -44,7 +46,10 @@ export function renderPage(root: HTMLElement, content: Content): PageSlots {
   mountSky(root.querySelector<HTMLCanvasElement>('.sky')!);
   const q = <T extends HTMLElement>(sel: string): T => root.querySelector<T>(sel)!;
   return {
+    pane: q('.pane'),
+    filterToggle: q('.ftoggle'),
     filters: q('[data-slot="filters"]'),
+    spin: q('[data-slot="spin"]'),
     tabRecord: q('#tab-record'),
     tabList: q('#tab-list'),
     stage: q('#stage'),
@@ -71,6 +76,8 @@ function mountSky(canvas: HTMLCanvasElement): void {
 /** Shows one view, marks its tab, and sets the notice. */
 export function showView(slots: PageSlots, view: 'record' | 'list', notice: string | null): void {
   const rec = view === 'record';
+  slots.pane.dataset.view = view;
+  slots.spin.hidden = !rec;
   slots.stage.hidden = !rec;
   slots.listView.hidden = rec;
   slots.tabRecord.setAttribute('aria-selected', String(rec));

@@ -1,5 +1,6 @@
-// Filter controls generated from the taxonomy and the counts (CLAUDE.md §4.2). Collapsible on
-// mobile. No filtering logic: every change goes through domain/filters.ts and back to the store.
+// Filter controls generated from the taxonomy and the counts (CLAUDE.md §4.2), in a panel that
+// the Filters toggle opens and closes (closed by default). No filtering logic: every change goes
+// through domain/filters.ts and back to the store.
 import type { Content } from '../content/load';
 import {
   COMPLEXITY_MAX,
@@ -17,7 +18,6 @@ export interface FilterPanel {
   update(filters: FilterState, matching: number): void;
 }
 
-const MOBILE = '(max-width: 899.98px)';
 const f = strings.filters;
 
 interface Option {
@@ -59,8 +59,6 @@ function template(content: Content): string {
   const range = (end: 'min' | 'max') =>
     `<label>${f[end]}<input type="range" data-range="${end}" min="${COMPLEXITY_MIN}" max="${COMPLEXITY_MAX}" step="1"></label>`;
   return `
-    <details class="filters">
-      <summary><h3>${f.title}</h3><span class="count" data-count></span></summary>
       <div class="fbody">
         <div class="fgroup"><div class="flabel">${f.style}</div><div class="flist">${styles.join('')}</div></div>
         <div class="fgroup"><div class="flabel">${f.complexity} <b data-range-label></b></div>
@@ -74,8 +72,7 @@ function template(content: Content): string {
           ${option({ kind: 'status', id: 'ready', label: f.ready, count: c.ready })}
           ${option({ kind: 'status', id: 'inProgress', label: f.inProgress, count: c.inProgress })}</div></div>
         <button type="button" class="btn freset" data-reset>${f.reset}</button>
-      </div>
-    </details>`;
+      </div>`;
 }
 
 function isChecked(filters: FilterState, kind: string, id: string): boolean {
@@ -92,15 +89,41 @@ function withOption(filters: FilterState, kind: string, id: string, on: boolean)
   return { ...filters, [id === 'ready' ? 'ready' : 'inProgress']: on };
 }
 
+/**
+ * The toggle shows «Filters N / total». Esc closes the panel (focus returns to the toggle when
+ * it was inside); over the record a click outside closes it too. In the List view the panel is
+ * a column beside the tiles, so it stays until toggled.
+ */
+function wireToggle(toggle: HTMLButtonElement, el: HTMLElement): void {
+  const isOpen = (): boolean => toggle.getAttribute('aria-expanded') === 'true';
+  const setOpen = (open: boolean): void => {
+    el.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+  };
+  toggle.addEventListener('click', () => setOpen(!isOpen()));
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !isOpen() || document.body.classList.contains('locked')) return;
+    const inside = el.contains(document.activeElement);
+    setOpen(false);
+    if (inside) toggle.focus();
+  });
+  document.addEventListener('pointerdown', (e) => {
+    const t = e.target as Node;
+    const overRecord = el.closest<HTMLElement>('[data-view]')?.dataset.view === 'record';
+    if (isOpen() && overRecord && !el.contains(t) && !toggle.contains(t)) setOpen(false);
+  });
+}
+
 export function mountFilterPanel(
   el: HTMLElement,
+  toggle: HTMLButtonElement,
   content: Content,
   current: () => FilterState,
   onChange: (filters: FilterState) => void,
 ): FilterPanel {
   el.innerHTML = template(content);
-  const details = el.querySelector('details')!;
-  details.open = !window.matchMedia(MOBILE).matches;
+  toggle.innerHTML = `${f.toggle} <span class="count" data-count></span>`;
+  wireToggle(toggle, el);
   const total = content.songs.length;
   const allAccents = content.taxonomy.accents.map((a) => a.id);
 
@@ -125,7 +148,7 @@ export function mountFilterPanel(
 
   return {
     update(filters, matching) {
-      el.querySelector('[data-count]')!.textContent = f.count(matching, total);
+      toggle.querySelector('[data-count]')!.textContent = f.count(matching, total);
       el.querySelector('[data-range-label]')!.textContent = f.range(filters.min, filters.max);
       el.querySelectorAll<HTMLInputElement>('input[data-kind]').forEach((input) => {
         input.checked = isChecked(filters, input.dataset.kind!, input.dataset.id!);

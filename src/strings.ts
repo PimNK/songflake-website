@@ -1,19 +1,19 @@
 // Every user-visible UI string lives here (English). Song titles and stories are the author's.
 import type { Axis } from './content/parse';
 
+/** The site's name: the page title and the record's centre label. */
+const site = 'OBYCHNO_';
+
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
 
 export const strings = {
-  siteTitle: 'Regularnik',
   tracks: (n: number) => plural(n, 'track'),
   years: (n: number) => plural(n, 'year'),
 
   hero: {
-    eyebrow: (n: number, first: number, last: number) =>
-      `Music diary · ${plural(n, 'track')} · ${first === last ? first : `${first} — ${last}`}`,
-    title: 'Regularnik',
+    title: site,
     intro:
-      'Every track I have recorded, pressed into one record. Each one is a snowflake computed from how it was made: rhythm, melody, technique, instruments and structure. The further from the label, the later it was finished. Click a snowflake to open the track, or switch to the list.',
+      'You are looking at my music diary: my solo recordings and the ones I made with the bands I played in. Each song is a snowflake computed from how it was made: rhythm, melody, technique, instruments and structure. Click a snowflake to open the track, or switch to the list.',
   },
 
   axes: {
@@ -32,7 +32,7 @@ export const strings = {
   },
 
   filters: {
-    title: 'Filter the record',
+    toggle: 'Filters',
     count: (n: number, total: number) => `${n} / ${total}`,
     style: 'Style',
     complexity: 'Total complexity',
@@ -53,16 +53,17 @@ export const strings = {
   record: {
     canvasLabel:
       'A vinyl record map of tracks: sectors are styles, distance from the label is the year. The List view shows the same tracks as tiles.',
-    pause: 'Pause the record',
-    spin: 'Spin the record',
+    spinLabel: 'Spin the record',
+    play: 'Play',
+    pause: 'Pause',
+    playGlyph: '▶',
     pauseGlyph: '❚❚',
-    spinGlyph: '▶',
     tooltip: (style: string, band: boolean, year: string, total: number) =>
       `${style} · ${band ? 'band' : 'solo'} · ${year} · complexity ${total}/15`,
     labelSide: (first: number, last: number) => `SIDE A · ${first} — ${last}`,
     labelTracks: (n: number) => `${plural(n, 'TRACK', 'TRACKS')} · 33⅓ RPM`,
     labelShort: '33⅓ RPM',
-    labelName: 'REGULARNIK',
+    labelName: site,
   },
 
   list: {
