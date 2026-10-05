@@ -7,13 +7,27 @@ const site = 'OBYCHNO_';
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
 
 export const strings = {
-  tracks: (n: number) => plural(n, 'track'),
   years: (n: number) => plural(n, 'year'),
 
   hero: {
     title: site,
-    intro:
-      'You are looking at my music diary: my solo recordings and the ones I made with the bands I played in. Each song is a snowflake computed from how it was made: rhythm, melody, technique, instruments and structure. Click a snowflake to open the track, or switch to the list.',
+    // Shown with its line breaks; «_» opens a list line.
+    intro: [
+      'You are looking at my music diary:',
+      '_my solo recordings,',
+      '_with the bands I played in.',
+      '',
+      'Each song is a snowflake.',
+      "It's computed from how it was made:",
+      '_rhythm,',
+      '_melody,',
+      '_technique,',
+      '_instruments,',
+      '_structure.',
+      '',
+      'Click a snowflake to open the track.',
+      'Check the notes on where to focus your attention.',
+    ].join('\n'),
   },
 
   axes: {
@@ -26,8 +40,10 @@ export const strings = {
 
   views: {
     label: 'View',
-    record: '◉ Record',
-    list: '☰ List',
+    record: 'Record',
+    list: 'List',
+    recordGlyph: '◉',
+    listGlyph: '☰',
     mapLabel: 'Track map',
   },
 
@@ -121,9 +137,6 @@ export const strings = {
     pause: 'Pause',
     noAudio: 'Recording coming soon',
     pinAt: (time: string, text: string) => `Pin at ${time}: ${text}`,
-    pins: 'Pinned notes',
-    copyLink: 'Copy link',
-    copied: 'Link copied',
     seek: 'Seek',
     download: '↓ Download',
     downloadLabel: (title: string) => `Download “${title}”`,

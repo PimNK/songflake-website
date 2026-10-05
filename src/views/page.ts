@@ -1,12 +1,12 @@
-// The static page frame: the star sky behind everything, the hero, and the map section: one bar
-// (Record / List switch, Filters toggle, Play / Pause), the filter panel under it, the views.
-// Returns the slots other views fill in.
+// The static page frame: the star sky behind everything and two sections — the intro (title and
+// text) and the map (the bar with Play / Pause, Record / List and Filters, the filter panel, the
+// views). On wide screens CSS lays them out side by side. Returns the slots other views fill in.
 import { drawSky } from '../render/sky';
 import { devicePixelRatioCapped } from '../render/snowflake';
 import { strings } from '../strings';
 
 export interface PageSlots {
-  pane: HTMLElement;
+  page: HTMLElement;
   filterToggle: HTMLButtonElement;
   filters: HTMLElement;
   spin: HTMLElement;
@@ -21,32 +21,32 @@ export function renderPage(root: HTMLElement): PageSlots {
   const v = strings.views;
   root.innerHTML = `
     <canvas class="sky" aria-hidden="true"></canvas>
-    <header class="wrap hero">
-      <h1>${strings.hero.title}</h1>
-      <p class="lead">${strings.hero.intro}</p>
-    </header>
-    <main>
-      <section class="map" aria-label="${v.mapLabel}">
-        <div class="pane" data-view="record">
-          <div class="viewbar">
-            <div class="vseg" role="tablist" aria-label="${v.label}">
-              <button type="button" role="tab" id="tab-record" aria-controls="stage">${v.record}</button>
-              <button type="button" role="tab" id="tab-list" aria-controls="listview">${v.list}</button>
-            </div>
-            <div class="vseg"><button type="button" class="ftoggle" aria-expanded="false" aria-controls="filters"></button></div>
-            <div class="vseg spinseg" role="group" aria-label="${strings.record.spinLabel}" data-slot="spin"></div>
+    <div class="page" data-view="record">
+      <header class="intro-sec">
+        <h1>${strings.hero.title}</h1>
+        <p class="lead">${strings.hero.intro}</p>
+      </header>
+      <main class="map-sec" aria-label="${v.mapLabel}">
+        <div class="viewbar">
+          <div class="vseg spinseg" role="group" aria-label="${strings.record.spinLabel}" data-slot="spin"></div>
+          <div class="vseg tabs" role="tablist" aria-label="${v.label}">
+            <button type="button" role="tab" id="tab-record" aria-controls="stage"><span class="glyph">${v.recordGlyph} </span>${v.record}</button>
+            <button type="button" role="tab" id="tab-list" aria-controls="listview"><span class="glyph">${v.listGlyph} </span>${v.list}</button>
           </div>
-          <div class="fanchor"><div class="fpanel" id="filters" data-slot="filters" hidden></div></div>
+          <div class="vseg filt"><button type="button" class="ftoggle" aria-expanded="false" aria-controls="filters"></button></div>
+        </div>
+        <div class="fanchor"><div class="fpanel" id="filters" data-slot="filters" hidden></div></div>
+        <div class="views">
           <p class="notice" role="status" data-slot="notice" hidden></p>
           <div class="stage" id="stage" role="tabpanel" aria-labelledby="tab-record"></div>
           <div class="listview" id="listview" role="tabpanel" aria-labelledby="tab-list" hidden></div>
         </div>
-      </section>
-    </main>`;
+      </main>
+    </div>`;
   mountSky(root.querySelector<HTMLCanvasElement>('.sky')!);
   const q = <T extends HTMLElement>(sel: string): T => root.querySelector<T>(sel)!;
   return {
-    pane: q('.pane'),
+    page: q('.page'),
     filterToggle: q('.ftoggle'),
     filters: q('[data-slot="filters"]'),
     spin: q('[data-slot="spin"]'),
@@ -76,8 +76,9 @@ function mountSky(canvas: HTMLCanvasElement): void {
 /** Shows one view, marks its tab, and sets the notice. */
 export function showView(slots: PageSlots, view: 'record' | 'list', notice: string | null): void {
   const rec = view === 'record';
-  slots.pane.dataset.view = view;
-  slots.spin.hidden = !rec;
+  slots.page.dataset.view = view;
+  // Kept in place (not removed) so the other controls do not jump under the pointer.
+  slots.spin.style.visibility = rec ? '' : 'hidden';
   slots.stage.hidden = !rec;
   slots.listView.hidden = rec;
   slots.tabRecord.setAttribute('aria-selected', String(rec));

@@ -22,7 +22,7 @@ import { mountMiniPlayer } from '../views/mini-player';
 import { Playback } from '../views/playback';
 import { mountPlayer } from '../views/player';
 import { leadColour } from '../views/card-body';
-import { songHash, startRouter } from './router';
+import { startRouter } from './router';
 import { Store } from './state';
 
 const content = loadContent();
@@ -59,8 +59,6 @@ const card = mountTrackCard(content, {
   },
   player: (slot, song, cue) =>
     mountPlayer(slot, song, cue, leadColour(song, taxonomy), playback, {
-      linkFor: (slug, at) =>
-        `${location.origin}${location.pathname}${songHash(slug, at, taxonomy)}`,
       warn: (message) => {
         if (import.meta.env.DEV) showContentOverlay([], [message]);
       },

@@ -1,6 +1,6 @@
-// The track card's sections (CLAUDE.md §4.3): what to listen for with the band marker,
-// idea → recording, story, and the large turning snowflake with the radar. DOM only; rules come
-// from domain/.
+// The track card's sections (CLAUDE.md §4.3): idea → recording and the story on the left; one
+// block on the right with what to listen for (and the band marker), the large turning snowflake
+// and the radar. DOM only; rules come from domain/.
 import { AXES, type Song } from '../content/parse';
 import type { Bands, Taxonomy } from '../content/taxonomy';
 import { rgba } from '../domain/colour';
@@ -83,17 +83,18 @@ export function renderCardBody(
   const story = song.story ? renderMarkdown(song.story) : `<p class="muted">${c.storyEmpty}</p>`;
   el.innerHTML = `
     <div class="mleft">
-      <section class="spot" aria-labelledby="spot-h">
-        <div class="spot-h"><h3 id="spot-h">${c.listen}</h3>${info(c.listenInfo)}</div>
-        <div class="spot-row">${listenChips(song, taxonomy)}</div>
-        <div>${bandMarker(song, bands)}</div>
-      </section>
       <section class="blk"><div class="spot-h"><h3>${c.timeline}</h3>${info(timelineInfo())}</div>
         <div class="stations">${stations(song, colour)}</div></section>
       <section class="blk"><h3>${c.story}</h3><div class="story">${story}</div></section>
     </div>
     <div class="mright">
-      <div class="flake-box"><div class="flake-clip"><canvas class="turn" style="${turnStyle(song)}"></canvas></div>
+      <div class="flake-box">
+        <section class="spot" aria-labelledby="spot-h">
+          <div class="spot-h"><h3 id="spot-h">${c.listen}</h3>${info(c.listenInfo)}</div>
+          <div class="spot-row">${listenChips(song, taxonomy)}</div>
+          <div>${bandMarker(song, bands)}</div>
+        </section>
+        <div class="flake-clip"><canvas class="turn" style="${turnStyle(song)}"></canvas></div>
         <div class="radar-box">${radarSvg(song.complexity, colour)}
           <div class="spot-h total">${c.total(song.complexityTotal)}${info(totalInfo())}</div></div>
       </div>

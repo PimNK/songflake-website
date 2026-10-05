@@ -91,8 +91,8 @@ function withOption(filters: FilterState, kind: string, id: string, on: boolean)
 
 /**
  * The toggle shows «Filters N / total». Esc closes the panel (focus returns to the toggle when
- * it was inside); over the record a click outside closes it too. In the List view the panel is
- * a column beside the tiles, so it stays until toggled.
+ * it was inside). Where it floats over the record a click outside closes it too; elsewhere it
+ * covers nothing and stays until toggled.
  */
 function wireToggle(toggle: HTMLButtonElement, el: HTMLElement): void {
   const isOpen = (): boolean => toggle.getAttribute('aria-expanded') === 'true';
@@ -109,8 +109,8 @@ function wireToggle(toggle: HTMLButtonElement, el: HTMLElement): void {
   });
   document.addEventListener('pointerdown', (e) => {
     const t = e.target as Node;
-    const overRecord = el.closest<HTMLElement>('[data-view]')?.dataset.view === 'record';
-    if (isOpen() && overRecord && !el.contains(t) && !toggle.contains(t)) setOpen(false);
+    const floating = getComputedStyle(el).position === 'absolute'; // over the record (CSS)
+    if (isOpen() && floating && !el.contains(t) && !toggle.contains(t)) setOpen(false);
   });
 }
 

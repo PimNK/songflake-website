@@ -1,6 +1,6 @@
 /* List view: a responsive grid of tiles straight on the page background. */
 .listview {
-  min-height: clamp(480px, 80vh, 920px);
+  padding-block: 8px 48px;
 }
 .gallery {
   display: grid;

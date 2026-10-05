@@ -1,10 +1,18 @@
-/* Page frame: hero, map grid, view switch. */
-.hero {
-  padding-block: clamp(28px, 5vw, 52px) 18px;
-  display: grid;
-  gap: 14px;
+/* Page frame. Below 1100 px: two sections, each a screen high — the intro, then the bar and the
+   view — and scrolling snaps to them. From 1100 px: one screen, with the title, intro, the stack
+   of controls and the filter panel on the left and the view filling the rest. */
+:root {
+  --gutter: clamp(16px, 3vw, 36px);
+  /* the bar above the view below 1100 px: top padding + bar + gap */
+  --bar-room: 60px;
 }
-.hero h1 {
+.intro-sec {
+  padding: clamp(28px, 6vw, 52px) var(--gutter) 24px;
+  display: grid;
+  gap: 18px;
+  align-content: center;
+}
+.intro-sec h1 {
   font-size: clamp(34px, 6.4vw, 76px);
   letter-spacing: -0.01em;
   line-height: 1.02;
@@ -12,7 +20,9 @@
 .lead {
   max-width: 64ch;
   color: var(--mist);
-  font-size: 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-line;
 }
 .btn {
   background: color-mix(in srgb, var(--panel) 85%, transparent);
@@ -29,25 +39,35 @@
   border-color: var(--mist);
 }
 
-/* The map runs the full page width so the record can be as large as the screen allows. */
-.map {
-  padding-inline: clamp(8px, 2vw, 24px);
-}
-.pane {
+.map-sec {
   display: grid;
   gap: 10px;
+  align-content: start;
+  padding: 10px var(--gutter) 0;
   min-width: 0;
 }
-/* One bar: Record / List, Filters, Play / Pause — all the same segmented style, at the right. */
+.views {
+  position: relative;
+  min-width: 0;
+}
+/* One bar: Record / List, Filters, Play / Pause, all in the same segmented style. */
 .viewbar {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+}
+.viewbar .tabs {
+  order: 1;
+}
+.viewbar .filt {
+  order: 2;
+}
+.viewbar .spinseg {
+  order: 3;
 }
 .vseg {
   display: inline-flex;
+  flex: none;
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 3px;
@@ -86,18 +106,76 @@
     transition: none !important;
   }
 }
-main {
-  padding-bottom: clamp(32px, 6vw, 64px);
+@media (max-width: 1099.98px) {
+  html {
+    scroll-snap-type: y proximity;
+  }
+  html:has(.page[data-view='record']) {
+    scroll-snap-type: y mandatory;
+  }
+  .intro-sec,
+  .map-sec {
+    min-height: 100svh;
+    scroll-snap-align: start;
+  }
 }
-/* Phones: a compact bar; Play / Pause show their icons only. */
+/* Phones: the bar stays on one line; Play / Pause show their icons only. */
 @media (max-width: 599.98px) {
   .viewbar {
-    gap: 6px;
+    gap: 5px;
   }
   .vseg button {
-    padding: 6px 10px;
+    padding: 6px 9px;
+    font-size: 11px;
+    letter-spacing: 0.02em;
   }
-  .spinseg .word {
+  .spinseg .word,
+  .tabs .glyph {
     display: none;
+  }
+}
+@media (min-width: 1100px) {
+  .page {
+    display: grid;
+    height: 100svh;
+    grid-template-columns: 290px 210px minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas: 'title title view' 'intro bar view' 'filt filt view';
+    column-gap: 24px;
+    padding-left: var(--gutter);
+  }
+  .intro-sec,
+  .map-sec {
+    display: contents;
+  }
+  .intro-sec h1 {
+    grid-area: title;
+    padding-block: 36px 22px;
+  }
+  .lead {
+    grid-area: intro;
+  }
+  .viewbar {
+    grid-area: bar;
+    flex-direction: column;
+    align-items: stretch;
+    align-self: start;
+  }
+  .viewbar .vseg {
+    order: 0;
+  }
+  .viewbar .vseg button {
+    flex: 1;
+  }
+  .fanchor {
+    grid-area: filt;
+    min-height: 0;
+    overflow: auto;
+    padding-block: 18px 24px;
+  }
+  .views {
+    grid-area: view;
+    height: 100svh;
+    overflow: auto;
   }
 }

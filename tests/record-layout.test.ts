@@ -25,7 +25,9 @@ import {
   rotateBy,
   visibleTitles,
   labelLineSize,
-  clampToStage,
+  arcGlyphs,
+  fitScale,
+  R_NAME,
   type Viewport,
 } from '../src/domain/record-layout';
 import { solveLayout } from '../src/domain/record-solve';
@@ -243,9 +245,27 @@ describe('centre label and style names', () => {
     expect(labelLineSize(-20, 10, 100, 4000)).toBeNull(); // under 5 px
     expect(labelLineSize(85, 10, 100, 10)).toBeNull(); // outside the inner circle
   });
-  it('style names are kept on the stage near ×1 only', () => {
-    expect(clampToStage(-30, 50, 400, 1)).toBe(50);
-    expect(clampToStage(390, 50, 400, 1)).toBe(350);
-    expect(clampToStage(-30, 50, 400, 2)).toBe(-30);
+  it('style names run along the rim and read left to right, top and bottom', () => {
+    const top = arcGlyphs([10, 10, 10], -Math.PI / 2, 100, 8);
+    expect(top[0]!.x).toBeLessThan(top[2]!.x); // left to right
+    expect(Math.hypot(top[1]!.x, top[1]!.y)).toBeCloseTo(100);
+    expect(top[1]!.rotation).toBeCloseTo(0); // upright at the top
+    const bottom = arcGlyphs([10, 10, 10], Math.PI / 2, 100, 8);
+    expect(bottom[0]!.x).toBeLessThan(bottom[2]!.x);
+    expect(Math.hypot(bottom[1]!.x, bottom[1]!.y)).toBeCloseTo(108); // hangs from the circle
+    expect(bottom[1]!.rotation).toBeCloseTo(0); // upright at the bottom too
+  });
+});
+
+describe('fitScale', () => {
+  it('fits the disc and the style names on its rim inside the stage', () => {
+    for (const [w, h] of [
+      [1400, 900],
+      [360, 680],
+      [900, 900],
+    ] as const) {
+      expect(R_NAME * fitScale(w, h) + 16).toBeLessThanOrEqual(Math.min(w, h) / 2 + 1e-9);
+    }
+    expect(fitScale(10, 10)).toBeGreaterThan(0);
   });
 });

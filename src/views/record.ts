@@ -147,7 +147,7 @@ class RecordStage implements RecordView {
     drawDisc(ctx, t, secs, taxonomy);
     drawYearRings(ctx, t, vp.width, vp.height, ringYears(range, ringStep(vp.zoom)), range);
     drawCentreLabel(ctx, t, vp.phi, secs, taxonomy, range, songs.length);
-    drawSectorNames(ctx, t, secs, taxonomy, vp.zoom, vp.width);
+    drawSectorNames(ctx, t, secs, taxonomy, vp.zoom);
     this.nodes = this.layoutNodes(t);
     drawFlakes(ctx, this.nodes, vp.zoom);
   }

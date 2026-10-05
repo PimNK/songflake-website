@@ -1,13 +1,13 @@
 /* Record stage: the canvas straight on the page background, and the controls laid over it. */
 .stage {
   position: relative;
-  /* as tall as the screen below the bar: the disc is sized by the shorter side */
-  height: max(420px, calc(100svh - 64px));
+  /* a screen high below the bar; on wide screens the whole right side */
+  height: calc(100svh - var(--bar-room));
+  min-height: 360px;
 }
-/* Narrow screens: the disc is sized by the width, so the stage is about square. */
-@media (max-width: 899.98px) {
+@media (min-width: 1100px) {
   .stage {
-    height: min(calc(100svh - 64px), calc(100vw + 40px));
+    height: 100%;
   }
 }
 .stage canvas {

@@ -5,7 +5,7 @@
 // Opening a card or switching views pushes a history entry, so Back closes the card first;
 // filter changes replace the current entry.
 import type { Taxonomy } from '../content/taxonomy';
-import { defaultFilters, fromQuery, toQuery } from '../domain/filters';
+import { fromQuery, toQuery } from '../domain/filters';
 import { formatTime, parseTime } from '../domain/pins';
 import { strings } from '../strings';
 import type { AppState, Store, ViewName } from './state';
@@ -63,19 +63,6 @@ export function stateToHash(s: AppState, taxonomy: Taxonomy): string {
   const search = q.toString().replace(/%2C/g, ',').replace(/%3A/g, ':');
   return `#${path}${search ? `?${search}` : ''}`;
 }
-
-/** The shareable hash of a card cued at a moment, e.g. `#/song/dd?t=2:15`. */
-export const songHash = (slug: string, seconds: number, taxonomy: Taxonomy): string =>
-  stateToHash(
-    {
-      view: 'record',
-      filters: defaultFilters(taxonomy),
-      openSlug: slug,
-      cue: seconds,
-      notice: null,
-    },
-    taxonomy,
-  );
 
 /** Keeps the store and the URL in step. `known` tells whether a slug exists. */
 export function startRouter(

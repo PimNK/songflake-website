@@ -5,13 +5,16 @@ import { formatTime, groupMarkers, type Pin } from '../domain/pins';
 import { strings } from '../strings';
 import { esc } from './html';
 
+/** Half the widest popover (220 px) plus a margin: closer to an end than this, it opens inwards. */
+const POP_HALF = 120;
+
 // A shown popover closes on a tap anywhere else.
 document.addEventListener('pointerdown', (e) => {
   if ((e.target as HTMLElement).closest('.pin')) return;
   document.querySelectorAll('.pin.show').forEach((x) => x.classList.remove('show'));
 });
 
-/** A merged marker seeks to its first pin; every pin stays reachable from the pin list. */
+/** A merged marker seeks to its first pin; its label and popover list every pin it holds. */
 export function renderMarkers(
   layer: HTMLElement,
   pins: readonly Pin[],
@@ -25,7 +28,8 @@ export function renderMarkers(
     const b = document.createElement('button');
     b.type = 'button';
     // Near either end of the bar the popover opens inwards, so it never sticks out of the card.
-    const side = group.fraction < 0.3 ? ' start' : group.fraction > 0.7 ? ' end' : '';
+    const x = group.fraction * width;
+    const side = x < POP_HALF ? ' start' : width - x < POP_HALF ? ' end' : '';
     b.className = `pin${side}`;
     b.style.left = `${group.fraction * 100}%`;
     b.setAttribute(

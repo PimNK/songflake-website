@@ -23,6 +23,5 @@ describe('record label strings', () => {
     const { strings } = await import('../src/strings');
     expect(strings.record.labelTracks(22)).toBe('22 TRACKS · 33⅓ RPM');
     expect(strings.record.labelTracks(1)).toBe('1 TRACK · 33⅓ RPM');
-    expect(strings.tracks(2)).toBe('2 tracks');
   });
 });

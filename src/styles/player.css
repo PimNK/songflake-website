@@ -1,12 +1,31 @@
 /* Card player and the mini-player. The lead colour is set inline from the taxonomy. */
+/* The play button sits level with the waveform; the time row above and the pin note below never
+   move it. */
 .player {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 14px;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 14px;
   align-items: center;
 }
 .pmain {
-  min-width: 0;
+  display: contents;
+}
+.player .play {
+  grid-column: 1;
+  grid-row: 2;
+}
+.ptop {
+  grid-column: 2;
+  grid-row: 1;
+  margin-bottom: 16px; /* room for the pin markers above the bar */
+}
+.wave-wrap {
+  grid-column: 2;
+  grid-row: 2;
+}
+.pnote {
+  grid-column: 2;
+  grid-row: 3;
 }
 .play {
   width: 48px;
@@ -39,7 +58,6 @@
 }
 .wave-wrap {
   position: relative;
-  margin-top: 16px;
 }
 .wave {
   position: relative;
@@ -144,46 +162,6 @@
   color: var(--ice);
   margin-right: 8px;
 }
-.pins {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 4px;
-}
-.pins li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.pin-seek {
-  background: none;
-  border: 0;
-  padding: 4px 0;
-  cursor: pointer;
-  text-align: left;
-  display: grid;
-  grid-template-columns: 3.4em 1fr;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--mist);
-  flex: 1;
-  min-width: 0;
-}
-.pin-seek b {
-  font-family: var(--mono);
-  font-weight: 500;
-  color: var(--ice);
-}
-.pin-seek:hover {
-  color: var(--frost);
-}
-.pin-copy {
-  flex: none;
-  font-size: 10.5px;
-  padding: 3px 9px;
-}
-
 .mini {
   position: fixed;
   left: 0;

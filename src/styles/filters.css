@@ -1,62 +1,30 @@
-/* Filter panel: a dropdown under the bar. Over the record it floats (anchored at the right,
-   opening left and down); in the List view it takes its own room so no tile is covered.
+/* Filter panel. Wide screens: in the left column under the controls, covering nothing.
+   Narrower: over the record it floats under the bar; in the List view it sits above the tiles.
    Option colours are set inline from the taxonomy. */
 .fanchor {
   position: relative;
-  height: 0;
   z-index: 6;
 }
 .fpanel {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 310px;
-  max-height: calc(100svh - 140px);
-  overflow: auto;
-  overscroll-behavior: contain;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: color-mix(in srgb, var(--panel) 90%, transparent);
   backdrop-filter: blur(6px);
   padding: 16px 16px 18px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
 }
-.pane[data-view='list'] {
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas: 'bar bar' 'notice notice' 'list filters';
-  align-items: start;
-}
-.pane[data-view='list'] .viewbar {
-  grid-area: bar;
-}
-.pane[data-view='list'] .notice {
-  grid-area: notice;
-}
-.pane[data-view='list'] .listview {
-  grid-area: list;
-}
-.pane[data-view='list'] .fanchor {
-  grid-area: filters;
-  height: auto;
-  position: sticky;
-  top: 12px;
-}
-.pane[data-view='list'] .fpanel {
-  position: static;
-  max-height: calc(100svh - 24px);
-  box-shadow: none;
-}
-@media (max-width: 899.98px) {
-  .fpanel {
+@media (max-width: 1099.98px) {
+  .page[data-view='record'] .fanchor {
+    height: 0;
+  }
+  .page[data-view='record'] .fpanel {
+    position: absolute;
+    top: 0;
     left: 0;
-    width: auto;
-  }
-  .pane[data-view='list'] {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: 'bar' 'notice' 'filters' 'list';
-  }
-  .pane[data-view='list'] .fanchor {
-    position: static;
+    width: min(360px, 100%);
+    max-height: calc(100svh - 80px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
   }
 }
 .count {

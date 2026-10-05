@@ -3,13 +3,15 @@
 import type { Taxonomy } from '../content/taxonomy';
 import { rgba } from '../domain/colour';
 import {
-  clampToStage,
-  LABEL_DISTANCE,
+  arcGlyphs,
+  NAME_RISE,
+  NAME_SPACING,
   R_DISC,
   R_GROOVE_IN,
   R_GROOVE_OUT,
   R_LABEL,
   R_MAX,
+  R_NAME,
   toScreen,
   wind,
   yearRadius,
@@ -17,7 +19,6 @@ import {
   type Transform,
   type YearRange,
 } from '../domain/record-layout';
-import { strings } from '../strings';
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -189,26 +190,29 @@ export function drawYearRings(
   }
 }
 
-/** Style name and track count outside the disc edge, never touching it. */
+/** Style names along the rim, following its curve, in the style colour; they turn with the disc. */
 export function drawSectorNames(
   ctx: Ctx,
   t: Transform,
   secs: readonly Sector[],
   taxonomy: Taxonomy,
   zoom: number,
-  width: number,
 ): void {
+  const size = zoom > 2 ? 12 : 11;
+  ctx.font = `500 ${size}px ${MONO}`;
+  ctx.textAlign = 'center';
   for (const w of secs) {
-    const [sx, y] = toScreen(t, ...wind(R_DISC * LABEL_DISTANCE, (w.a0 + w.a1) / 2));
-    ctx.textAlign = 'center';
-    ctx.font = `500 ${zoom > 2 ? 12 : 11}px ${MONO}`;
-    letterSpacing(ctx, '2px');
-    const x = clampToStage(sx, ctx.measureText(w.style.toUpperCase()).width / 2 + 4, width, zoom);
+    const [sx, sy] = toScreen(t, ...wind(R_NAME, (w.a0 + w.a1) / 2));
+    const letters = [...w.style.toUpperCase()];
+    const widths = letters.map((ch) => ctx.measureText(ch).width + size * NAME_SPACING);
+    const angle = Math.atan2(sy - t.cy, sx - t.cx);
     ctx.fillStyle = rgba(taxonomy.styleColours[w.style] ?? '#ffffff', 0.95);
-    ctx.fillText(w.style.toUpperCase(), x, y);
-    letterSpacing(ctx, '0px');
-    ctx.font = `400 10px ${MONO}`;
-    ctx.fillStyle = 'rgba(190,205,245,.55)';
-    ctx.fillText(strings.tracks(w.count), x, y + 14);
+    arcGlyphs(widths, angle, R_NAME * t.scale, size * NAME_RISE).forEach((g, i) => {
+      ctx.save();
+      ctx.translate(t.cx + g.x, t.cy + g.y);
+      ctx.rotate(g.rotation);
+      ctx.fillText(letters[i]!, 0, 0);
+      ctx.restore();
+    });
   }
 }

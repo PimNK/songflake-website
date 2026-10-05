@@ -12,13 +12,12 @@
   text-transform: uppercase;
   color: var(--mist);
 }
+/* What to listen for opens the snowflake block: it is part of it, not a box of its own. */
 .spot {
-  background: var(--panel2);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 14px 16px;
   display: grid;
   gap: 10px;
+  justify-self: stretch;
+  margin-bottom: 10px;
 }
 .spot-row {
   display: flex;

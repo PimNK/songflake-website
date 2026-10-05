@@ -9,7 +9,7 @@ export const R_LABEL = 186;
 export const R_GROOVE_IN = R_MIN * 0.9;
 export const R_GROOVE_OUT = R_MAX * 1.03;
 export const SPIRAL = 0.85;
-export const LABEL_DISTANCE = 1.17; // style names, × R_DISC
+export const R_NAME = R_DISC * 1.035; // style names run along the rim just outside the disc
 export const ZOOM_MIN = 1;
 export const ZOOM_MAX = 8;
 export const YEAR_DRIFT = 0.45; // under half a year: songs of different years never swap order
@@ -94,9 +94,16 @@ export interface Viewport {
   phi: number;
 }
 
-/** Screen pixels per world unit at zoom 1: the disc plus outside labels fill the stage. */
+/** Room in px outside R_NAME for the style names' letters. */
+const NAME_ROOM = 16;
+/** Style-name letter spacing and the height a hanging name drops by, as fractions of its size. */
+export const NAME_SPACING = 0.22;
+export const NAME_RISE = 0.75;
+
+/** Screen pixels per world unit at zoom 1: the disc and the style names on its rim fill the stage. */
 export const fitScale = (width: number, height: number): number =>
-  Math.min(width, height) / 2 / (R_MAX * 1.3);
+  // never zero or negative, even on a stage too small for the names
+  Math.max(0.01, (Math.min(width, height) / 2 - NAME_ROOM) / R_NAME);
 
 /** Snowflake size scale for the stage; flakes grow slower than the map when zooming. */
 export const stageFlakeScale = (width: number, height: number): number =>
@@ -234,6 +241,31 @@ export function labelLineSize(
   return px < LABEL_MIN_PX ? null : px;
 }
 
-/** Near ×1 the whole record is in view: a style name is kept on the stage instead of cut off. */
-export const clampToStage = (x: number, half: number, width: number, zoom: number): number =>
-  zoom < 1.3 ? clamp(x, half, width - half) : x;
+export interface Glyph {
+  x: number;
+  y: number;
+  rotation: number;
+}
+
+/**
+ * Letters of a style name along a circle of `radius` px round (0, 0), centred at `angle`, so it
+ * reads left to right: on the upper half it runs clockwise standing on the circle; on the lower
+ * half counterclockwise, hanging from it (baseline `rise` px further out) so it stays upright.
+ * `widths` are the letters' advance widths in px.
+ */
+export function arcGlyphs(
+  widths: readonly number[],
+  angle: number,
+  radius: number,
+  rise: number,
+): Glyph[] {
+  const upper = Math.sin(angle) <= 0;
+  const r = upper ? radius : radius + rise;
+  const dir = upper ? 1 : -1;
+  let a = angle - (dir * widths.reduce((sum, w) => sum + w, 0)) / r / 2;
+  return widths.map((w) => {
+    const c = a + (dir * w) / 2 / r;
+    a += (dir * w) / r;
+    return { x: r * Math.cos(c), y: r * Math.sin(c), rotation: c + (dir * Math.PI) / 2 };
+  });
+}

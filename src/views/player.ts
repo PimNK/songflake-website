@@ -1,5 +1,6 @@
 // The card's player (CLAUDE.md §4.6): round play/pause in the lead colour, m:ss / m:ss, the
-// download link, the waveform seek bar with pin markers, the active-pin note and the pin list.
+// download link, the waveform seek bar with pin markers, and the note of the active pin (pins
+// have no list of their own: a marker shows its text on hover and under the bar once reached).
 // The <audio> element lives in views/playback.ts; time maths lives in domain/pins.ts.
 import type { Song } from '../content/parse';
 import { activePin, formatTime, type Pin } from '../domain/pins';
@@ -11,8 +12,6 @@ import type { Playback, Recording } from './playback';
 import { renderMarkers } from './pin-markers';
 
 export interface PlayerHooks {
-  /** Shareable URL of the card cued at a moment. */
-  linkFor(slug: string, seconds: number): string;
   /** Development warning, e.g. a pin past the end of the recording. */
   warn(message: string): void;
 }
@@ -29,15 +28,6 @@ function downloadLink(song: Song): string {
 }
 
 function template(song: Song, colour: string): string {
-  const list = song.pins
-    .map(
-      (
-        pin,
-        i,
-      ) => `<li><button type="button" class="pin-seek" data-i="${i}"><b>${formatTime(pin.at)}</b><span>${esc(pin.text)}</span></button>
-        <button type="button" class="pin-copy btn" data-i="${i}">${p.copyLink}</button></li>`,
-    )
-    .join('');
   return `
     <div class="player">
       <button class="play" type="button" style="background:${esc(colour)}"></button>
@@ -49,8 +39,7 @@ function template(song: Song, colour: string): string {
         </div>
         <div class="pnote" aria-live="polite"></div>
       </div>
-    </div>
-    ${song.pins.length ? `<ol class="pins" aria-label="${p.pins}">${list}</ol>` : ''}`;
+    </div>`;
 }
 
 /** Mounts the player for one song into the card's slot; returns a cleanup function. */
@@ -84,7 +73,7 @@ class CardPlayer {
     private song: Song,
     private colour: string,
     private playback: Playback,
-    private hooks: PlayerHooks,
+    hooks: PlayerHooks,
   ) {
     slot.innerHTML = template(song, colour);
     this.wire();
@@ -101,7 +90,6 @@ class CardPlayer {
       if (!this.alive) return;
       this.rec = r;
       warnPastEnd(song, r.duration, hooks);
-      this.hidePastEnd(r.duration);
       this.markers();
       this.update();
     });
@@ -134,14 +122,6 @@ class CardPlayer {
     renderMarkers(this.q('.pins-layer'), this.song.pins, this.duration(), (pin) =>
       this.playback.seek(this.song, pin.at, true),
     );
-  }
-
-  /** A pin past the end of the recording is skipped (and warned about in development). */
-  private hidePastEnd(duration: number): void {
-    if (!(duration > 0)) return;
-    this.slot.querySelectorAll<HTMLElement>('.pins li').forEach((li, i) => {
-      li.hidden = this.song.pins[i]!.at > duration;
-    });
   }
 
   private update(): void {
@@ -190,18 +170,6 @@ class CardPlayer {
           Math.min(this.duration(), Math.max(0, playback.position(song) + delta)),
         ),
     );
-    this.slot
-      .querySelectorAll<HTMLButtonElement>('.pin-seek')
-      .forEach((b) =>
-        b.addEventListener('click', () => playback.seek(song, song.pins[+b.dataset.i!]!.at, true)),
-      );
-    this.slot
-      .querySelectorAll<HTMLButtonElement>('.pin-copy')
-      .forEach((b) =>
-        b.addEventListener('click', () =>
-          copyLink(b, this.hooks.linkFor(song.slug, song.pins[+b.dataset.i!]!.at)),
-        ),
-      );
   }
 }
 
@@ -278,11 +246,4 @@ function warnPastEnd(song: Song, duration: number, hooks: PlayerHooks): void {
   song.pins
     .filter((pin: Pin) => pin.at > duration)
     .forEach((pin) => hooks.warn(p.pastEnd(song.slug, formatTime(pin.at))));
-}
-
-function copyLink(button: HTMLButtonElement, url: string): void {
-  void navigator.clipboard?.writeText(url).then(() => {
-    button.textContent = p.copied;
-    setTimeout(() => (button.textContent = p.copyLink), 1600);
-  });
 }
