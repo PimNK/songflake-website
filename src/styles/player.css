@@ -1,31 +1,36 @@
 /* Card player and the mini-player. The lead colour is set inline from the taxonomy. */
-/* The play button sits level with the waveform; the time row above and the pin note below never
-   move it. */
-.player {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  column-gap: 14px;
+/* The transport row, centred: previous, play / pause, next — all round, the same size; the
+   skip buttons take the card's own colour. The time, waveform and pin note sit below. */
+.transport {
+  display: flex;
+  justify-content: center;
   align-items: center;
+  gap: 18px;
 }
-.pmain {
-  display: contents;
+.nav {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--frost);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
 }
-.player .play {
-  grid-column: 1;
-  grid-row: 2;
+.nav:hover {
+  border-color: var(--mist);
 }
-.ptop {
-  grid-column: 2;
-  grid-row: 1;
-  margin-bottom: 16px; /* room for the pin markers above the bar */
+.nav.next svg {
+  transform: scaleX(-1);
 }
-.wave-wrap {
-  grid-column: 2;
-  grid-row: 2;
+.play:disabled {
+  background: var(--panel2);
+  color: var(--mist);
+  cursor: default;
 }
-.pnote {
-  grid-column: 2;
-  grid-row: 3;
+.player-body .no-audio {
+  text-align: center;
 }
 .play {
   width: 48px;
@@ -39,10 +44,7 @@
   font-size: 16px;
 }
 .ptop {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
+  margin-bottom: 16px; /* room for the pin markers above the bar */
   font-family: var(--mono);
   font-size: 12px;
   color: var(--mist);

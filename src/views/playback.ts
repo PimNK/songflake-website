@@ -1,6 +1,7 @@
 // The one shared <audio> element for the whole page, and what is known about each recording
 // (waveform peaks, duration), cached per song in memory. Playback continues when a card closes;
-// opening another card does not stop the current track until its own play is pressed.
+// opening another card does not stop the current track until its own play is pressed; when a
+// track ends, the next playable one follows (autoAdvance).
 import type { Song } from '../content/parse';
 import { peaks } from '../domain/waveform';
 
@@ -72,7 +73,8 @@ export class Playback {
   play(song: Song): void {
     if (!song.audioSrc) return;
     if (!this.isCurrent(song)) {
-      if (this.song && this.audio.currentTime > 0) {
+      // A finished track starts from the top next time, not from its end.
+      if (this.song && this.audio.currentTime > 0 && !this.audio.ended) {
         this.pending.set(this.song.slug, this.audio.currentTime);
       }
       const start = this.pending.get(song.slug) ?? 0;
@@ -89,6 +91,20 @@ export class Playback {
   toggle(song: Song): void {
     if (this.isPlaying(song)) this.audio.pause();
     else this.play(song);
+  }
+
+  /**
+   * When a track ends, play the one `next` picks (none: stop there); `moved` hears about it so
+   * an open card can follow.
+   */
+  autoAdvance(next: (ended: Song) => Song | null, moved: (from: Song, to: Song) => void): void {
+    this.audio.addEventListener('ended', () => {
+      const ended = this.song;
+      const to = ended && next(ended);
+      if (!ended || !to) return;
+      moved(ended, to);
+      this.play(to);
+    });
   }
 
   /** Stops and unloads: the mini-player's close. */

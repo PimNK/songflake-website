@@ -212,13 +212,15 @@
 .bubble .term b {
   display: inline;
 }
+/* Its bubble is wide: anchor it to the whole heading row so it stays inside the block. */
 .total {
-  justify-content: center;
+  position: relative;
 }
-/* The radar sits at the right of the card: open its bubble leftwards so it stays inside. */
+.total .qi {
+  position: static;
+}
 .total .bubble {
-  left: auto;
-  right: -8px;
+  left: 0;
   transform: none;
-  max-width: 290px;
+  max-width: min(290px, 100%);
 }

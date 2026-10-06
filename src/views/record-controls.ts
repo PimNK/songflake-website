@@ -19,7 +19,8 @@ export interface RecordControlHandlers {
 export function wireRecordControls(segment: HTMLElement, h: RecordControlHandlers): void {
   const half = (spin: string, glyph: string, word: string): string =>
     `<button type="button" data-spin="${spin}" aria-label="${word}">${glyph}<span class="word"> ${word}</span></button>`;
-  segment.innerHTML = half('on', r.playGlyph, r.play) + half('off', r.pauseGlyph, r.pause);
+  segment.innerHTML =
+    half('on', strings.player.playGlyph, r.play) + half('off', strings.player.pauseGlyph, r.pause);
   const buttons = [...segment.querySelectorAll<HTMLButtonElement>('button')];
   const mark = (): void =>
     buttons.forEach((b) =>

@@ -41,6 +41,9 @@ body.locked {
   max-height: 100%;
   overflow: auto;
   overscroll-behavior: contain;
+  /* horizontal swipes step tracks (views/track-card.ts), never the browser's back gesture */
+  touch-action: pan-y pinch-zoom;
+  overscroll-behavior-x: none;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -118,10 +121,9 @@ body.locked {
   height: auto;
   overflow: visible;
 }
+/* «Total complexity N / 15» heads the snowflake, styled like «What to listen for». */
 .total {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--mist);
+  justify-self: stretch;
 }
 .total b {
   color: var(--frost);

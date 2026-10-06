@@ -168,3 +168,23 @@ export function neighbour(
   if (i < 0 || !list.length) return null;
   return list[(i + direction + list.length) % list.length]!.slug;
 }
+
+/**
+ * The track to play after `slug` ends: the next one in the card's order (as `neighbour`) that
+ * passes `playable`, wrapping round; null when no other track qualifies.
+ */
+export function nextPlayable(
+  songs: readonly Song[],
+  f: FilterState,
+  slug: string,
+  playable: (song: Song) => boolean,
+): string | null {
+  let at = slug;
+  for (let i = 0; i < songs.length; i++) {
+    const next = neighbour(songs, f, at, 1);
+    if (!next || next === slug) return null;
+    if (playable(songs.find((s) => s.slug === next)!)) return next;
+    at = next;
+  }
+  return null;
+}

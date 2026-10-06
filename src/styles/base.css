@@ -62,6 +62,9 @@ input {
     transform: rotate(1turn);
   }
 }
+body.still .turn {
+  animation-play-state: paused;
+}
 @media (prefers-reduced-motion: reduce) {
   .turn {
     animation: none;

@@ -1,16 +1,25 @@
-// The track card modal (CLAUDE.md §4.3): title and ← → ✕, the player slot, the body.
+// The track card modal (CLAUDE.md §4.3): title with Download and ✕; the transport row (previous,
+// play / pause, next) above the player; the body. Swiping left / right on touch steps tracks.
 // Focus is trapped while open and returned to the opener; page scroll is locked.
 // Closing (✕, Esc, backdrop) and prev/next go through the caller, which owns the state.
 import type { Content } from '../content/load';
 import type { Song } from '../content/parse';
 import { strings } from '../strings';
 import { renderCardBody } from './card-body';
+import { esc } from './html';
 
 export interface CardHooks {
   close(): void;
   step(direction: -1 | 1): void;
-  /** Fills the player slot for a song with audio; returns a cleanup function. */
-  player(slot: HTMLElement, song: Song, cue: number | null): () => void;
+  /** Fills the play slot and the player body for a song with audio; returns a cleanup. */
+  player(slots: PlayerSlots, song: Song, cue: number | null): () => void;
+}
+
+export interface PlayerSlots {
+  /** Between the previous and next buttons: the round play / pause button goes here. */
+  play: HTMLElement;
+  /** Under the transport row: time, waveform with pins, the pin note. */
+  body: HTMLElement;
 }
 
 export interface TrackCard {
@@ -19,12 +28,18 @@ export interface TrackCard {
 }
 
 const c = strings.card;
+const p = strings.player;
+const SWIPE_PX = 60;
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
   const modal = createModal();
   const title = modal.querySelector<HTMLElement>('#card-title')!;
-  const playerSlot = modal.querySelector<HTMLElement>('.player-blk')!;
+  const slots: PlayerSlots = {
+    play: modal.querySelector<HTMLElement>('.play-slot')!,
+    body: modal.querySelector<HTMLElement>('.player-body')!,
+  };
+  const download = modal.querySelector<HTMLElement>('.dl-slot')!;
   const body = modal.querySelector<HTMLElement>('.mgrid')!;
   const sheet = modal.querySelector<HTMLElement>('.sheet')!;
   let opener: HTMLElement | null = null;
@@ -32,7 +47,8 @@ export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
   const clearPlayer = (): void => {
     disposePlayer?.();
     disposePlayer = null;
-    playerSlot.replaceChildren();
+    slots.play.replaceChildren();
+    slots.body.replaceChildren();
   };
 
   wireEvents(modal, sheet, hooks);
@@ -42,8 +58,12 @@ export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
       if (modal.hidden) opener = document.activeElement as HTMLElement | null;
       title.textContent = song.title;
       clearPlayer();
-      if (song.audioSrc) disposePlayer = hooks.player(playerSlot, song, cue);
-      else playerSlot.innerHTML = `<p class="no-audio">${strings.player.noAudio}</p>`;
+      download.innerHTML = song.audioSrc ? downloadLink(song, song.audioSrc) : '';
+      if (song.audioSrc) disposePlayer = hooks.player(slots, song, cue);
+      else {
+        slots.play.innerHTML = `<button class="play" type="button" disabled aria-label="${p.play}">${p.playGlyph}</button>`;
+        slots.body.innerHTML = `<p class="no-audio">${p.noAudio}</p>`;
+      }
       renderCardBody(body, song, content.taxonomy, content.bands);
       const opening = modal.hidden;
       modal.hidden = false;
@@ -81,6 +101,17 @@ function trapFocus(e: KeyboardEvent, root: HTMLElement): void {
   }
 }
 
+/** Skip-to-previous icon; the next button mirrors it with CSS. */
+const SKIP_ICON =
+  '<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M15 3.5v11L6.5 9z" fill="currentColor"/></svg>';
+
+/** The saved file is named after the track, keeping the recording's own extension. */
+function downloadLink(song: Song, src: string): string {
+  const ext = /\.(mp3|m4a|ogg)(?:[?#]|$)/i.exec(src)?.[1] ?? 'mp3';
+  const name = `${song.title}.${ext.toLowerCase()}`;
+  return `<a class="btn dl" href="${esc(src)}" download="${esc(name)}" aria-label="${esc(p.downloadLabel(song.title))}">${p.download}</a>`;
+}
+
 function createModal(): HTMLElement {
   const modal = document.createElement('div');
   modal.className = 'modal';
@@ -93,19 +124,52 @@ function createModal(): HTMLElement {
       <header class="mhead">
         <h2 id="card-title"></h2>
         <div class="mnav">
-          <button class="btn" type="button" data-step="-1" aria-label="${c.prev}">←</button>
-          <button class="btn" type="button" data-step="1" aria-label="${c.next}">→</button>
+          <span class="dl-slot"></span>
           <button class="btn" type="button" data-close aria-label="${c.close}">✕</button>
         </div>
       </header>
-      <section class="player-blk" aria-label="${strings.player.label}"></section>
+      <section class="player-blk" aria-label="${p.label}">
+        <div class="transport">
+          <button class="nav" type="button" data-step="-1" aria-label="${c.prev}">${SKIP_ICON}</button>
+          <div class="play-slot"></div>
+          <button class="nav next" type="button" data-step="1" aria-label="${c.next}">${SKIP_ICON}</button>
+        </div>
+        <div class="player-body"></div>
+      </section>
       <div class="mgrid"></div>
     </article>`;
   document.body.append(modal);
   return modal;
 }
 
+/**
+ * Touch: a mostly horizontal swipe of at least SWIPE_PX steps tracks — left for the next one,
+ * right for the previous, as in a music player. Swipes that start on the waveform seek instead.
+ */
+function wireSwipe(sheet: HTMLElement, hooks: CardHooks): void {
+  let start: { x: number; y: number } | null = null;
+  sheet.addEventListener(
+    'touchstart',
+    (e) => {
+      const t = e.touches[0];
+      const onSeek = (e.target as HTMLElement).closest('.wave, .pin, input');
+      start = t && e.touches.length === 1 && !onSeek ? { x: t.clientX, y: t.clientY } : null;
+    },
+    { passive: true },
+  );
+  sheet.addEventListener('touchcancel', () => (start = null));
+  sheet.addEventListener('touchend', (e) => {
+    const t = e.changedTouches[0];
+    if (!start || !t) return;
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    start = null;
+    if (Math.abs(dx) >= SWIPE_PX && Math.abs(dx) > Math.abs(dy) * 1.5) hooks.step(dx < 0 ? 1 : -1);
+  });
+}
+
 function wireEvents(modal: HTMLElement, sheet: HTMLElement, hooks: CardHooks): void {
+  wireSwipe(sheet, hooks);
   modal.addEventListener('click', (e) => {
     const t = e.target as HTMLElement;
     if (t === modal) hooks.close();

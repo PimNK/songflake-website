@@ -15,10 +15,10 @@ export const strings = {
     intro: [
       'You are looking at my music diary:',
       '_my solo recordings,',
-      '_with the bands I played in.',
+      '_collaboration recordings.',
       '',
       'Each song is a snowflake.',
-      "It's computed from how it was made:",
+      "It's computed from song parameters:",
       '_rhythm,',
       '_melody,',
       '_technique,',
@@ -45,6 +45,8 @@ export const strings = {
     recordGlyph: '◉',
     listGlyph: '☰',
     mapLabel: 'Track map',
+    toRecord: 'Scroll down to the record',
+    toIntro: 'Back to the intro',
   },
 
   filters: {
@@ -72,8 +74,6 @@ export const strings = {
     spinLabel: 'Spin the record',
     play: 'Play',
     pause: 'Pause',
-    playGlyph: '▶',
-    pauseGlyph: '❚❚',
     tooltip: (style: string, band: boolean, year: string, total: number) =>
       `${style} · ${band ? 'band' : 'solo'} · ${year} · complexity ${total}/15`,
     labelSide: (first: number, last: number) => `SIDE A · ${first} — ${last}`,
@@ -135,6 +135,8 @@ export const strings = {
     label: 'Player',
     play: 'Play',
     pause: 'Pause',
+    playGlyph: '▶',
+    pauseGlyph: '❚❚',
     noAudio: 'Recording coming soon',
     pinAt: (time: string, text: string) => `Pin at ${time}: ${text}`,
     seek: 'Seek',

@@ -25,8 +25,10 @@ export function renderPage(root: HTMLElement): PageSlots {
       <header class="intro-sec">
         <h1>${strings.hero.title}</h1>
         <p class="lead">${strings.hero.intro}</p>
+        <button type="button" class="scroll-cue down" aria-label="${v.toRecord}">${CHEVRON}</button>
       </header>
       <main class="map-sec" aria-label="${v.mapLabel}">
+        <button type="button" class="scroll-cue up" aria-label="${v.toIntro}">${CHEVRON}</button>
         <div class="viewbar">
           <div class="vseg spinseg" role="group" aria-label="${strings.record.spinLabel}" data-slot="spin"></div>
           <div class="vseg tabs" role="tablist" aria-label="${v.label}">
@@ -44,6 +46,7 @@ export function renderPage(root: HTMLElement): PageSlots {
       </main>
     </div>`;
   mountSky(root.querySelector<HTMLCanvasElement>('.sky')!);
+  wireScrollCues(root);
   const q = <T extends HTMLElement>(sel: string): T => root.querySelector<T>(sel)!;
   return {
     page: q('.page'),
@@ -56,6 +59,18 @@ export function renderPage(root: HTMLElement): PageSlots {
     listView: q('#listview'),
     notice: q('[data-slot="notice"]'),
   };
+}
+
+/** A chevron pointing down; the «up» cue turns it with CSS. */
+const CHEVRON =
+  '<svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M6 10l8 8 8-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/** Narrow screens: the arrows scroll to the record section and back to the intro. */
+function wireScrollCues(root: HTMLElement): void {
+  const go = (selector: string): void =>
+    root.querySelector(selector)!.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  root.querySelector('.scroll-cue.down')!.addEventListener('click', () => go('.map-sec'));
+  root.querySelector('.scroll-cue.up')!.addEventListener('click', () => go('.intro-sec'));
 }
 
 /** The fixed star sky, redrawn only when the window size changes. */
@@ -77,8 +92,6 @@ function mountSky(canvas: HTMLCanvasElement): void {
 export function showView(slots: PageSlots, view: 'record' | 'list', notice: string | null): void {
   const rec = view === 'record';
   slots.page.dataset.view = view;
-  // Kept in place (not removed) so the other controls do not jump under the pointer.
-  slots.spin.style.visibility = rec ? '' : 'hidden';
   slots.stage.hidden = !rec;
   slots.listView.hidden = rec;
   slots.tabRecord.setAttribute('aria-selected', String(rec));

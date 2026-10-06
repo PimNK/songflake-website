@@ -88,6 +88,7 @@ class RecordStage implements RecordView {
     this.secs = sectors(taxonomy.styles, songs);
     this.flakes = new Map(songs.map((s) => [s.slug, flakeOf(s, taxonomy)]));
     this.wireControls();
+    this.markStill();
     this.wireInput();
     this.observe();
   }
@@ -245,11 +246,17 @@ class RecordStage implements RecordView {
     });
   }
 
+  /** Pause also stills the snowflakes outside the record (list tiles, the card): body.still. */
+  private markStill(): void {
+    document.body.classList.toggle('still', !this.motion.spinning);
+  }
+
   private wireControls(): void {
     wireRecordControls(this.spin, {
       spinning: () => this.motion.spinning,
       toggleSpin: () => {
         this.motion.spinning = !this.motion.spinning;
+        this.markStill();
         this.wake();
       },
     });

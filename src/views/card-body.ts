@@ -94,9 +94,9 @@ export function renderCardBody(
           <div class="spot-row">${listenChips(song, taxonomy)}</div>
           <div>${bandMarker(song, bands)}</div>
         </section>
+        <div class="spot-h total"><h3>${c.total(song.complexityTotal)}</h3>${info(totalInfo())}</div>
         <div class="flake-clip"><canvas class="turn" style="${turnStyle(song)}"></canvas></div>
-        <div class="radar-box">${radarSvg(song.complexity, colour)}
-          <div class="spot-h total">${c.total(song.complexityTotal)}${info(totalInfo())}</div></div>
+        <div class="radar-box">${radarSvg(song.complexity, colour)}</div>
       </div>
     </div>`;
   const flake = flakeOf(song, taxonomy);

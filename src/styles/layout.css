@@ -3,8 +3,8 @@
    of controls and the filter panel on the left and the view filling the rest. */
 :root {
   --gutter: clamp(16px, 3vw, 36px);
-  /* the bar above the view below 1100 px: top padding + bar + gap */
-  --bar-room: 60px;
+  /* above the view below 1100 px: top padding + up arrow + bar + gaps */
+  --bar-room: 106px;
 }
 .intro-sec {
   padding: clamp(28px, 6vw, 52px) var(--gutter) 24px;
@@ -106,6 +106,42 @@
     transition: none !important;
   }
 }
+/* Narrow screens: arrows that show (and do) the way between the two sections. */
+.scroll-cue {
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ice);
+  cursor: pointer;
+  animation: cue 2.4s ease-in-out infinite;
+}
+.scroll-cue.up svg {
+  transform: rotate(180deg);
+}
+.intro-sec {
+  position: relative;
+}
+.scroll-cue.down {
+  position: absolute;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  margin-left: -22px;
+}
+@keyframes cue {
+  50% {
+    translate: 0 5px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue {
+    animation: none;
+  }
+}
 @media (max-width: 1099.98px) {
   html {
     scroll-snap-type: y proximity;
@@ -147,6 +183,9 @@
   .intro-sec,
   .map-sec {
     display: contents;
+  }
+  .scroll-cue {
+    display: none;
   }
   .intro-sec h1 {
     grid-area: title;

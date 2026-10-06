@@ -11,7 +11,7 @@ import '../styles/player.css';
 import '../styles/overlay.css';
 import { loadContent } from '../content/load';
 import type { Song } from '../content/parse';
-import { countMatching, defaultFilters, matches, neighbour } from '../domain/filters';
+import { countMatching, defaultFilters, matches, neighbour, nextPlayable } from '../domain/filters';
 import { showContentOverlay } from '../views/content-overlay';
 import { mountFilterPanel } from '../views/filter-panel';
 import { mountList } from '../views/list';
@@ -50,6 +50,14 @@ const panel = mountFilterPanel(
 );
 const playback = new Playback();
 const mini = mountMiniPlayer(playback, open);
+const bySlug = (slug: string | null): Song | undefined => songs.find((x) => x.slug === slug);
+playback.autoAdvance(
+  (ended) =>
+    bySlug(nextPlayable(songs, store.get().filters, ended.slug, (x) => !!x.audioSrc)) ?? null,
+  (from, to) => {
+    if (store.get().openSlug === from.slug) store.set({ openSlug: to.slug, cue: null });
+  },
+);
 const card = mountTrackCard(content, {
   close: () => store.set({ openSlug: null, cue: null }),
   step: (direction) => {

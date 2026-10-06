@@ -36,7 +36,9 @@ export function mountMiniPlayer(playback: Playback, open: (slug: string) => void
     if (!song || bar.hidden) return;
     const d = a.duration || 0;
     q('.mini-title').innerHTML = esc(song.title);
-    q('.mini-play').textContent = playback.isPlaying() ? '❚❚' : '▶';
+    q('.mini-play').textContent = playback.isPlaying()
+      ? strings.player.pauseGlyph
+      : strings.player.playGlyph;
     q('.mini-play').setAttribute('aria-label', playback.isPlaying() ? p.pause : p.play);
     q<HTMLElement>('.mini-line i').style.width = `${d ? (a.currentTime / d) * 100 : 0}%`;
     const key = `${song.slug}|${d}`;
