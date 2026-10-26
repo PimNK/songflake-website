@@ -36,7 +36,7 @@ import { RecordMotion } from './record-motion';
 export interface RecordView {
   setMatch(match: (song: Song) => boolean): void;
   setActive(active: boolean): void;
-  /** The track that is playing now: its snowflake pulses. */
+  /** The current track (playing or paused): its snowflake pulses. */
   setPlaying(slug: string | null): void;
 }
 
@@ -45,7 +45,7 @@ type Node = FlakeNode & { song: Song };
 const HOVER_SCALE = 1.18;
 /** The playing snowflake swells by up to this much, once per PULSE_MS. */
 const PULSE_GROW = 0.16;
-const PULSE_MS = 1600;
+const PULSE_MS = 2200;
 
 /** Mounted once for the page's lifetime: observers and listeners are never released. */
 export function mountRecord(

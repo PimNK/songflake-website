@@ -1,7 +1,8 @@
-// The static page frame: the star sky behind everything and two sections — the intro (title and
-// text) and the map (the random-track player, the bar with the labelled Record / List switch and
-// Filters, the filter panel, the views). On wide screens CSS lays them out as one left column
-// beside the view. Returns the slots other views fill in.
+// The static page frame: the star sky behind everything and two sections — the intro (title,
+// About and its text) and the map (the random-track player with the Filters toggle, the bar with
+// the labelled Record / List switch, the filter panel, the views). On wide screens CSS lays them
+// out as one left column beside the view; narrower, the player is frozen at the bottom. Returns
+// the slots other views fill in.
 import { drawSky } from '../render/sky';
 import { devicePixelRatioCapped } from '../render/snowflake';
 import { strings } from '../strings';
@@ -25,18 +26,23 @@ export function renderPage(root: HTMLElement): PageSlots {
     <div class="page" data-view="record">
       <header class="intro-sec">
         <h1>${strings.hero.title}</h1>
-        <p class="lead">${strings.hero.intro}</p>
+        <section class="about" aria-labelledby="about-h">
+          <h2 class="label" id="about-h">${strings.hero.about}</h2>
+          <p class="lead">${strings.hero.intro}</p>
+        </section>
         <button type="button" class="scroll-cue" aria-label="${v.toRecord}">${CHEVRON}<small>${v.scroll}</small></button>
       </header>
       <main class="map-sec" aria-label="${v.mapLabel}">
-        <div class="rplayer" data-slot="player"></div>
+        <div class="rplayer">
+          <div class="rp" data-slot="player"></div>
+          <button type="button" class="ftoggle" aria-expanded="false" aria-controls="filters"></button>
+        </div>
         <div class="viewbar">
-          <span class="vlabel" id="view-label">${v.label}</span>
+          <span class="vlabel label" id="view-label">${v.label}</span>
           <div class="vseg tabs" role="tablist" aria-labelledby="view-label">
             <button type="button" role="tab" id="tab-record" aria-controls="stage"><span class="glyph">${v.recordGlyph} </span>${v.record}</button>
             <button type="button" role="tab" id="tab-list" aria-controls="listview"><span class="glyph">${v.listGlyph} </span>${v.list}</button>
           </div>
-          <div class="vseg filt"><button type="button" class="ftoggle" aria-expanded="false" aria-controls="filters"></button></div>
         </div>
         <div class="fanchor"><div class="fpanel" id="filters" data-slot="filters" hidden></div></div>
         <div class="views">

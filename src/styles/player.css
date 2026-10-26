@@ -1,5 +1,5 @@
-/* The card's player and the random-track player. The lead colour is set inline from the
-   taxonomy. */
+/* The card's player; the transport buttons (.nav, .play) are shared with the random player
+   (random-player.css). The lead colour is set inline from the taxonomy. */
 /* The transport row, centred: previous, play / pause, next — all round, the same size; the
    skip buttons take the card's own colour. The time, waveform and pin note sit below. */
 .transport {
@@ -46,7 +46,6 @@
 }
 .ptop {
   margin-bottom: 16px; /* room for the pin markers above the bar */
-  font-family: var(--mono);
   font-size: 12px;
   color: var(--mist);
   font-variant-numeric: tabular-nums;
@@ -139,7 +138,6 @@
   transform: none;
 }
 .pin .pop b {
-  font-family: var(--mono);
   font-weight: 500;
   color: var(--ice);
   margin-right: 6px;
@@ -156,106 +154,7 @@
   margin-top: 8px;
 }
 .pnote b {
-  font-family: var(--mono);
   font-weight: 500;
   color: var(--ice);
   margin-right: 8px;
-}
-.rplayer {
-  display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr);
-  align-items: center;
-  column-gap: 14px;
-  row-gap: 8px;
-}
-.rp-keys {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.rp-keys .nav {
-  width: 38px;
-  height: 38px;
-}
-.rp-play {
-  background: var(--ice);
-  width: 46px;
-  height: 46px;
-}
-/* The playing track's snowflake; its slot keeps its size while nothing is loaded. */
-.rp-flake {
-  width: 60px;
-  height: 60px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: none;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-}
-.rp-flake canvas {
-  width: 100% !important;
-  height: 100% !important;
-}
-.rp-flake.empty {
-  visibility: hidden;
-}
-.rp-flake:hover {
-  background: color-mix(in srgb, var(--panel2) 70%, transparent);
-}
-.rp-text {
-  display: grid;
-  align-content: center;
-  min-width: 0;
-  min-height: 42px; /* caption + title, so nothing moves when a track starts */
-}
-.rp-cap {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  color: var(--mist);
-}
-.rp-title {
-  background: none;
-  border: 0;
-  padding: 0;
-  text-align: left;
-  font-family: var(--display);
-  font-weight: 500;
-  font-size: 14px;
-  cursor: pointer;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.rp-title:hover {
-  color: var(--ice);
-}
-.rp-line {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 14px;
-}
-.rp-bar {
-  flex: 1;
-  height: 2px;
-  border-radius: 1px;
-  background: rgba(232, 238, 255, 0.12);
-  overflow: hidden;
-}
-.rp-bar i {
-  display: block;
-  height: 100%;
-  width: 0;
-  background: var(--ice);
-}
-.rp-time {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--mist);
-  font-variant-numeric: tabular-nums;
 }

@@ -2,6 +2,7 @@
 // interpolated into innerHTML goes through esc() and is never read as markup.
 import type { Song } from '../content/parse';
 import { turnTiming } from '../domain/snowflake';
+import { strings } from '../strings';
 
 const ENTITIES: Record<string, string> = {
   '&': '&amp;',
@@ -26,3 +27,7 @@ export function turnStyle(song: Pick<Song, 'slug' | 'complexity'>): string {
   const { period, delay } = turnTiming(song);
   return `animation-duration:${period.toFixed(2)}s;animation-delay:${delay.toFixed(2)}s`;
 }
+
+/** An ⓘ that explains a block on hover or focus; `bubble` is trusted markup from strings.ts. */
+export const info = (bubble: string): string =>
+  `<span class="qi" tabindex="0" aria-label="${strings.aboutBlock}">i<span class="bubble" role="tooltip">${bubble}</span></span>`;

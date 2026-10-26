@@ -1,7 +1,7 @@
 // The random-track player in the page's controls (CLAUDE.md §4.6): previous · play / pause ·
 // next, the playing track's snowflake (it opens the card), a caption that says it plays a random
-// track (then the title of what is playing, which opens its card too) and a thin progress line
-// with the time. Picks come from domain/shuffle.ts.
+// track (then the title of what is playing, which opens its card too) and a progress line with
+// the time; the line seeks (click, drag, keys). Picks come from domain/shuffle.ts.
 import type { Song } from '../content/parse';
 import type { Taxonomy } from '../content/taxonomy';
 import { formatTime } from '../domain/pins';
@@ -11,6 +11,7 @@ import { paintSnowflake } from '../render/snowflake';
 import { strings } from '../strings';
 import { esc, SKIP_ICON, turnStyle } from './html';
 import type { Playback } from './playback';
+import { wireSeek } from './seek';
 
 export interface RandomPlayerHooks {
   /** Slugs the random player may pick now: playable and matching the filters. */
@@ -39,7 +40,7 @@ const TEMPLATE = `
     <button type="button" class="rp-title" hidden></button>
   </div>
   <div class="rp-line">
-    <span class="rp-bar" aria-hidden="true"><i></i></span>
+    <span class="rp-bar" role="slider" aria-label="${p.seek}" aria-valuemin="0"><i></i><b></b></span>
     <small class="rp-time"></small>
   </div>`;
 
@@ -64,8 +65,39 @@ function render(el: HTMLElement, playback: Playback, canStart: boolean): void {
   }
   const d = playback.audio.duration || 0;
   const t = song ? playback.audio.currentTime : 0;
-  q('.rp-bar i').style.width = `${d ? (t / d) * 100 : 0}%`;
-  q('.rp-time').textContent = song ? `${formatTime(t)} / ${d ? formatTime(d) : '–:––'}` : '';
+  const time = song ? `${formatTime(t)} / ${d ? formatTime(d) : '–:––'}` : '';
+  const bar = q('.rp-bar');
+  moveLine(el, playback);
+  // Nothing loaded: the line is not a control yet.
+  bar.tabIndex = song ? 0 : -1;
+  bar.setAttribute('aria-disabled', String(!song));
+  bar.setAttribute('aria-valuemax', String(Math.round(d)));
+  bar.setAttribute('aria-valuenow', String(Math.round(t)));
+  bar.setAttribute('aria-valuetext', time);
+  q('.rp-time').textContent = time;
+}
+
+/** The played part and the thumb only: cheap enough for every animation frame. */
+function moveLine(el: HTMLElement, playback: Playback): void {
+  const d = playback.audio.duration || 0;
+  const t = playback.song ? playback.audio.currentTime : 0;
+  el.querySelector<HTMLElement>('.rp-bar')!.style.setProperty('--at', `${d ? (t / d) * 100 : 0}%`);
+}
+
+/** The line seeks the loaded track: click or drag, ← / →, Home / End. */
+function wireLine(el: HTMLElement, playback: Playback): void {
+  const duration = (): number => playback.audio.duration || 0;
+  wireSeek(
+    el.querySelector<HTMLElement>('.rp-bar')!,
+    (fraction) => {
+      if (playback.song && duration()) playback.seek(playback.song, fraction * duration());
+    },
+    (delta) => {
+      const song = playback.song;
+      if (song)
+        playback.seek(song, Math.min(duration(), Math.max(0, playback.position(song) + delta)));
+    },
+  );
 }
 
 /** Paints the playing track's snowflake into the player's slot; the slot keeps its size. */
@@ -108,18 +140,25 @@ export function mountRandomPlayer(
     if (slug) start(h.song(slug));
     else if (playback.song) playback.seek(playback.song, 0, playback.isPlaying());
   });
-  const openCard = (): void => {
-    if (playback.song) h.open(playback.song.slug);
-  };
-  el.querySelector('.rp-title')!.addEventListener('click', openCard);
   const flake = el.querySelector<HTMLElement>('.rp-flake')!;
-  flake.addEventListener('click', openCard);
+  for (const b of [flake, el.querySelector('.rp-title')!]) {
+    b.addEventListener('click', () => playback.song && h.open(playback.song.slug));
+  }
+  wireLine(el, playback);
   let painted: Song | null | undefined;
+  let raf = 0;
   const update = (): void => {
     // A track started from a card joins the history, so ⏮ can return to it.
     if (playback.song && playback.isPlaying()) history.push(playback.song.slug);
     if (playback.song !== painted) paintFlake(flake, (painted = playback.song), taxonomy);
     render(el, playback, h.pool().length > 0);
+    if (playback.isPlaying() && !raf) raf = requestAnimationFrame(glide);
+  };
+  // timeupdate is coarse: between its events only the line moves, every frame while playing;
+  // the time text and the slider's values follow timeupdate.
+  const glide = (): void => {
+    moveLine(el, playback);
+    raf = playback.isPlaying() ? requestAnimationFrame(glide) : 0;
   };
   playback.subscribe(update);
   update();

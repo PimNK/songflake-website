@@ -1,0 +1,223 @@
+/* The random-track player: keys · snowflake · caption and title, then the seekable line with the
+   time. From 1100 px it heads the left column; narrower it is frozen at the bottom of the screen
+   (layout.css) with the Filters toggle beside the line. */
+.rp {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 16px;
+  row-gap: 10px;
+}
+.rp-keys {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rp-keys .nav {
+  width: 46px;
+  height: 46px;
+}
+.rp-play {
+  background: var(--ice);
+  width: 56px;
+  height: 56px;
+  font-size: 18px;
+}
+/* The playing track's snowflake; its slot keeps its size while nothing is loaded. */
+.rp-flake {
+  width: 76px;
+  height: 76px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.rp-flake canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+.rp-flake.empty {
+  visibility: hidden;
+}
+.rp-flake:hover {
+  background: color-mix(in srgb, var(--panel2) 70%, transparent);
+}
+.rp-text {
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  min-width: 0;
+  min-height: 46px; /* caption + title, so nothing moves when a track starts */
+}
+.rp-cap {
+  font-size: 12px;
+  color: var(--mist);
+}
+.rp-title {
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  font-weight: 600;
+  font-size: 17px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rp-title:hover {
+  color: var(--ice);
+}
+.rp-line {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+/* The seek line: a 4 px track in a 20 px tall hit area, the played part and a round thumb. */
+.rp-bar {
+  position: relative;
+  flex: 1;
+  height: 20px;
+  cursor: pointer;
+  touch-action: none;
+  border-radius: 4px;
+}
+.rp-bar::before,
+.rp-bar i {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 2px;
+}
+.rp-bar::before {
+  right: 0;
+  background: rgba(232, 238, 255, 0.14);
+}
+.rp-bar i {
+  width: var(--at, 0%);
+  background: var(--ice);
+}
+.rp-bar b {
+  position: absolute;
+  top: 50%;
+  left: var(--at, 0%);
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: var(--frost);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--ice) 70%, transparent);
+}
+.rp-bar[aria-disabled='true'] {
+  cursor: default;
+}
+.rp-bar[aria-disabled='true'] b {
+  display: none;
+}
+.rp-time {
+  font-size: 13px;
+  color: var(--mist);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* The Filters toggle lives in the player; from 1100 px the panel is always open and it hides. */
+.ftoggle {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--frost);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ftoggle[aria-expanded='true'] {
+  background: var(--frost);
+  color: var(--void);
+}
+@media (min-width: 1100px) {
+  .ftoggle {
+    display: none;
+  }
+}
+@media (max-width: 1099.98px) {
+  .rp {
+    display: contents;
+  }
+  .rplayer {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'keys flake text text'
+      'line line line tog';
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 4px;
+  }
+  .rp-keys {
+    grid-area: keys;
+    gap: 6px;
+  }
+  .rp-keys .nav {
+    width: 38px;
+    height: 38px;
+  }
+  .rp-play {
+    width: 46px;
+    height: 46px;
+  }
+  .rp-flake {
+    grid-area: flake;
+    width: 46px;
+    height: 46px;
+  }
+  .rp-cap {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rp-text {
+    grid-area: text;
+    min-height: 42px;
+  }
+  .rp-title {
+    font-size: 15px;
+  }
+  .rp-line {
+    grid-area: line;
+  }
+  .ftoggle {
+    grid-area: tog;
+    padding: 7px 12px;
+  }
+  .ftoggle .count {
+    margin-left: 2px;
+    padding-inline: 5px;
+  }
+}
+/* The smallest phones: the toggle keeps its «N / total» (so active filters show) and drops the
+   word (still read out), with a ≡ in its place, so the player fits. */
+@media (max-width: 359.98px) {
+  .ftoggle .fword {
+    font-size: 0;
+  }
+  .rp-keys .nav {
+    width: 34px;
+    height: 34px;
+  }
+  .ftoggle {
+    padding-inline: 10px;
+  }
+  .ftoggle .fword::before {
+    content: '≡';
+    font-size: 14px;
+  }
+}

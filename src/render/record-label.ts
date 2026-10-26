@@ -10,7 +10,7 @@ import {
   type YearRange,
 } from '../domain/record-layout';
 import { strings } from '../strings';
-import { DISPLAY, letterSpacing, MONO } from './record';
+import { BODY, DISPLAY, letterSpacing } from './record';
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -40,17 +40,17 @@ function labelText(ctx: Ctx, LR: number, range: YearRange, trackCount: number): 
   ctx.fillStyle = '#e8eeff';
   fittedLine(ctx, r.labelName, -LR * 0.2, fs * 1.15, LR, (px) => `500 ${px}px ${DISPLAY}`);
   ctx.fillStyle = 'rgba(200,212,245,.8)';
-  const mono = (px: number): string => `400 ${px}px ${MONO}`;
+  const small = (px: number): string => `400 ${px}px ${BODY}`;
   const side = fittedLine(
     ctx,
     r.labelSide(range.first, range.last),
     LR * 0.36,
     fs * 0.68,
     LR,
-    mono,
+    small,
   );
-  if (side) fittedLine(ctx, r.labelTracks(trackCount), LR * 0.52, fs * 0.68, LR, mono);
-  else fittedLine(ctx, r.labelShort, LR * 0.42, fs * 0.68, LR, mono);
+  if (side) fittedLine(ctx, r.labelTracks(trackCount), LR * 0.52, fs * 0.68, LR, small);
+  else fittedLine(ctx, r.labelShort, LR * 0.42, fs * 0.68, LR, small);
   letterSpacing(ctx, '0px');
 }
 

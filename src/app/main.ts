@@ -8,11 +8,13 @@ import '../styles/list.css';
 import '../styles/card.css';
 import '../styles/card-body.css';
 import '../styles/player.css';
+import '../styles/random-player.css';
 import '../styles/hints.css';
 import '../styles/overlay.css';
 import { loadContent } from '../content/load';
 import type { Song } from '../content/parse';
 import { countMatching, defaultFilters, matches, neighbour, nextPlayable } from '../domain/filters';
+import { yearRange } from '../domain/record-layout';
 import { showContentOverlay } from '../views/content-overlay';
 import { mountFilterPanel } from '../views/filter-panel';
 import { mountList } from '../views/list';
@@ -30,6 +32,8 @@ import { Store, type ViewName } from './state';
 const content = loadContent();
 if (import.meta.env.DEV) showContentOverlay(content.errors, content.warnings);
 const { songs, taxonomy } = content;
+const years = yearRange(songs);
+const space = { taxonomy, years };
 
 // Phones and tablets open on the list; wide screens on the record. Phones have the list only.
 const narrow = window.matchMedia('(max-width: 1099.98px)').matches;
@@ -38,7 +42,7 @@ const PHONE = window.matchMedia('(max-width: 599.98px)');
 const fitView = (view: ViewName): ViewName => (PHONE.matches ? 'list' : view);
 const store = new Store({
   view: narrow ? 'list' : 'record',
-  filters: defaultFilters(taxonomy),
+  filters: defaultFilters(space),
   openSlug: null,
   cue: null,
   notice: null,
@@ -52,6 +56,7 @@ const panel = mountFilterPanel(
   slots.filters,
   slots.filterToggle,
   content,
+  space,
   () => store.get().filters,
   (filters) => store.set({ filters }),
 );
@@ -61,7 +66,7 @@ const playable = songs.filter((x) => !!x.audioSrc);
 const random = mountRandomPlayer(slots.player, playback, taxonomy, {
   // Playable tracks that match the filters; all playable ones when none match.
   pool: () => {
-    const on = playable.filter((x) => matches(x, store.get().filters));
+    const on = playable.filter((x) => matches(x, store.get().filters, years));
     return (on.length ? on : playable).map((x) => x.slug);
   },
   song: bySlug,
@@ -71,7 +76,8 @@ playback.autoAdvance(
   (ended, mode) =>
     mode === 'shuffle'
       ? random.next()
-      : (bySlug(nextPlayable(songs, store.get().filters, ended.slug, (x) => !!x.audioSrc)) ?? null),
+      : (bySlug(nextPlayable(songs, store.get().filters, years, ended.slug, (x) => !!x.audioSrc)) ??
+        null),
   (from, to) => {
     if (store.get().openSlug === from.slug) store.set({ openSlug: to.slug, cue: null });
   },
@@ -80,7 +86,7 @@ const card = mountTrackCard(content, {
   close: () => store.set({ openSlug: null, cue: null }),
   step: (direction) => {
     const s = store.get();
-    const slug = s.openSlug && neighbour(songs, s.filters, s.openSlug, direction);
+    const slug = s.openSlug && neighbour(songs, s.filters, years, s.openSlug, direction);
     if (slug) store.set({ openSlug: slug, cue: null });
   },
   player: (slot, song, cue) =>
@@ -98,22 +104,22 @@ store.subscribe((s, prev) => {
     if (song) card.show(song, s.cue);
     else card.hide();
   }
-  const match = (song: Song): boolean => matches(song, s.filters);
+  const match = (song: Song): boolean => matches(song, s.filters, years);
   record.setMatch(match);
   record.setActive(s.view === 'record');
   list.update(match);
-  panel.update(s.filters, countMatching(songs, s.filters));
+  panel.update(s.filters, countMatching(songs, s.filters, years));
   showView(slots, s.view, s.notice);
 });
-// The playing track's snowflake pulses on the record and in the list.
+// The current track's snowflake pulses on the record and in the list, also while paused.
 let pulsing: string | null = null;
 playback.subscribe(() => {
-  const slug = playback.song && playback.isPlaying() ? playback.song.slug : null;
+  const slug = playback.song?.slug ?? null;
   if (slug === pulsing) return;
   pulsing = slug;
   record.setPlaying(slug);
   list.setPlaying(slug);
 });
-const router = startRouter(store, taxonomy, (slug) => songs.some((x) => x.slug === slug), fitView);
+const router = startRouter(store, space, (slug) => songs.some((x) => x.slug === slug), fitView);
 PHONE.addEventListener('change', () => router.refit());
 if (!store.get().openSlug) startHints(slots);

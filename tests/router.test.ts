@@ -4,9 +4,11 @@ import type { AppState } from '../src/app/state';
 import { defaultFilters } from '../src/domain/filters';
 import { taxonomy } from './fixtures';
 
+const space = { taxonomy, years: { first: 2010, last: 2020 } };
+
 const base: AppState = {
   view: 'record',
-  filters: defaultFilters(taxonomy),
+  filters: defaultFilters(space),
   openSlug: null,
   cue: null,
   notice: null,
@@ -24,22 +26,22 @@ describe('router (§4.5)', () => {
   });
 
   it('writes the hash with only non-default filters', () => {
-    expect(stateToHash(base, taxonomy)).toBe('#/');
-    expect(stateToHash({ ...base, view: 'list' }, taxonomy)).toBe('#/list');
+    expect(stateToHash(base, space)).toBe('#/');
+    expect(stateToHash({ ...base, view: 'list' }, space)).toBe('#/list');
     const f = {
       ...base.filters,
       styles: new Set(['Progressive', 'Ambient']),
       min: 9,
       ready: false,
     };
-    expect(stateToHash({ ...base, view: 'list', filters: f }, taxonomy)).toBe(
+    expect(stateToHash({ ...base, view: 'list', filters: f }, space)).toBe(
       '#/list?style=Progressive,Ambient&min=9&status=in-progress',
     );
   });
 
   it('a song card with a cue time', () => {
-    expect(stateToHash({ ...base, openSlug: 'dd', cue: 135 }, taxonomy)).toBe('#/song/dd?t=2:15');
-    expect(stateToHash({ ...base, openSlug: 'dd' }, taxonomy)).toBe('#/song/dd');
+    expect(stateToHash({ ...base, openSlug: 'dd', cue: 135 }, space)).toBe('#/song/dd?t=2:15');
+    expect(stateToHash({ ...base, openSlug: 'dd' }, space)).toBe('#/song/dd');
   });
 });
 

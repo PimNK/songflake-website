@@ -13,6 +13,5 @@
   --grid: #2a3558; /* chart grid lines (radar) */
   --display: 'Unbounded', 'Arial Black', system-ui, sans-serif;
   --body: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   color-scheme: dark;
 }

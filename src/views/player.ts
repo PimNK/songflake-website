@@ -10,6 +10,7 @@ import { strings } from '../strings';
 import { esc } from './html';
 import type { Playback, Recording } from './playback';
 import { renderMarkers } from './pin-markers';
+import { wireSeek } from './seek';
 import type { PlayerSlots } from './track-card';
 
 export interface PlayerHooks {
@@ -18,7 +19,6 @@ export interface PlayerHooks {
 }
 
 const p = strings.player;
-const SEEK_STEP = 5;
 const PLAYED_REST = 'rgba(232,238,255,.22)';
 
 const template = (): string => `
@@ -169,35 +169,6 @@ class CardPlayer {
         ),
     );
   }
-}
-
-function wireSeek(
-  wave: HTMLElement,
-  toFraction: (f: number) => void,
-  by: (delta: number) => void,
-): void {
-  const at = (e: PointerEvent): void => {
-    const r = wave.getBoundingClientRect();
-    toFraction(Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)));
-  };
-  wave.addEventListener('pointerdown', (e) => {
-    wave.setPointerCapture(e.pointerId);
-    at(e);
-  });
-  wave.addEventListener('pointermove', (e) => {
-    if (wave.hasPointerCapture(e.pointerId)) at(e);
-  });
-  wave.addEventListener('keydown', (e) => {
-    const step: Record<string, number> = {
-      ArrowRight: SEEK_STEP,
-      ArrowLeft: -SEEK_STEP,
-      Home: -Infinity,
-      End: Infinity,
-    };
-    if (e.target !== wave || !(e.key in step)) return;
-    e.preventDefault();
-    by(step[e.key]!);
-  });
 }
 
 type Size = { width: number; height: number };

@@ -1,6 +1,6 @@
-// Filter controls generated from the taxonomy and the counts (CLAUDE.md §4.2). From 1100 px the
-// panel is always open, in three columns; narrower, the Filters toggle opens and closes it
-// (closed by default).
+// Filter controls generated from the taxonomy, the songs' years and the counts (CLAUDE.md §4.2).
+// Each group has an ⓘ note. From 1100 px the panel is always open, in three columns; narrower,
+// it is a sheet above the bottom player, opened by the player's Filters toggle (closed by default).
 // No filtering logic: every change goes through domain/filters.ts and back to the store.
 import type { Content } from '../content/load';
 import {
@@ -9,11 +9,13 @@ import {
   countOptions,
   defaultFilters,
   setRange,
+  setYears,
   toggle,
+  type FilterSpace,
   type FilterState,
 } from '../domain/filters';
 import { strings } from '../strings';
-import { esc } from './html';
+import { esc, info } from './html';
 
 export interface FilterPanel {
   update(filters: FilterState, matching: number): void;
@@ -29,15 +31,34 @@ interface Option {
   colour?: string;
 }
 
+// No count is shown; an option no song carries is dimmed.
 const option = (o: Option): string => `
   <label class="fopt${o.count ? '' : ' zero'}">
     <input type="checkbox" data-kind="${o.kind}" data-id="${esc(o.id)}">
     ${o.colour ? `<i style="background:${esc(o.colour)}"></i>` : ''}<span>${esc(o.label)}</span>
-    <span class="n">${o.count}</span>
   </label>`;
 
-function template(content: Content): string {
+/** A group's heading: its name with an ⓘ note, then whatever goes at its right. */
+const label = (name: string, note: string, right = ''): string =>
+  `<div class="flabel"><span class="fname">${name} ${info(note)}</span>${right}</div>`;
+
+/** Two range sliders, e.g. complexity min / max or years from / to. */
+const range = (
+  key: 'range' | 'years',
+  ends: readonly ('min' | 'max' | 'from' | 'to')[],
+  lo: number,
+  hi: number,
+): string =>
+  ends
+    .map(
+      (end) =>
+        `<label>${f[end]}<input type="range" data-${key}="${end}" min="${lo}" max="${hi}" step="1"></label>`,
+    )
+    .join('');
+
+function template(content: Content, space: FilterSpace): string {
   const { taxonomy, songs } = content;
+  const { years } = space;
   const c = countOptions(songs, taxonomy);
   // Styles carry no colour dot here: they would read as instrument colours.
   const styles = taxonomy.styles.map((s) =>
@@ -52,17 +73,18 @@ function template(content: Content): string {
       colour: a.colour,
     }),
   );
-  const range = (end: 'min' | 'max') =>
-    `<label>${f[end]}<input type="range" data-range="${end}" min="${COMPLEXITY_MIN}" max="${COMPLEXITY_MAX}" step="1"></label>`;
+  const all = `<button type="button" data-all>${f.allNone}</button>`;
   return `
       <div class="fbody">
-        <div class="fgroup"><div class="flabel">${f.style}</div><div class="flist">${styles.join('')}</div></div>
-        <div class="fgroup"><div class="flabel">${f.listen} <button type="button" data-all>${f.allNone}</button></div>
+        <div class="fgroup">${label(f.style, f.info.style)}<div class="flist">${styles.join('')}</div></div>
+        <div class="fgroup">${label(f.listen, f.info.listen, all)}
           <div class="fgrid">${accents.join('')}</div></div>
         <div class="fcol">
-          <div class="fgroup"><div class="flabel">${f.complexity} <b data-range-label></b></div>
-            <div class="range">${range('min')}${range('max')}</div></div>
-          <div class="fgroup" ${c.inProgress ? '' : 'hidden'}><div class="flabel">${f.status}</div><div class="flist">
+          <div class="fgroup">${label(f.complexity, f.info.complexity, '<b data-range-label></b>')}
+            <div class="range">${range('range', ['min', 'max'], COMPLEXITY_MIN, COMPLEXITY_MAX)}</div></div>
+          <div class="fgroup">${label(f.year, f.info.year, '<b data-years-label></b>')}
+            <div class="range">${range('years', ['from', 'to'], years.first, years.last)}</div></div>
+          <div class="fgroup" ${c.inProgress ? '' : 'hidden'}>${label(f.status, f.info.status)}<div class="flist">
             ${option({ kind: 'status', id: 'ready', label: f.ready, count: c.ready })}
             ${option({ kind: 'status', id: 'inProgress', label: f.inProgress, count: c.inProgress })}</div></div>
           <button type="button" class="btn freset" data-reset>${f.reset}</button>
@@ -86,9 +108,8 @@ function withOption(filters: FilterState, kind: string, id: string, on: boolean)
 const WIDE = window.matchMedia('(min-width: 1100px)');
 
 /**
- * Narrow screens: the toggle shows «Filters N / total». Esc closes the panel (focus returns to
- * the toggle when it was inside). Where it floats over the record a click outside closes it too;
- * elsewhere it covers nothing and stays until toggled.
+ * Narrow screens: the toggle (in the bottom player) shows «Filters N / total» and opens the
+ * sheet. Esc or a click outside closes it (Esc returns focus to the toggle when it was inside).
  */
 function wireToggle(toggle: HTMLButtonElement, el: HTMLElement): void {
   const isOpen = (): boolean => toggle.getAttribute('aria-expanded') === 'true';
@@ -108,8 +129,7 @@ function wireToggle(toggle: HTMLButtonElement, el: HTMLElement): void {
   });
   document.addEventListener('pointerdown', (e) => {
     const t = e.target as Node;
-    const floating = getComputedStyle(el).position === 'absolute'; // over the record (CSS)
-    if (isOpen() && floating && !el.contains(t) && !toggle.contains(t)) setOpen(false);
+    if (isOpen() && !WIDE.matches && !el.contains(t) && !toggle.contains(t)) setOpen(false);
   });
 }
 
@@ -117,11 +137,12 @@ export function mountFilterPanel(
   el: HTMLElement,
   toggle: HTMLButtonElement,
   content: Content,
+  space: FilterSpace,
   current: () => FilterState,
   onChange: (filters: FilterState) => void,
 ): FilterPanel {
-  el.innerHTML = template(content);
-  toggle.innerHTML = `${f.toggle} <span class="count" data-count></span>`;
+  el.innerHTML = template(content, space);
+  toggle.innerHTML = `<span class="fword">${f.toggle}</span> <span class="count" data-count></span>`;
   wireToggle(toggle, el);
   const total = content.songs.length;
   const allAccents = content.taxonomy.accents.map((a) => a.id);
@@ -135,25 +156,30 @@ export function mountFilterPanel(
   el.addEventListener('input', (e) => {
     const input = e.target as HTMLInputElement;
     const end = input.dataset.range as 'min' | 'max' | undefined;
+    const year = input.dataset.years as 'from' | 'to' | undefined;
     if (end) onChange(setRange(current(), end, Number(input.value)));
+    if (year) onChange(setYears(current(), year, Number(input.value), space.years));
   });
   el.querySelector('[data-all]')!.addEventListener('click', () => {
     const all = current().accents.size < allAccents.length;
     onChange({ ...current(), accents: new Set(all ? allAccents : []) });
   });
   el.querySelector('[data-reset]')!.addEventListener('click', () => {
-    onChange(defaultFilters(content.taxonomy));
+    onChange(defaultFilters(space));
   });
 
   return {
     update(filters, matching) {
       toggle.querySelector('[data-count]')!.textContent = f.count(matching, total);
       el.querySelector('[data-range-label]')!.textContent = f.range(filters.min, filters.max);
+      el.querySelector('[data-years-label]')!.textContent = f.range(filters.from, filters.to);
       el.querySelectorAll<HTMLInputElement>('input[data-kind]').forEach((input) => {
         input.checked = isChecked(filters, input.dataset.kind!, input.dataset.id!);
       });
-      el.querySelectorAll<HTMLInputElement>('input[data-range]').forEach((input) => {
-        input.value = String(input.dataset.range === 'min' ? filters.min : filters.max);
+      el.querySelectorAll<HTMLInputElement>('input[data-range], input[data-years]').forEach((i) => {
+        i.value = String(
+          filters[(i.dataset.range ?? i.dataset.years) as 'min' | 'max' | 'from' | 'to'],
+        );
       });
     },
   };

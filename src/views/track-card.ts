@@ -56,6 +56,7 @@ export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
     show(song, cue) {
       if (modal.hidden) opener = document.activeElement as HTMLElement | null;
       title.textContent = song.title;
+      title.title = song.title; // one line on wide cards: the whole title on hover
       clearPlayer();
       if (song.audioSrc) disposePlayer = hooks.player(slots, song, cue);
       else {

@@ -8,9 +8,11 @@ const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n =
 
 export const strings = {
   years: (n: number) => plural(n, 'year'),
+  aboutBlock: 'About this block',
 
   hero: {
     title: site,
+    about: 'About',
     // Shown with its line breaks; «_» opens a list line.
     intro: [
       'You are looking at my music diary:',
@@ -57,12 +59,23 @@ export const strings = {
     range: (min: number, max: number) => `${min} – ${max}`,
     min: 'min',
     max: 'max',
+    year: 'Year',
+    from: 'from',
+    to: 'to',
     listen: 'What to listen for',
     allNone: 'all / none',
     status: 'Status',
     ready: 'Ready',
     inProgress: 'In progress',
     reset: 'Reset filters',
+    info: {
+      style: 'The genre a track leans to. Each style is a sector of the record.',
+      listen:
+        'The instruments a track is built around. A track shows when it has at least one of the checked ones.',
+      complexity: 'Rhythm, melody, technique, instruments and structure, each 1–3, added up: 5–15.',
+      year: 'The year a track was recorded. Tracks in progress count as the latest year.',
+      status: 'Ready tracks are recorded; tracks in progress are still being worked on.',
+    },
   },
 
   record: {
@@ -90,7 +103,6 @@ export const strings = {
     listen: 'What to listen for',
     listenInfo:
       "What I'd like you to notice while listening — the parts this track is built around. They also colour the rays of the snowflake.",
-    aboutBlock: 'About this block',
     lead: 'lead',
     recordedWith: 'Recorded with',
     recordedWithBand: 'Recorded with a band',

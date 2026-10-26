@@ -1,6 +1,7 @@
 // Filter state, matching, counts and the URL query form (CLAUDE.md §4.2, §4.5). Pure.
 import type { Song } from '../content/parse';
 import type { Taxonomy } from '../content/taxonomy';
+import { placementYear, type YearRange } from './record-layout';
 
 export const COMPLEXITY_MIN = 5;
 export const COMPLEXITY_MAX = 15;
@@ -10,40 +11,70 @@ export interface FilterState {
   accents: ReadonlySet<string>;
   min: number;
   max: number;
+  /** Year range, inclusive, over the year a song sits at (`placementYear`). */
+  from: number;
+  to: number;
   ready: boolean;
   inProgress: boolean;
 }
 
-export function defaultFilters(taxonomy: Taxonomy): FilterState {
+/** What the filters range over: the taxonomy's options and the songs' years. */
+export interface FilterSpace {
+  taxonomy: Taxonomy;
+  years: YearRange;
+}
+
+export function defaultFilters({ taxonomy, years }: FilterSpace): FilterState {
   return {
     styles: new Set(taxonomy.styles),
     accents: new Set(taxonomy.accents.map((a) => a.id)),
     min: COMPLEXITY_MIN,
     max: COMPLEXITY_MAX,
+    from: years.first,
+    to: years.last,
     ready: true,
     inProgress: true,
   };
 }
 
-export function matches(song: Song, f: FilterState): boolean {
+export function matches(song: Song, f: FilterState, years: YearRange): boolean {
+  const year = placementYear(song, years);
   return (
     f.styles.has(song.style) &&
     song.complexityTotal >= f.min &&
     song.complexityTotal <= f.max &&
+    year >= f.from &&
+    year <= f.to &&
     song.accents.some((a) => f.accents.has(a)) &&
     (song.status === 'ready' ? f.ready : f.inProgress)
   );
 }
 
-export const countMatching = (songs: readonly Song[], f: FilterState): number =>
-  songs.reduce((n, s) => n + (matches(s, f) ? 1 : 0), 0);
+export const countMatching = (songs: readonly Song[], f: FilterState, years: YearRange): number =>
+  songs.reduce((n, s) => n + (matches(s, f, years) ? 1 : 0), 0);
+
+const within = (value: number, lo: number, hi: number): number =>
+  Math.min(hi, Math.max(lo, Math.round(value)));
 
 /** Moves one end of the complexity range; the other follows so min never exceeds max. */
 export function setRange(f: FilterState, end: 'min' | 'max', value: number): FilterState {
-  const v = Math.min(COMPLEXITY_MAX, Math.max(COMPLEXITY_MIN, Math.round(value)));
+  const v = within(value, COMPLEXITY_MIN, COMPLEXITY_MAX);
   return end === 'min'
     ? { ...f, min: v, max: Math.max(f.max, v) }
     : { ...f, max: v, min: Math.min(f.min, v) };
+}
+
+/** Moves one end of the year range, inside the songs' years; `from` never exceeds `to`. */
+export function setYears(
+  f: FilterState,
+  end: 'from' | 'to',
+  value: number,
+  years: YearRange,
+): FilterState {
+  const v = within(value, years.first, years.last);
+  return end === 'from'
+    ? { ...f, from: v, to: Math.max(f.to, v) }
+    : { ...f, to: v, from: Math.min(f.from, v) };
 }
 
 export function toggle(set: ReadonlySet<string>, id: string, on: boolean): Set<string> {
@@ -77,16 +108,17 @@ export function countOptions(songs: readonly Song[], taxonomy: Taxonomy): Filter
 const sameSet = (a: ReadonlySet<string>, b: ReadonlySet<string>): boolean =>
   a.size === b.size && [...a].every((x) => b.has(x));
 
-export function isDefault(f: FilterState, taxonomy: Taxonomy): boolean {
-  return Object.keys(toQuery(f, taxonomy)).length === 0;
+export function isDefault(f: FilterState, space: FilterSpace): boolean {
+  return Object.keys(toQuery(f, space)).length === 0;
 }
 
 const pair = (a: boolean, b: boolean, names: [string, string]): string | null =>
   a && b ? null : a ? names[0] : b ? names[1] : 'none';
 
 /** Only what differs from the default, e.g. `{ style: 'Progressive,Ambient', min: '9' }`. */
-export function toQuery(f: FilterState, taxonomy: Taxonomy): Record<string, string> {
-  const d = defaultFilters(taxonomy);
+export function toQuery(f: FilterState, space: FilterSpace): Record<string, string> {
+  const { taxonomy } = space;
+  const d = defaultFilters(space);
   const q: Record<string, string> = {};
   if (!sameSet(f.styles, d.styles))
     q.style = taxonomy.styles.filter((s) => f.styles.has(s)).join(',');
@@ -98,14 +130,17 @@ export function toQuery(f: FilterState, taxonomy: Taxonomy): Record<string, stri
   }
   if (f.min !== d.min) q.min = String(f.min);
   if (f.max !== d.max) q.max = String(f.max);
+  if (f.from !== d.from) q.from = String(f.from);
+  if (f.to !== d.to) q.to = String(f.to);
   const status = pair(f.ready, f.inProgress, ['ready', 'in-progress']);
   if (status) q.status = status;
   return q;
 }
 
 /** Reads a query back; unknown names and values are ignored, so old links never break. */
-export function fromQuery(q: URLSearchParams, taxonomy: Taxonomy): FilterState {
-  let f = defaultFilters(taxonomy);
+export function fromQuery(q: URLSearchParams, space: FilterSpace): FilterState {
+  const { taxonomy, years } = space;
+  let f = defaultFilters(space);
   // An empty list means "none checked"; a list with only unknown names keeps the default.
   const list = (key: string, known: string[]): Set<string> | null => {
     const raw = q.get(key);
@@ -130,6 +165,10 @@ export function fromQuery(q: URLSearchParams, taxonomy: Taxonomy): FilterState {
   const min = num('min');
   if (max !== null) f = setRange(f, 'max', max);
   if (min !== null) f = setRange(f, 'min', min);
+  const to = num('to');
+  const from = num('from');
+  if (to !== null) f = setYears(f, 'to', to, years);
+  if (from !== null) f = setYears(f, 'from', from, years);
   const status = q.get('status');
   if (status === 'ready' || status === 'in-progress' || status === 'none') {
     f = { ...f, ready: status === 'ready', inProgress: status === 'in-progress' };
@@ -144,10 +183,11 @@ export function fromQuery(q: URLSearchParams, taxonomy: Taxonomy): FilterState {
 export function neighbour(
   songs: readonly Song[],
   f: FilterState,
+  years: YearRange,
   slug: string,
   direction: -1 | 1,
 ): string | null {
-  const filtered = songs.filter((s) => matches(s, f));
+  const filtered = songs.filter((s) => matches(s, f, years));
   const list = filtered.some((s) => s.slug === slug) ? filtered : songs;
   const i = list.findIndex((s) => s.slug === slug);
   if (i < 0 || !list.length) return null;
@@ -161,12 +201,13 @@ export function neighbour(
 export function nextPlayable(
   songs: readonly Song[],
   f: FilterState,
+  years: YearRange,
   slug: string,
   playable: (song: Song) => boolean,
 ): string | null {
   let at = slug;
   for (let i = 0; i < songs.length; i++) {
-    const next = neighbour(songs, f, at, 1);
+    const next = neighbour(songs, f, years, at, 1);
     if (!next || next === slug) return null;
     if (playable(songs.find((s) => s.slug === next)!)) return next;
     at = next;

@@ -22,7 +22,7 @@ import {
 
 type Ctx = CanvasRenderingContext2D;
 
-export const MONO = '"JetBrains Mono", ui-monospace, monospace';
+export const BODY = '"Golos Text", system-ui, sans-serif';
 export const DISPLAY = 'Unbounded, "Arial Black", sans-serif';
 const GROOVES = 110;
 
@@ -170,7 +170,7 @@ export function drawYearRings(
   const angle = Math.hypot(dx, dy) > 40 ? Math.atan2(dy, dx) : -Math.PI / 2;
   const [lc, ls] = [Math.cos(angle), Math.sin(angle)];
   ctx.textAlign = 'center';
-  ctx.font = `400 9.5px ${MONO}`;
+  ctx.font = `400 9.5px ${BODY}`;
   for (const y of years) {
     const r = yearRadius(y, range) * t.scale;
     ctx.beginPath();
@@ -199,7 +199,7 @@ export function drawSectorNames(
   zoom: number,
 ): void {
   const size = zoom > 2 ? 12 : 11;
-  ctx.font = `500 ${size}px ${MONO}`;
+  ctx.font = `500 ${size}px ${BODY}`;
   ctx.textAlign = 'center';
   for (const w of secs) {
     const [sx, sy] = toScreen(t, ...wind(R_NAME, (w.a0 + w.a1) / 2));

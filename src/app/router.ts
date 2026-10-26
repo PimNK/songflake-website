@@ -4,8 +4,7 @@
 //   filters as a query only when they differ from the default.
 // Opening a card or switching views pushes a history entry, so Back closes the card first;
 // filter changes replace the current entry.
-import type { Taxonomy } from '../content/taxonomy';
-import { fromQuery, toQuery } from '../domain/filters';
+import { fromQuery, toQuery, type FilterSpace } from '../domain/filters';
 import { formatTime, parseTime } from '../domain/pins';
 import { strings } from '../strings';
 import type { AppState, Store, ViewName } from './state';
@@ -54,8 +53,8 @@ export function parseHash(hash: string): Route {
   return { view: parts[0] === 'list' ? 'list' : 'record', slug: null, query };
 }
 
-export function stateToHash(s: AppState, taxonomy: Taxonomy): string {
-  const q = new URLSearchParams(toQuery(s.filters, taxonomy));
+export function stateToHash(s: AppState, space: FilterSpace): string {
+  const q = new URLSearchParams(toQuery(s.filters, space));
   if (s.openSlug && s.cue !== null) q.set('t', formatTime(s.cue));
   const path = s.openSlug
     ? `/song/${encodeURIComponent(s.openSlug)}`
@@ -67,8 +66,8 @@ export function stateToHash(s: AppState, taxonomy: Taxonomy): string {
 }
 
 /** Writes the state's hash unless it is already there; pushes a history entry or replaces. */
-function writeHash(s: AppState, taxonomy: Taxonomy, push: boolean): void {
-  const hash = stateToHash(s, taxonomy);
+function writeHash(s: AppState, space: FilterSpace, push: boolean): void {
+  const hash = stateToHash(s, space);
   if (hash === (location.hash || '#/')) return;
   if (push) history.pushState(null, '', hash);
   else history.replaceState(null, '', hash);
@@ -85,7 +84,7 @@ export interface Router {
  */
 export function startRouter(
   store: Store,
-  taxonomy: Taxonomy,
+  space: FilterSpace,
   known: (slug: string) => boolean,
   fitView: (view: ViewName) => ViewName = (view) => view,
 ): Router {
@@ -94,11 +93,11 @@ export function startRouter(
   // closing it then goes back instead of adding an entry, so Back never reopens it.
   let cardEntry = false;
 
-  const write = (push: boolean): void => writeHash(store.get(), taxonomy, push);
+  const write = (push: boolean): void => writeHash(store.get(), space, push);
 
   const read = (): void => {
     const route = parseHash(location.hash);
-    const filters = fromQuery(route.query, taxonomy);
+    const filters = fromQuery(route.query, space);
     const t = route.query.get('t');
     reading = true;
     if (route.slug && !known(route.slug)) {
@@ -133,7 +132,7 @@ export function startRouter(
   window.addEventListener('popstate', read);
   read();
   // An empty hash becomes the starting view's own, so Back to it never keeps another view.
-  if (!location.hash) history.replaceState(null, '', stateToHash(store.get(), taxonomy));
+  if (!location.hash) history.replaceState(null, '', stateToHash(store.get(), space));
 
   // Re-reading the URL fits the view to the screen and replaces the entry, never pushes.
   return { refit: read };

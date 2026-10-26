@@ -3,15 +3,6 @@
   display: grid;
   gap: 10px;
 }
-.blk > h3,
-.spot-h h3 {
-  font-family: var(--mono);
-  font-weight: 400;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--mist);
-}
 /* What to listen for opens the snowflake block: it is part of it, not a box of its own. */
 .spot {
   display: grid;
@@ -44,68 +35,15 @@
   color: var(--frost);
 }
 .spot-chip small {
-  font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--mist);
   font-weight: 400;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 .spot-h {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.qi {
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  border: 1px solid var(--mist);
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--mist);
-  cursor: help;
-}
-.bubble {
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 8px);
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: 250px;
-  background: var(--void);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-family: var(--body);
-  font-size: 12.5px;
-  line-height: 1.4;
-  color: var(--frost);
-  text-align: left;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s;
-  z-index: 4;
-  letter-spacing: 0;
-  text-transform: none;
-}
-.bubble b {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-.bubble small {
-  display: block;
-  color: var(--mist);
-  font-family: var(--mono);
-  font-size: 10.5px;
-  margin-top: 4px;
-}
-.qi:hover .bubble,
-.qi:focus-visible .bubble,
 .bandchip:hover .bubble,
 .bandchip:focus-visible .bubble {
   opacity: 1;
@@ -162,16 +100,8 @@
   opacity: 0.6;
 }
 .st b {
-  font-family: var(--mono);
   font-weight: 500;
   font-size: 14px;
-}
-.st span {
-  font-size: 11px;
-  color: var(--mist);
-  font-family: var(--mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 .link {
   position: relative;
@@ -194,7 +124,6 @@
 .link span {
   position: relative;
   top: 16px;
-  font-family: var(--mono);
   font-size: 10.5px;
   color: var(--mist);
   white-space: nowrap;

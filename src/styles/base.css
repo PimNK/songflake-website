@@ -20,20 +20,45 @@ body {
   z-index: -1;
   pointer-events: none;
 }
+/* Two fonts: the display face for the site name only (the hero and the record's label), the body
+   face for everything else; figures are tabular so times and counts do not wobble. */
 body {
   color: var(--frost);
   font-family: var(--body);
   font-size: 15px;
   line-height: 1.55;
+  font-variant-numeric: tabular-nums;
   margin: 0;
+}
+h1 {
+  font-family: var(--display);
+  font-weight: 300;
 }
 h1,
 h2,
 h3 {
-  font-family: var(--display);
-  font-weight: 300;
   text-wrap: balance;
   margin: 0;
+}
+h2,
+h3 {
+  font-weight: 600;
+}
+/* One style for every small heading label: «About», «View», the filter groups, the card's
+   blocks, the timeline's stations, the scroll caption and the hint step. */
+.label,
+.flabel,
+.blk > h3,
+.spot-h h3,
+.st span,
+.scroll-cue small,
+.hint-n {
+  font-family: var(--body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mist);
 }
 p {
   margin: 0;
@@ -66,4 +91,56 @@ input {
   .turn {
     animation: none;
   }
+}
+/* The ⓘ that explains a block on hover or focus (views/html.ts `info`), and its bubble — also
+   used by the band marker. */
+.qi {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 1px solid var(--mist);
+  font-size: 10px;
+  color: var(--mist);
+  cursor: help;
+}
+.bubble {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 250px;
+  background: var(--void);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: var(--body);
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--frost);
+  text-align: left;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 4;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.bubble b {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.bubble small {
+  display: block;
+  color: var(--mist);
+  font-size: 10.5px;
+  margin-top: 4px;
+}
+.qi:hover .bubble,
+.qi:focus-visible .bubble {
+  opacity: 1;
 }

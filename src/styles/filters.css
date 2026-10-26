@@ -1,33 +1,35 @@
 /* Filter panel, straight on the page background. Wide screens: always open under the player, in
-   three columns, covering nothing. Narrower: over the record it floats under the bar (only then
-   with a backdrop, to stay readable); in the List view it sits above the tiles.
+   three columns, covering nothing. Narrower: a sheet above the bottom player (the only place it
+   has a fill), with options as pills big enough for a finger.
    Instrument colours are set inline from the taxonomy; styles have none here. */
 .fanchor {
   position: relative;
   z-index: 6;
 }
 @media (max-width: 1099.98px) {
-  .page[data-view='record'] .fanchor {
+  .fanchor {
     height: 0;
   }
-  .page[data-view='record'] .fpanel {
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    background: color-mix(in srgb, var(--panel) 92%, transparent);
-    backdrop-filter: blur(6px);
-    padding: 12px 12px 14px;
-    position: absolute;
-    top: 0;
+  .fpanel {
+    position: fixed;
     left: 0;
-    width: min(360px, 100%);
-    max-height: calc(100svh - 80px);
+    right: 0;
+    bottom: var(--player-room);
+    z-index: 9;
+    max-height: 70svh;
     overflow: auto;
     overscroll-behavior: contain;
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+    padding: 18px var(--gutter) 20px;
+    border: 1px solid var(--line);
+    border-bottom: 0;
+    border-radius: 18px 18px 0 0;
+    background: color-mix(in srgb, var(--panel) 96%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.45);
   }
 }
 .count {
-  font-family: var(--mono);
   font-size: 11px;
   border-radius: 999px;
   padding: 1px 7px;
@@ -46,10 +48,19 @@
   gap: 12px;
   align-content: start;
 }
+/* Wide: Style beside What to listen for; under them the two ranges side by side, then Status and
+   Reset. */
 @media (min-width: 1100px) {
   .fbody {
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr) minmax(0, 1fr);
-    column-gap: 18px;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr);
+    column-gap: 24px;
+    row-gap: 16px;
+  }
+  .fcol {
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 24px;
+    align-items: end;
   }
 }
 .fgroup {
@@ -57,11 +68,6 @@
   gap: 6px;
 }
 .flabel {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--mist);
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -71,7 +77,7 @@
   white-space: nowrap;
   color: var(--frost);
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
 }
 .flabel button {
   background: none;
@@ -79,7 +85,7 @@
   padding: 0;
   color: var(--ice);
   font: inherit;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
   cursor: pointer;
   text-transform: none;
 }
@@ -105,12 +111,6 @@
 .fopt input {
   accent-color: var(--ice);
   margin: 0;
-}
-.fopt .n {
-  margin-left: auto;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--mist);
 }
 .fopt i {
   width: 9px;
@@ -138,7 +138,6 @@
   grid-template-columns: 2.4em 1fr;
   gap: 8px;
   align-items: center;
-  font-family: var(--mono);
   font-size: 11px;
   color: var(--mist);
 }
@@ -149,4 +148,78 @@
 .freset {
   justify-self: start;
   background: none;
+}
+/* The ⓘ notes open downwards, under the group's heading, inside the panel. */
+.fgroup {
+  position: relative;
+}
+.fname {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.fpanel .qi {
+  position: static;
+}
+.fpanel .bubble {
+  top: 22px;
+  bottom: auto;
+  left: 0;
+  transform: none;
+  width: 240px;
+  max-width: calc(100vw - 2 * var(--gutter));
+}
+.flabel button {
+  white-space: nowrap;
+}
+/* Narrow: options are pills that wrap — the checkbox stays focusable but out of sight, and a
+   checked option is outlined in ice. */
+@media (max-width: 1099.98px) {
+  .fbody {
+    gap: 20px;
+  }
+  .flist,
+  .fgrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .fopt,
+  .fgrid .fopt {
+    position: relative;
+    min-height: 44px;
+    padding: 10px 14px;
+    gap: 8px;
+    font-size: 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--mist);
+  }
+  .fopt input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .fopt:has(input:checked) {
+    border-color: var(--ice);
+    background: color-mix(in srgb, var(--ice) 12%, transparent);
+    color: var(--frost);
+  }
+  .fopt:has(input:focus-visible) {
+    outline: 2px solid var(--ice);
+    outline-offset: 2px;
+  }
+  .flabel button {
+    padding: 8px 0;
+  }
+  .range label {
+    font-size: 13px;
+  }
+  .range input {
+    height: 32px;
+  }
+  .freset {
+    min-height: 44px;
+    padding-inline: 18px;
+  }
 }

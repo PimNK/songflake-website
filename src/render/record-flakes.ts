@@ -1,7 +1,7 @@
 // The snowflakes with their titles, drawn over the vinyl. Positions and sizes come from the
 // record view.
 import { visibleTitles } from '../domain/record-layout';
-import { MONO } from './record';
+import { BODY } from './record';
 import type { Sprite } from './snowflake';
 
 type Ctx = CanvasRenderingContext2D;
@@ -22,7 +22,7 @@ export interface FlakeNode {
 }
 
 export const flakeTitleFont = (hovered: boolean, zoom: number): string =>
-  `${hovered ? 500 : 400} ${hovered ? 11.5 : zoom > 2 ? 11 : 10}px ${MONO}`;
+  `${hovered ? 500 : 400} ${hovered ? 11.5 : zoom > 2 ? 11 : 10}px ${BODY}`;
 
 export function drawFlakes(ctx: Ctx, nodes: readonly FlakeNode[], zoom: number): void {
   for (const n of nodes) {

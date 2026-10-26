@@ -52,12 +52,6 @@
     translate: 0 8px;
   }
 }
-.hint-n {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  color: var(--ice);
-}
 .hint-note p {
   font-size: 14px;
   line-height: 1.5;

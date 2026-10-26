@@ -10,7 +10,7 @@ import { timeline, type Station } from '../domain/timeline';
 import { radarSvg } from '../render/radar';
 import { paintSnowflake } from '../render/snowflake';
 import { strings } from '../strings';
-import { bandRing, esc, turnStyle } from './html';
+import { bandRing, esc, info, turnStyle } from './html';
 import { renderMarkdown } from './markdown';
 
 const c = strings.card;
@@ -30,10 +30,6 @@ function listenChips(song: Song, taxonomy: Taxonomy): string {
     })
     .join('');
 }
-
-/** An ⓘ that explains the block on hover or focus. */
-const info = (bubble: string): string =>
-  `<span class="qi" tabindex="0" aria-label="${c.aboutBlock}">i<span class="bubble" role="tooltip">${bubble}</span></span>`;
 
 const timelineInfo = (): string =>
   (['idea', 'concept', 'ready'] as const)
@@ -80,7 +76,6 @@ export function renderCardBody(
   bands: Bands,
 ): void {
   const colour = leadColour(song, taxonomy);
-  const band = bandMarker(song, bands);
   const story = song.story ? renderMarkdown(song.story) : `<p class="muted">${c.storyEmpty}</p>`;
   el.innerHTML = `
     <div class="mleft">
@@ -92,7 +87,7 @@ export function renderCardBody(
       <section class="spot" aria-labelledby="spot-h">
         <div class="spot-h"><h3 id="spot-h">${c.listen}</h3>${info(c.listenInfo)}</div>
         <div class="spot-row">${listenChips(song, taxonomy)}</div>
-        ${band ? `<div>${band}</div>` : ''}
+        <div class="band-row">${bandMarker(song, bands)}</div>
       </section>
       <div class="spot-h total"><h3>${c.total(song.complexityTotal)}</h3>${info(totalInfo())}</div>
       <div class="flake-radar">
