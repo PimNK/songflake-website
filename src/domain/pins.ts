@@ -40,21 +40,14 @@ export function sortPins<T extends Pin>(pins: readonly T[]): T[] {
   return [...pins].sort((a, b) => a.at - b.at);
 }
 
-/** How long a passed pin stays shown as the active note when no next pin comes first. */
-export const PIN_HOLD_SECONDS = 8;
-
-/** The most recent pin passed at time `t`, while it is still within the hold window. */
-export function activePin<T extends Pin>(
-  sortedPins: readonly T[],
-  t: number,
-  hold = PIN_HOLD_SECONDS,
-): T | null {
+/** The most recent pin passed at time `t`; it stays active until the next pin is reached. */
+export function activePin<T extends Pin>(sortedPins: readonly T[], t: number): T | null {
   let current: T | null = null;
   for (const pin of sortedPins) {
     if (pin.at <= t) current = pin;
     else break;
   }
-  return current && t - current.at < hold ? current : null;
+  return current;
 }
 
 /** Marker position as a fraction of the duration; `null` when the pin lies past the end. */

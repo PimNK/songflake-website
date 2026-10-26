@@ -80,16 +80,27 @@ export function renderPage(root: HTMLElement): PageSlots {
 const CHEVRON =
   '<svg width="40" height="40" viewBox="0 0 28 28" aria-hidden="true"><path d="M6 10l8 8 8-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-/** Narrow screens: the arrow scrolls to the second section; it fades out once the page moves. */
+/**
+ * Narrow screens: the arrow scrolls to the second section; it fades out once the page moves.
+ * While the intro fills most of the screen, `at-intro` on the page keeps the bottom player out of
+ * sight (layout.css).
+ */
 function wireScrollCue(root: HTMLElement): void {
   const cue = root.querySelector<HTMLElement>('.scroll-cue')!;
+  const intro = root.querySelector<HTMLElement>('.intro-sec')!;
+  const page = root.querySelector<HTMLElement>('.page')!;
   cue.addEventListener('click', () =>
     root.querySelector('.map-sec')!.scrollIntoView({ behavior: 'smooth', block: 'start' }),
   );
   const fade = (): void => {
     cue.classList.toggle('gone', window.scrollY > 24);
+    page.classList.toggle(
+      'at-intro',
+      intro.getBoundingClientRect().bottom > window.innerHeight / 2,
+    );
   };
   window.addEventListener('scroll', fade, { passive: true });
+  window.addEventListener('resize', fade);
   fade();
 }
 

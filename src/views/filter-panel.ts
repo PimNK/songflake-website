@@ -49,19 +49,23 @@ const FUNNEL =
 const label = (name: string, note: string, right = ''): string =>
   `<div class="flabel"><span class="fname">${name} ${info(note)}</span>${right}</div>`;
 
-/** Two range sliders, e.g. complexity min / max or years from / to. */
+/**
+ * One line with two thumbs, e.g. complexity min / max or years from / to: two range inputs over
+ * one track; the part between the thumbs is lit (--lo / --hi, set in update).
+ */
 const range = (
   key: 'range' | 'years',
+  name: string,
   ends: readonly ('min' | 'max' | 'from' | 'to')[],
   lo: number,
   hi: number,
 ): string =>
-  ends
+  `<div class="dual" data-dual="${key}">${ends
     .map(
       (end) =>
-        `<label>${f[end]}<input type="range" data-${key}="${end}" min="${lo}" max="${hi}" step="1"></label>`,
+        `<input type="range" data-${key}="${end}" aria-label="${name}: ${f[end]}" min="${lo}" max="${hi}" step="1">`,
     )
-    .join('');
+    .join('')}</div>`;
 
 function template(content: Content, space: FilterSpace): string {
   const { taxonomy, songs } = content;
@@ -88,9 +92,9 @@ function template(content: Content, space: FilterSpace): string {
           <div class="pads">${accents.join('')}</div></div>
         <div class="franges">
           <div class="fgroup">${label(f.complexity, f.info.complexity, '<b data-range-label></b>')}
-            <div class="range">${range('range', ['min', 'max'], COMPLEXITY_MIN, COMPLEXITY_MAX)}</div></div>
+            ${range('range', f.complexity, ['min', 'max'], COMPLEXITY_MIN, COMPLEXITY_MAX)}</div>
           <div class="fgroup">${label(f.year, f.info.year, '<b data-years-label></b>')}
-            <div class="range">${range('years', ['from', 'to'], years.first, years.last)}</div></div>
+            ${range('years', f.year, ['from', 'to'], years.first, years.last)}</div>
         </div>
         <div class="fgroup" ${c.inProgress ? '' : 'hidden'}>${label(f.status, f.info.status)}<div class="pads">
           ${option({ kind: 'status', id: 'ready', label: f.ready, count: c.ready })}
@@ -141,6 +145,21 @@ function wireToggle(toggle: HTMLButtonElement, el: HTMLElement): void {
   });
 }
 
+/** Sets a two-thumb line's values, the lit part between them, and which thumb is on top. */
+function showDual(dual: HTMLElement, filters: FilterState): void {
+  const [low, high] = [...dual.querySelectorAll('input')] as [HTMLInputElement, HTMLInputElement];
+  const key = (i: HTMLInputElement): 'min' | 'max' | 'from' | 'to' =>
+    (i.dataset.range ?? i.dataset.years) as 'min' | 'max' | 'from' | 'to';
+  const [lo, hi] = [Number(low.min), Number(low.max)];
+  const at = (v: number): string => `${hi > lo ? ((v - lo) / (hi - lo)) * 100 : 0}%`;
+  low.value = String(filters[key(low)]);
+  high.value = String(filters[key(high)]);
+  dual.style.setProperty('--lo', at(filters[key(low)]));
+  dual.style.setProperty('--hi', at(filters[key(high)]));
+  // Both thumbs at the top end: the lower one must stay reachable, so it goes on top.
+  low.classList.toggle('top', filters[key(low)] > (lo + hi) / 2);
+}
+
 export function mountFilterPanel(
   el: HTMLElement,
   toggle: HTMLButtonElement,
@@ -185,11 +204,7 @@ export function mountFilterPanel(
       el.querySelectorAll<HTMLInputElement>('input[data-kind]').forEach((input) => {
         input.checked = isChecked(filters, input.dataset.kind!, input.dataset.id!);
       });
-      el.querySelectorAll<HTMLInputElement>('input[data-range], input[data-years]').forEach((i) => {
-        i.value = String(
-          filters[(i.dataset.range ?? i.dataset.years) as 'min' | 'max' | 'from' | 'to'],
-        );
-      });
+      el.querySelectorAll<HTMLElement>('[data-dual]').forEach((dual) => showDual(dual, filters));
     },
   };
 }

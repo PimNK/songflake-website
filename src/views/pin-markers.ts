@@ -14,6 +14,13 @@ document.addEventListener('pointerdown', (e) => {
   document.querySelectorAll('.pin.show').forEach((x) => x.classList.remove('show'));
 });
 
+/**
+ * Narrow cards: markers only mark (no popover, no pointer; player.css) and are out of the tab order
+ * and the accessibility tree — the pin note under the waveform says it. The player re-renders the
+ * markers when the waveform changes width, so crossing this width updates them.
+ */
+const NARROW = window.matchMedia('(max-width: 899.98px)');
+
 /** A merged marker seeks to its first pin; its label and popover list every pin it holds. */
 export function renderMarkers(
   layer: HTMLElement,
@@ -32,6 +39,10 @@ export function renderMarkers(
     const side = x < POP_HALF ? ' start' : width - x < POP_HALF ? ' end' : '';
     b.className = `pin${side}`;
     b.style.left = `${group.fraction * 100}%`;
+    if (NARROW.matches) {
+      b.tabIndex = -1;
+      b.setAttribute('aria-hidden', 'true');
+    }
     b.setAttribute(
       'aria-label',
       group.pins.map((p) => strings.player.pinAt(formatTime(p.at), p.text)).join('; '),

@@ -47,12 +47,13 @@ describe('pins', () => {
 
   it('sorts', () => expect(pins.map((p) => p.text)).toEqual(['a', 'b', 'c']));
 
-  it('active pin: most recent passed, until the next one or the hold ends', () => {
+  it('active pin: most recent passed, until the next one', () => {
     expect(activePin(pins, 5)).toBeNull();
     expect(activePin(pins, 10)?.text).toBe('a');
     expect(activePin(pins, 13.9)?.text).toBe('a');
     expect(activePin(pins, 15)?.text).toBe('b');
-    expect(activePin(pins, 22.5)).toBeNull();
+    expect(activePin(pins, 22.5)?.text).toBe('b');
+    expect(activePin(pins, 99.9)?.text).toBe('b');
     expect(activePin(pins, 101)?.text).toBe('c');
   });
 

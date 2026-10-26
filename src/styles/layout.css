@@ -1,17 +1,19 @@
 /* Page frame. Below 1100 px: two sections, each a screen high — the intro, then the bar and the
    view — and scrolling snaps to them; the random-track player is frozen at the bottom of the
-   screen. From 1100 px: one screen; a left column with the title, the player, the filter block
-   (the labelled Record / List switch on top) and the About button, which opens the intro in a
-   window; the view fills the rest. */
+   screen, from the second section on. From 1100 px: one screen; a left column with the title,
+   the player, the filter block (the labelled Record / List switch on top) and the About button,
+   which opens the intro in a window; the view fills the rest. */
 :root {
   --gutter: clamp(16px, 3vw, 36px);
   /* above the view below 1100 px: top padding + the bar + gap */
   --bar-room: 64px;
   /* the bottom player below 1100 px (player.css sizes its rows to fit) */
   --player-room: calc(104px + env(safe-area-inset-bottom, 0px));
+  /* between the Record / List tabs (filters.css); the About button is one tab wide */
+  --tab-gap: 6px;
 }
 .intro-sec {
-  padding: clamp(28px, 6vw, 52px) var(--gutter) calc(var(--player-room) + 72px);
+  padding: clamp(28px, 6vw, 52px) var(--gutter) 96px;
   display: grid;
   gap: 18px;
   align-content: center;
@@ -108,7 +110,7 @@
 .scroll-cue {
   position: absolute;
   left: 50%;
-  bottom: calc(var(--player-room) + 12px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
   margin-left: -36px;
   width: 72px;
   display: grid;
@@ -165,6 +167,15 @@
     background: color-mix(in srgb, var(--void) 92%, transparent);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    transition:
+      transform 0.25s ease,
+      visibility 0.25s;
+  }
+  /* Not on the first screen: the player slides in once the intro is scrolled away (page.ts). */
+  .page.at-intro .rplayer,
+  .page.at-intro .fpanel {
+    transform: translateY(100%);
+    visibility: hidden;
   }
 }
 /* Phones: the list only — no Record / List switch (app/main.ts keeps the view on the list; its
@@ -209,15 +220,16 @@
   .fanchor {
     grid-area: filt;
   }
+  /* Centred in the column, the size of a Record / List tab (filters.css). */
   .about-btn {
     grid-area: about;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    justify-self: start;
-    height: 42px;
-    margin-block: 12px 18px;
-    padding: 0 20px;
+    display: grid;
+    place-items: center;
+    justify-self: center;
+    width: calc((100% - var(--tab-gap)) / 2);
+    height: var(--pad-h);
+    margin-block: 22px 18px;
+    padding: 0 12px;
     border: 1px solid var(--line);
     border-radius: 8px;
     background: linear-gradient(180deg, var(--panel2), var(--panel));

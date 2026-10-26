@@ -2,7 +2,7 @@
 // lead colour (between the card's skip keys), a caption (playing / paused / press play) with the
 // note of the active pin under it, then the waveform seek bar with pin markers and a thumb, and
 // m:ss / m:ss at its right (pins have no list of their own: a marker shows its text on hover and
-// once reached).
+// once reached). Narrow cards: no caption, the note under the waveform, markers that only mark.
 // The <audio> element lives in views/playback.ts; time maths lives in domain/pins.ts.
 import type { Song } from '../content/parse';
 import { activePin, formatTime, type Pin } from '../domain/pins';
@@ -24,8 +24,8 @@ const p = strings.player;
 const r = strings.random;
 const PLAYED_REST = 'rgba(232,238,255,.22)';
 
-const template = (): string => `
-  <div class="pcap"><small class="pstate"></small><div class="pnote" aria-live="polite"></div></div>
+const template = (song: Song): string => `
+  <div class="pcap"><small class="pstate"></small><div class="pnote${song.pins.length ? '' : ' none'}" aria-live="polite"></div></div>
   <div class="pline">
     <div class="wave-wrap">
       <div class="wave" role="slider" tabindex="0" aria-label="${p.seek}" aria-valuemin="0"><canvas></canvas><b></b></div>
@@ -75,7 +75,7 @@ class CardPlayer {
     hooks: PlayerHooks,
   ) {
     this.slot = slots.body;
-    this.slot.innerHTML = template();
+    this.slot.innerHTML = template(song);
     this.play = document.createElement('button');
     this.play.type = 'button';
     this.play.className = 'play';

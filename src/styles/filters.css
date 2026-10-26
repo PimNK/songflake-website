@@ -1,7 +1,8 @@
 /* Filter panel. Options are drum-machine pads: one size, one grid, a light that glows in the
-   instrument's colour (ice for the rest) when the pad is on. Wide screens: one block under the
-   player — the Record / List switch on top, then the filters — always open. Narrower: a sheet above
-   the bottom player. Instrument colours are set inline from the taxonomy. */
+   instrument's colour (ice for the rest) when the pad is on. Ranges are one line with two thumbs.
+   Wide screens: one block on the page background under the player — the Record / List switch on
+   top, then the filters — always open. Narrower: a sheet above the bottom player. Instrument
+   colours are set inline from the taxonomy. */
 :root {
   --pad-cols: 3;
   --pad-h: 52px;
@@ -44,15 +45,11 @@
 @media (min-width: 1100px) {
   .fanchor {
     display: grid;
-    gap: 12px;
+    gap: 22px;
     align-self: start;
     max-height: 100%;
     overflow: auto;
     overscroll-behavior: contain;
-    padding: 14px;
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    background: color-mix(in srgb, var(--panel) 80%, transparent);
   }
   .viewbar {
     display: grid;
@@ -61,7 +58,7 @@
   .vseg {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 6px;
+    gap: var(--tab-gap);
     border: 0;
     padding: 0;
   }
@@ -84,17 +81,17 @@
 }
 .fbody {
   display: grid;
-  gap: 14px;
+  gap: 28px;
 }
 @media (min-width: 1100px) {
   .fbody {
-    gap: 12px;
+    gap: 22px;
   }
 }
 .fgroup {
   position: relative;
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 .flabel {
   display: flex;
@@ -192,31 +189,91 @@
 }
 .franges {
   display: grid;
-  gap: 16px;
+  gap: 28px;
 }
 @media (min-width: 600px) {
   .franges {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    column-gap: 20px;
+    column-gap: 28px;
   }
 }
-.range {
-  display: grid;
-  gap: 2px;
+/* A range: one track, two thumbs (two range inputs stacked; only their thumbs take the pointer).
+   The track is inset by the thumb's radius, so --lo / --hi line up with the thumbs' centres. */
+.dual {
+  --thumb: 18px;
+  position: relative;
+  height: 32px;
 }
-.range label {
-  display: grid;
-  grid-template-columns: 2.6em 1fr;
-  gap: 8px;
-  align-items: center;
-  font-size: 12px;
-  color: var(--mist);
+.dual::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--thumb) / 2);
+  right: calc(var(--thumb) / 2);
+  top: 50%;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(232, 238, 255, 0.14) var(--lo, 0%),
+    var(--ice) var(--lo, 0%) var(--hi, 100%),
+    rgba(232, 238, 255, 0.14) var(--hi, 100%)
+  );
 }
-.range input {
+.dual input {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: 28px;
+  height: 100%;
   margin: 0;
-  accent-color: var(--ice);
+  background: none;
+  appearance: none;
+  -webkit-appearance: none;
+  pointer-events: none;
+}
+.dual input.top {
+  z-index: 1;
+}
+.dual input::-webkit-slider-runnable-track {
+  height: 4px;
+  background: none;
+  border: 0;
+}
+.dual input::-moz-range-track {
+  height: 4px;
+  background: none;
+  border: 0;
+}
+.dual input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: var(--thumb);
+  height: var(--thumb);
+  margin-top: calc(2px - var(--thumb) / 2);
+  border: 0;
+  border-radius: 50%;
+  background: var(--frost);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--ice) 70%, transparent);
+  pointer-events: auto;
+  cursor: grab;
+}
+.dual input::-moz-range-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border: 0;
+  border-radius: 50%;
+  background: var(--frost);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--ice) 70%, transparent);
+  pointer-events: auto;
+  cursor: grab;
+}
+.dual input:focus-visible {
+  outline: none;
+}
+.dual input:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--ice);
+}
+.dual input:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 3px var(--ice);
 }
 .freset {
   height: var(--pad-h);

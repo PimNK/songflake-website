@@ -229,3 +229,34 @@
   color: var(--ice);
   margin-right: 8px;
 }
+.pnote.none {
+  display: none;
+}
+/* Narrow cards (card.css lays out the rows): no playing / paused caption, the pin note under the
+   waveform (two lines kept free for it), and the pin markers only mark — no popovers; a tap on
+   them seeks like the rest of the waveform. */
+@media (max-width: 899.98px) {
+  .player-blk,
+  .pcap {
+    display: contents;
+  }
+  .pstate {
+    display: none;
+  }
+  .pnote,
+  .no-audio {
+    grid-area: note;
+  }
+  .pnote {
+    min-height: 2.8em;
+  }
+  .pline {
+    grid-area: line;
+  }
+  .pin {
+    pointer-events: none;
+  }
+  .pin .pop {
+    display: none;
+  }
+}

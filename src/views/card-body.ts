@@ -79,9 +79,9 @@ export function renderCardBody(
   const colour = leadColour(song, taxonomy);
   const story = song.story ? renderMarkdown(song.story) : `<p class="muted">${c.storyEmpty}</p>`;
   grid.innerHTML = `
-    <section class="cell mid"><div class="spot-h"><h3>${c.timeline}</h3>${info(timelineInfo())}</div>
+    <section class="cell"><div class="spot-h"><h3>${c.timeline}</h3>${info(timelineInfo())}</div>
       <div class="stations">${stations(song, colour)}</div></section>
-    <section class="cell mid" aria-labelledby="spot-h">
+    <section class="cell" aria-labelledby="spot-h">
       <div class="spot-h"><h3 id="spot-h">${c.listen}</h3>${info(c.listenInfo)}</div>
       <div class="spot-body">
         <div class="spot-row">${listenChips(song, taxonomy)}</div>
