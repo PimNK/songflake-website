@@ -1,7 +1,8 @@
 // The one shared <audio> element for the whole page, and what is known about each recording
 // (waveform peaks, duration), cached per song in memory. Playback continues when a card closes;
 // opening another card does not stop the current track until its own play is pressed; when a
-// track ends, the next playable one follows (autoAdvance).
+// track ends, the next one follows (autoAdvance), picked the way the run was started: in the
+// card's order or by the random-track player.
 import type { Song } from '../content/parse';
 import { peaks } from '../domain/waveform';
 
@@ -15,10 +16,14 @@ export interface Recording {
 
 type Listener = () => void;
 
+/** Who started the current run: a card's play (the card order) or the random-track player. */
+export type PlayMode = 'order' | 'shuffle';
+
 export class Playback {
   readonly audio = new Audio();
   /** The song loaded into the audio element, if any. */
   song: Song | null = null;
+  mode: PlayMode = 'order';
   /** Positions chosen for songs that are not loaded yet (a cue or a seek before play). */
   private pending = new Map<string, number>();
   private recordings = new Map<string, Promise<Recording>>();
@@ -70,9 +75,11 @@ export class Playback {
     else this.emit();
   }
 
-  play(song: Song): void {
+  /** Plays a song; switching to another song also sets who started the run (`mode`). */
+  play(song: Song, mode: PlayMode = 'order'): void {
     if (!song.audioSrc) return;
     if (!this.isCurrent(song)) {
+      this.mode = mode;
       // A finished track starts from the top next time, not from its end.
       if (this.song && this.audio.currentTime > 0 && !this.audio.ended) {
         this.pending.set(this.song.slug, this.audio.currentTime);
@@ -94,26 +101,20 @@ export class Playback {
   }
 
   /**
-   * When a track ends, play the one `next` picks (none: stop there); `moved` hears about it so
-   * an open card can follow.
+   * When a track ends, play the one `next` picks for the run's mode (none: stop there); `moved`
+   * hears about it so an open card can follow. The run keeps its mode.
    */
-  autoAdvance(next: (ended: Song) => Song | null, moved: (from: Song, to: Song) => void): void {
+  autoAdvance(
+    next: (ended: Song, mode: PlayMode) => Song | null,
+    moved: (from: Song, to: Song) => void,
+  ): void {
     this.audio.addEventListener('ended', () => {
       const ended = this.song;
-      const to = ended && next(ended);
+      const to = ended && next(ended, this.mode);
       if (!ended || !to) return;
       moved(ended, to);
-      this.play(to);
+      this.play(to, this.mode);
     });
-  }
-
-  /** Stops and unloads: the mini-player's close. */
-  stop(): void {
-    this.audio.pause();
-    this.song = null;
-    this.audio.removeAttribute('src');
-    this.audio.load();
-    this.emit();
   }
 
   /** Waveform and duration, decoded on first request and cached. */

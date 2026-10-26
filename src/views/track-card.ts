@@ -6,7 +6,7 @@ import type { Content } from '../content/load';
 import type { Song } from '../content/parse';
 import { strings } from '../strings';
 import { renderCardBody } from './card-body';
-import { esc } from './html';
+import { esc, SKIP_ICON } from './html';
 
 export interface CardHooks {
   close(): void;
@@ -100,10 +100,6 @@ function trapFocus(e: KeyboardEvent, root: HTMLElement): void {
     first.focus();
   }
 }
-
-/** Skip-to-previous icon; the next button mirrors it with CSS. */
-const SKIP_ICON =
-  '<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M15 3.5v11L6.5 9z" fill="currentColor"/></svg>';
 
 /** The saved file is named after the track, keeping the recording's own extension. */
 function downloadLink(song: Song, src: string): string {

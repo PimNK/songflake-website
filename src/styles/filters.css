@@ -1,4 +1,4 @@
-/* Filter panel. Wide screens: in the left column under the controls, covering nothing.
+/* Filter panel. Wide screens: always open in the left column beside the intro, covering nothing.
    Narrower: over the record it floats under the bar; in the List view it sits above the tiles.
    Option colours are set inline from the taxonomy. */
 .fanchor {
@@ -10,7 +10,7 @@
   border-radius: 16px;
   background: color-mix(in srgb, var(--panel) 90%, transparent);
   backdrop-filter: blur(6px);
-  padding: 16px 16px 18px;
+  padding: 12px 12px 14px;
 }
 @media (max-width: 1099.98px) {
   .page[data-view='record'] .fanchor {
@@ -43,11 +43,11 @@
 }
 .fbody {
   display: grid;
-  gap: 18px;
+  gap: 12px;
 }
 .fgroup {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 .flabel {
   font-family: var(--mono);
@@ -77,14 +77,14 @@
 }
 .flist {
   display: grid;
-  gap: 5px;
+  gap: 3px;
 }
 .fopt {
   display: flex;
   align-items: center;
   gap: 9px;
-  font-size: 13.5px;
-  padding: 5px 9px;
+  font-size: 13px;
+  padding: 3px 8px;
   border-radius: 8px;
   background: var(--panel2);
   border: 1px solid transparent;
@@ -115,19 +115,19 @@
 .fgrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 5px;
+  gap: 3px;
 }
 .fgrid .fopt {
-  font-size: 12.5px;
-  padding: 5px 7px;
+  font-size: 12px;
+  padding: 3px 6px;
   gap: 7px;
 }
 .range {
   display: grid;
-  gap: 6px;
+  gap: 2px;
   background: var(--panel2);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 4px 10px;
 }
 .range label {
   display: grid;

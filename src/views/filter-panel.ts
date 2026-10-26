@@ -1,6 +1,6 @@
-// Filter controls generated from the taxonomy and the counts (CLAUDE.md §4.2), in a panel that
-// the Filters toggle opens and closes (closed by default). No filtering logic: every change goes
-// through domain/filters.ts and back to the store.
+// Filter controls generated from the taxonomy and the counts (CLAUDE.md §4.2). From 1100 px the
+// panel is always open; narrower, the Filters toggle opens and closes it (closed by default).
+// No filtering logic: every change goes through domain/filters.ts and back to the store.
 import type { Content } from '../content/load';
 import {
   COMPLEXITY_MAX,
@@ -65,9 +65,6 @@ function template(content: Content): string {
           <div class="range">${range('min')}${range('max')}</div></div>
         <div class="fgroup"><div class="flabel">${f.listen} <button type="button" data-all>${f.allNone}</button></div>
           <div class="fgrid">${accents.join('')}</div></div>
-        <div class="fgroup"><div class="flabel">${f.recorded}</div><div class="flist">
-          ${option({ kind: 'band', id: 'band', label: f.withBand, count: c.band })}
-          ${option({ kind: 'band', id: 'solo', label: f.solo, count: c.solo })}</div></div>
         <div class="fgroup" ${c.inProgress ? '' : 'hidden'}><div class="flabel">${f.status}</div><div class="flist">
           ${option({ kind: 'status', id: 'ready', label: f.ready, count: c.ready })}
           ${option({ kind: 'status', id: 'inProgress', label: f.inProgress, count: c.inProgress })}</div></div>
@@ -78,21 +75,22 @@ function template(content: Content): string {
 function isChecked(filters: FilterState, kind: string, id: string): boolean {
   if (kind === 'style') return filters.styles.has(id);
   if (kind === 'accent') return filters.accents.has(id);
-  if (kind === 'band') return id === 'band' ? filters.band : filters.solo;
   return id === 'ready' ? filters.ready : filters.inProgress;
 }
 
 function withOption(filters: FilterState, kind: string, id: string, on: boolean): FilterState {
   if (kind === 'style') return { ...filters, styles: toggle(filters.styles, id, on) };
   if (kind === 'accent') return { ...filters, accents: toggle(filters.accents, id, on) };
-  if (kind === 'band') return { ...filters, [id === 'band' ? 'band' : 'solo']: on };
   return { ...filters, [id === 'ready' ? 'ready' : 'inProgress']: on };
 }
 
+/** From this width the panel is always open and the toggle is not shown (CSS). */
+const WIDE = window.matchMedia('(min-width: 1100px)');
+
 /**
- * The toggle shows «Filters N / total». Esc closes the panel (focus returns to the toggle when
- * it was inside). Where it floats over the record a click outside closes it too; elsewhere it
- * covers nothing and stays until toggled.
+ * Narrow screens: the toggle shows «Filters N / total». Esc closes the panel (focus returns to
+ * the toggle when it was inside). Where it floats over the record a click outside closes it too;
+ * elsewhere it covers nothing and stays until toggled.
  */
 function wireToggle(toggle: HTMLButtonElement, el: HTMLElement): void {
   const isOpen = (): boolean => toggle.getAttribute('aria-expanded') === 'true';
@@ -100,9 +98,12 @@ function wireToggle(toggle: HTMLButtonElement, el: HTMLElement): void {
     el.hidden = !open;
     toggle.setAttribute('aria-expanded', String(open));
   };
+  setOpen(WIDE.matches);
+  WIDE.addEventListener('change', () => setOpen(WIDE.matches));
   toggle.addEventListener('click', () => setOpen(!isOpen()));
   document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape' || !isOpen() || document.body.classList.contains('locked')) return;
+    if (e.key !== 'Escape' || WIDE.matches || !isOpen()) return;
+    if (document.body.classList.contains('locked')) return;
     const inside = el.contains(document.activeElement);
     setOpen(false);
     if (inside) toggle.focus();

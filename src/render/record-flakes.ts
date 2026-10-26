@@ -16,6 +16,8 @@ export interface FlakeNode {
   /** Matches the filters: full opacity with a label. */
   on: boolean;
   hovered: boolean;
+  /** The playing track: its pulse phase, 0–1; null for every other snowflake. */
+  pulse: number | null;
   title: string;
 }
 
@@ -24,6 +26,7 @@ export const flakeTitleFont = (hovered: boolean, zoom: number): string =>
 
 export function drawFlakes(ctx: Ctx, nodes: readonly FlakeNode[], zoom: number): void {
   for (const n of nodes) {
+    if (n.pulse !== null && n.on) drawBeat(ctx, n, n.pulse);
     const k = n.R / n.sprite.radius;
     const hh = n.sprite.half * k;
     ctx.save();
@@ -34,6 +37,28 @@ export function drawFlakes(ctx: Ctx, nodes: readonly FlakeNode[], zoom: number):
     ctx.restore();
   }
   drawTitles(ctx, nodes, zoom);
+}
+
+/** The page's ice accent (--ice), as an rgb triple for canvas rgba(). */
+const ICE = '166,220,255';
+
+/** The playing snowflake's beat: a soft ice glow that swells with the pulse. */
+function drawBeat(ctx: Ctx, n: FlakeNode, pulse: number): void {
+  const r = n.R * (1.05 + 0.25 * pulse);
+  const g = ctx.createRadialGradient(n.x, n.y, n.R * 0.3, n.x, n.y, r);
+  g.addColorStop(0, `rgba(${ICE},${0.1 + 0.16 * pulse})`);
+  g.addColorStop(1, `rgba(${ICE},0)`);
+  ctx.save();
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = `rgba(${ICE},${0.55 - 0.3 * pulse})`;
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
 }
 
 /** Titles of matching snowflakes; the hovered one and bigger snowflakes win where they collide. */

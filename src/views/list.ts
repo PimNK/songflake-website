@@ -1,5 +1,6 @@
 // The tile grid and its empty state (CLAUDE.md §4.4); each tile's snowflake turns on its own
-// axis. No filtering logic — a match function comes from the caller.
+// axis, and the playing track's pulses. No filtering logic — a match function comes from the
+// caller.
 import type { Content } from '../content/load';
 import type { Song } from '../content/parse';
 import { flakeOf, sizeFactor } from '../domain/snowflake';
@@ -9,6 +10,7 @@ import { bandRing, esc, turnStyle } from './html';
 
 export interface ListView {
   update(match: (song: Song) => boolean): void;
+  setPlaying(slug: string | null): void;
 }
 
 const TILE_RADIUS = 32;
@@ -70,6 +72,9 @@ export function mountList(
         if (on) shown++;
       });
       empty.hidden = shown > 0;
+    },
+    setPlaying(slug) {
+      for (const t of tiles) t.classList.toggle('playing', t.dataset.slug === slug);
     },
   };
 }

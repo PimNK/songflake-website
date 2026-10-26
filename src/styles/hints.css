@@ -1,0 +1,80 @@
+/* First-visit hints (wide screens): a glowing ring round one part of the page and a note beside
+   it. The ring glides from step to step; the note fades in. Nothing blocks the page. */
+.hints {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+}
+.hint-ring {
+  position: fixed;
+  border-radius: 18px;
+  border: 1.5px solid var(--ice);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--ice) 18%, transparent),
+    0 0 36px color-mix(in srgb, var(--ice) 35%, transparent);
+  transition:
+    left 0.5s ease,
+    top 0.5s ease,
+    width 0.5s ease,
+    height 0.5s ease;
+  animation: ring 2s ease-in-out infinite;
+}
+@keyframes ring {
+  50% {
+    box-shadow:
+      0 0 0 9px color-mix(in srgb, var(--ice) 8%, transparent),
+      0 0 52px color-mix(in srgb, var(--ice) 45%, transparent);
+  }
+}
+.hint-note {
+  position: fixed;
+  width: 260px;
+  pointer-events: auto;
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 94%, transparent);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  transition:
+    left 0.5s ease,
+    top 0.5s ease;
+}
+.hint-note.in {
+  animation: note-in 0.45s ease both;
+}
+@keyframes note-in {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+.hint-n {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ice);
+}
+.hint-note p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.hint-keys {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.hint-next {
+  background: var(--frost);
+  color: var(--void);
+  border-color: var(--frost);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hint-ring,
+  .hint-note.in {
+    animation: none;
+  }
+}

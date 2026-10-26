@@ -1,4 +1,5 @@
-// The record canvas: DPR sizing, animation loop, play / pause, hover tooltip, click → card.
+// The record canvas: DPR sizing, animation loop, the playing track's pulse, hover tooltip,
+// click → card.
 // Layout comes from domain/record-layout.ts, drawing from render/record*.ts.
 import type { Content } from '../content/load';
 import type { Song } from '../content/parse';
@@ -28,27 +29,31 @@ import { drawFlakes, flakeTitleFont, type FlakeNode } from '../render/record-fla
 import { drawDisc, drawSectorNames, drawYearRings } from '../render/record';
 import { drawCentreLabel } from '../render/record-label';
 import { devicePixelRatioCapped, SpriteCache } from '../render/snowflake';
-import { recordTemplate, showTooltip, wireRecordControls } from './record-controls';
+import { recordTemplate, showTooltip } from './record-controls';
 import { attachRecordInput } from './record-input';
 import { RecordMotion } from './record-motion';
 
 export interface RecordView {
   setMatch(match: (song: Song) => boolean): void;
   setActive(active: boolean): void;
+  /** The track that is playing now: its snowflake pulses. */
+  setPlaying(slug: string | null): void;
 }
 
 type Node = FlakeNode & { song: Song };
 
 const HOVER_SCALE = 1.18;
+/** The playing snowflake swells by up to this much, once per PULSE_MS. */
+const PULSE_GROW = 0.16;
+const PULSE_MS = 1600;
 
 /** Mounted once for the page's lifetime: observers and listeners are never released. */
 export function mountRecord(
   stage: HTMLElement,
-  spin: HTMLElement,
   content: Content,
   onOpen: (slug: string) => void,
 ): RecordView {
-  return new RecordStage(stage, spin, content, onOpen);
+  return new RecordStage(stage, content, onOpen);
 }
 
 class RecordStage implements RecordView {
@@ -65,6 +70,7 @@ class RecordStage implements RecordView {
   private dpr = 1;
   private flakeScale = 1;
   private hover: string | null = null;
+  private playing: string | null = null;
   private nodes: Node[] = [];
   private match: (song: Song) => boolean = () => true;
   private active = true;
@@ -75,7 +81,6 @@ class RecordStage implements RecordView {
 
   constructor(
     private stage: HTMLElement,
-    private spin: HTMLElement,
     private content: Content,
     private onOpen: (slug: string) => void,
   ) {
@@ -87,8 +92,6 @@ class RecordStage implements RecordView {
     this.range = yearRange(songs);
     this.secs = sectors(taxonomy.styles, songs);
     this.flakes = new Map(songs.map((s) => [s.slug, flakeOf(s, taxonomy)]));
-    this.wireControls();
-    this.markStill();
     this.wireInput();
     this.observe();
   }
@@ -101,6 +104,22 @@ class RecordStage implements RecordView {
   setActive(active: boolean): void {
     this.active = active;
     this.invalidate();
+  }
+
+  setPlaying(slug: string | null): void {
+    this.playing = slug;
+    this.invalidate();
+  }
+
+  /** 0 → 1 → 0 once per PULSE_MS; held at 1 under reduced motion (bigger, no beat). */
+  private pulse(): number {
+    if (this.motion.reduced) return 1;
+    return Math.sin((Math.PI * (performance.now() % PULSE_MS)) / PULSE_MS) ** 2;
+  }
+
+  /** Something moves: the spin, or the playing snowflake's pulse. */
+  private animating(): boolean {
+    return this.motion.busy || (this.playing !== null && !this.motion.reduced);
   }
 
   private invalidate(): void {
@@ -162,13 +181,15 @@ class RecordStage implements RecordView {
       const [x, y] = toScreen(t, p.x, p.y);
       const on = this.match(song);
       const hovered = on && this.hover === song.slug;
-      const R = this.flakeR(song, vp.zoom) * (hovered ? HOVER_SCALE : 1);
+      const pulse = song.slug === this.playing ? this.pulse() : null;
+      const grow = (hovered ? HOVER_SCALE : 1) * (1 + PULSE_GROW * (pulse ?? 0));
+      const R = this.flakeR(song, vp.zoom) * grow;
       if (x < -R * 2 || y < -R * 2 || x > vp.width + R * 2 || y > vp.height + R * 2) continue;
       const f = this.flakes.get(song.slug)!;
       const sprite = this.sprites.get(song.slug, f.params, f.colours, R, this.dpr);
       const offset = turnOffset(song.slug);
       const rotation = flakeTurn(song.complexity.structure, this.motion.time, offset);
-      out.push({ song, x, y, R, rotation, sprite, on, hovered, title: song.title });
+      out.push({ song, x, y, R, rotation, sprite, on, hovered, pulse, title: song.title });
     }
     return out;
   }
@@ -182,14 +203,14 @@ class RecordStage implements RecordView {
     if (!this.running()) return;
     const dt = Math.min(0.05, (now - this.last) / 1000);
     this.last = now;
-    if (this.motion.busy) {
+    if (this.animating()) {
       this.vp = this.motion.step(this.vp, dt);
       this.dirty = true;
     }
     if (this.dirty) this.draw();
     this.dirty = false;
-    // Idle (paused, nothing changed): stop; wake() restarts on the next change.
-    if (this.motion.busy) this.raf = requestAnimationFrame((n) => this.frame(n));
+    // Idle (nothing moves, nothing changed): stop; wake() restarts on the next change.
+    if (this.animating()) this.raf = requestAnimationFrame((n) => this.frame(n));
   }
 
   private wake(): void {
@@ -242,22 +263,6 @@ class RecordStage implements RecordView {
       dragging: (on) => {
         this.canvas.classList.toggle('dragging', on);
         if (on) this.tip.hidden = true;
-      },
-    });
-  }
-
-  /** Pause also stills the snowflakes outside the record (list tiles, the card): body.still. */
-  private markStill(): void {
-    document.body.classList.toggle('still', !this.motion.spinning);
-  }
-
-  private wireControls(): void {
-    wireRecordControls(this.spin, {
-      spinning: () => this.motion.spinning,
-      toggleSpin: () => {
-        this.motion.spinning = !this.motion.spinning;
-        this.markStill();
-        this.wake();
       },
     });
   }

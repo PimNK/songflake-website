@@ -49,6 +49,8 @@ export function parseHash(hash: string): Route {
   const parts = path.split('/').filter(Boolean);
   const query = new URLSearchParams(search);
   if (parts[0] === 'song' && parts[1]) return { view: null, slug: safeDecode(parts[1]), query };
+  // No hash at all keeps the starting view (the list on narrow screens); `#/` is the record.
+  if (!raw) return { view: null, slug: null, query };
   return { view: parts[0] === 'list' ? 'list' : 'record', slug: null, query };
 }
 
@@ -116,4 +118,6 @@ export function startRouter(
   });
   window.addEventListener('popstate', read);
   read();
+  // An empty hash becomes the starting view's own, so Back to it never keeps another view.
+  if (!location.hash) history.replaceState(null, '', stateToHash(store.get(), taxonomy));
 }

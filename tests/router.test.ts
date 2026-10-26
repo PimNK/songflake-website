@@ -14,7 +14,7 @@ const base: AppState = {
 
 describe('router (§4.5)', () => {
   it('parses views, songs and queries', () => {
-    expect(parseHash('')).toMatchObject({ view: 'record', slug: null });
+    expect(parseHash('')).toMatchObject({ view: null, slug: null });
     expect(parseHash('#/')).toMatchObject({ view: 'record', slug: null });
     expect(parseHash('#/list?min=9')).toMatchObject({ view: 'list', slug: null });
     expect(parseHash('#/list?min=9').query.get('min')).toBe('9');
@@ -30,11 +30,10 @@ describe('router (§4.5)', () => {
       ...base.filters,
       styles: new Set(['Progressive', 'Ambient']),
       min: 9,
-      solo: true,
-      band: false,
+      ready: false,
     };
     expect(stateToHash({ ...base, view: 'list', filters: f }, taxonomy)).toBe(
-      '#/list?style=Progressive,Ambient&min=9&band=solo',
+      '#/list?style=Progressive,Ambient&min=9&status=in-progress',
     );
   });
 

@@ -29,11 +29,6 @@ describe('filters (§4.2)', () => {
     expect(matches(s, { ...d, accents: new Set(['Vox']) })).toBe(true);
     expect(matches(s, { ...d, accents: new Set(['Guitar']) })).toBe(false);
   });
-  it('band / solo, including band ""', () => {
-    expect(matches(s, { ...d, band: false })).toBe(false);
-    expect(matches(song({ band: '' }), { ...d, solo: false })).toBe(true);
-    expect(matches(song({ band: null }), { ...d, solo: false })).toBe(false);
-  });
   it('status', () => {
     const wip = song({ status: 'in-progress', years: { idea: 2020 } });
     expect(matches(wip, { ...d, inProgress: false })).toBe(false);
@@ -48,7 +43,7 @@ describe('filters (§4.2)', () => {
     const c = countOptions([s, song({ style: 'Alternative', accents: ['Guitar'] })], taxonomy);
     expect(c.styles).toEqual({ Alternative: 1, Progressive: 0, Electronic: 0, Ambient: 1 });
     expect(c.accents).toMatchObject({ Keys: 1, Vox: 1, Guitar: 1, Bass: 0 });
-    expect(c).toMatchObject({ band: 1, solo: 1, ready: 2, inProgress: 0 });
+    expect(c).toMatchObject({ ready: 2, inProgress: 0 });
   });
 });
 
@@ -58,8 +53,8 @@ describe('filters ⇄ query (§4.5)', () => {
     expect(isDefault(d, taxonomy)).toBe(true);
   });
   it('only differences, in taxonomy order', () => {
-    const f = { ...d, styles: new Set(['Ambient', 'Progressive']), min: 9, band: false };
-    expect(toQuery(f, taxonomy)).toEqual({ style: 'Progressive,Ambient', min: '9', band: 'solo' });
+    const f = { ...d, styles: new Set(['Ambient', 'Progressive']), min: 9 };
+    expect(toQuery(f, taxonomy)).toEqual({ style: 'Progressive,Ambient', min: '9' });
   });
   it('round-trips', () => {
     const f = {
@@ -73,11 +68,11 @@ describe('filters ⇄ query (§4.5)', () => {
     expect(toQuery(back, taxonomy)).toEqual(toQuery(f, taxonomy));
     expect(back.styles.size).toBe(0);
   });
-  it('ignores unknown band, status, lists and empty numbers', () => {
-    const f = fromQuery(new URLSearchParams('band=bogus&status=bogus&listen=Sitar&min='), taxonomy);
+  it('ignores unknown status, lists and empty numbers', () => {
+    const f = fromQuery(new URLSearchParams('status=bogus&listen=Sitar&min='), taxonomy);
     expect(isDefault(f, taxonomy)).toBe(true);
-    const none = fromQuery(new URLSearchParams('band=none&style='), taxonomy);
-    expect(none).toMatchObject({ band: false, solo: false });
+    const none = fromQuery(new URLSearchParams('status=none&style='), taxonomy);
+    expect(none).toMatchObject({ ready: false, inProgress: false });
     expect(none.styles.size).toBe(0);
   });
 

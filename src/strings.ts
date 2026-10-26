@@ -59,9 +59,6 @@ export const strings = {
     max: 'max',
     listen: 'What to listen for',
     allNone: 'all / none',
-    recorded: 'Recorded',
-    withBand: 'With a band',
-    solo: 'Solo',
     status: 'Status',
     ready: 'Ready',
     inProgress: 'In progress',
@@ -71,9 +68,6 @@ export const strings = {
   record: {
     canvasLabel:
       'A vinyl record map of tracks: sectors are styles, distance from the label is the year. The List view shows the same tracks as tiles.',
-    spinLabel: 'Spin the record',
-    play: 'Play',
-    pause: 'Pause',
     tooltip: (style: string, band: boolean, year: string, total: number) =>
       `${style} · ${band ? 'band' : 'solo'} · ${year} · complexity ${total}/15`,
     labelSide: (first: number, last: number) => `SIDE A · ${first} — ${last}`,
@@ -142,10 +136,32 @@ export const strings = {
     seek: 'Seek',
     download: '↓ Download',
     downloadLabel: (title: string) => `Download “${title}”`,
-    mini: 'Now playing',
-    closeMini: 'Stop and close the player',
     pastEnd: (slug: string, time: string) =>
       `songs/${slug}/index.md: pin at ${time} is past the end of the recording`,
+  },
+
+  random: {
+    label: 'Random track player',
+    idle: '⤮ Plays a random track',
+    nowPlaying: 'Now playing',
+    paused: 'Paused',
+    play: 'Play a random track',
+    prev: 'Previous track',
+    next: 'Next random track',
+    openCard: (title: string) => `Open “${title}”`,
+  },
+
+  hints: {
+    label: 'How to use this page',
+    steps: [
+      'Select a snowflake to play the song and read about it.',
+      'Or press play here for a random track. ⏭ picks another one.',
+      'Narrow the tracks down by style, complexity and instrument.',
+    ],
+    step: (n: number, total: number) => `${n} / ${total}`,
+    next: 'Next',
+    done: 'Got it',
+    skip: 'Skip',
   },
 
   overlay: {

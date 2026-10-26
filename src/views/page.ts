@@ -1,6 +1,7 @@
 // The static page frame: the star sky behind everything and two sections — the intro (title and
-// text) and the map (the bar with Play / Pause, Record / List and Filters, the filter panel, the
-// views). On wide screens CSS lays them out side by side. Returns the slots other views fill in.
+// text) and the map (the random-track player, the bar with Record / List and Filters, the filter
+// panel, the views). On wide screens CSS lays them out side by side. Returns the slots other
+// views fill in.
 import { drawSky } from '../render/sky';
 import { devicePixelRatioCapped } from '../render/snowflake';
 import { strings } from '../strings';
@@ -9,7 +10,7 @@ export interface PageSlots {
   page: HTMLElement;
   filterToggle: HTMLButtonElement;
   filters: HTMLElement;
-  spin: HTMLElement;
+  player: HTMLElement;
   tabRecord: HTMLButtonElement;
   tabList: HTMLButtonElement;
   stage: HTMLElement;
@@ -29,8 +30,8 @@ export function renderPage(root: HTMLElement): PageSlots {
       </header>
       <main class="map-sec" aria-label="${v.mapLabel}">
         <button type="button" class="scroll-cue up" aria-label="${v.toIntro}">${CHEVRON}</button>
+        <div class="rplayer" data-slot="player"></div>
         <div class="viewbar">
-          <div class="vseg spinseg" role="group" aria-label="${strings.record.spinLabel}" data-slot="spin"></div>
           <div class="vseg tabs" role="tablist" aria-label="${v.label}">
             <button type="button" role="tab" id="tab-record" aria-controls="stage"><span class="glyph">${v.recordGlyph} </span>${v.record}</button>
             <button type="button" role="tab" id="tab-list" aria-controls="listview"><span class="glyph">${v.listGlyph} </span>${v.list}</button>
@@ -52,7 +53,7 @@ export function renderPage(root: HTMLElement): PageSlots {
     page: q('.page'),
     filterToggle: q('.ftoggle'),
     filters: q('[data-slot="filters"]'),
-    spin: q('[data-slot="spin"]'),
+    player: q('[data-slot="player"]'),
     tabRecord: q('#tab-record'),
     tabList: q('#tab-list'),
     stage: q('#stage'),

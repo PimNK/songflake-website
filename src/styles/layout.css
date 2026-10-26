@@ -1,10 +1,11 @@
-/* Page frame. Below 1100 px: two sections, each a screen high — the intro, then the bar and the
-   view — and scrolling snaps to them. From 1100 px: one screen, with the title, intro, the stack
-   of controls and the filter panel on the left and the view filling the rest. */
+/* Page frame. Below 1100 px: two sections, each a screen high — the intro, then the random-track
+   player, the bar and the view — and scrolling snaps to them. From 1100 px: one screen; on the
+   left the title with the player and Record / List beside it, then the intro beside the
+   always-open filter panel; the view fills the rest. */
 :root {
   --gutter: clamp(16px, 3vw, 36px);
-  /* above the view below 1100 px: top padding + up arrow + bar + gaps */
-  --bar-room: 106px;
+  /* above the view below 1100 px: top padding + up arrow + player + bar + gaps */
+  --bar-room: 172px;
 }
 .intro-sec {
   padding: clamp(28px, 6vw, 52px) var(--gutter) 24px;
@@ -50,7 +51,7 @@
   position: relative;
   min-width: 0;
 }
-/* One bar: Record / List, Filters, Play / Pause, all in the same segmented style. */
+/* One bar: Record / List and Filters, in the same segmented style, on the page background. */
 .viewbar {
   display: flex;
   align-items: center;
@@ -62,17 +63,12 @@
 .viewbar .filt {
   order: 2;
 }
-.viewbar .spinseg {
-  order: 3;
-}
 .vseg {
   display: inline-flex;
   flex: none;
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 3px;
-  background: color-mix(in srgb, var(--panel) 82%, transparent);
-  backdrop-filter: blur(4px);
 }
 .vseg button {
   background: none;
@@ -155,7 +151,7 @@
     scroll-snap-align: start;
   }
 }
-/* Phones: the bar stays on one line; Play / Pause show their icons only. */
+/* Phones: the bar stays on one line; the tabs lose their glyphs. */
 @media (max-width: 599.98px) {
   .viewbar {
     gap: 5px;
@@ -165,7 +161,6 @@
     font-size: 11px;
     letter-spacing: 0.02em;
   }
-  .spinseg .word,
   .tabs .glyph {
     display: none;
   }
@@ -174,9 +169,12 @@
   .page {
     display: grid;
     height: 100svh;
-    grid-template-columns: 290px 210px minmax(0, 1fr);
+    grid-template-columns: 290px 80px 210px minmax(0, 1fr);
     grid-template-rows: auto auto minmax(0, 1fr);
-    grid-template-areas: 'title title view' 'intro bar view' 'filt filt view';
+    grid-template-areas:
+      'title title play view'
+      'title title bar view'
+      'intro filt filt view';
     column-gap: 24px;
     padding-left: var(--gutter);
   }
@@ -184,24 +182,34 @@
   .map-sec {
     display: contents;
   }
-  .scroll-cue {
+  .scroll-cue,
+  .viewbar .filt {
     display: none;
   }
+  /* sized so «OBYCHNO_» fits its two columns, beside the player */
   .intro-sec h1 {
     grid-area: title;
-    padding-block: 36px 22px;
+    font-size: clamp(44px, 3.5vw, 56px);
+    align-self: center;
+    padding-block: 32px 20px;
+  }
+  .rplayer {
+    grid-area: play;
+    margin-top: 32px;
   }
   .lead {
     grid-area: intro;
+    min-height: 0;
+    overflow: auto;
+    padding-bottom: 24px;
   }
   .viewbar {
     grid-area: bar;
-    flex-direction: column;
-    align-items: stretch;
     align-self: start;
+    padding-block: 12px 20px;
   }
   .viewbar .vseg {
-    order: 0;
+    flex: 1;
   }
   .viewbar .vseg button {
     flex: 1;
@@ -210,7 +218,7 @@
     grid-area: filt;
     min-height: 0;
     overflow: auto;
-    padding-block: 18px 24px;
+    padding-bottom: 24px;
   }
   .views {
     grid-area: view;

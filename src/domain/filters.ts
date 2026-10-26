@@ -10,8 +10,6 @@ export interface FilterState {
   accents: ReadonlySet<string>;
   min: number;
   max: number;
-  band: boolean;
-  solo: boolean;
   ready: boolean;
   inProgress: boolean;
 }
@@ -22,8 +20,6 @@ export function defaultFilters(taxonomy: Taxonomy): FilterState {
     accents: new Set(taxonomy.accents.map((a) => a.id)),
     min: COMPLEXITY_MIN,
     max: COMPLEXITY_MAX,
-    band: true,
-    solo: true,
     ready: true,
     inProgress: true,
   };
@@ -35,7 +31,6 @@ export function matches(song: Song, f: FilterState): boolean {
     song.complexityTotal >= f.min &&
     song.complexityTotal <= f.max &&
     song.accents.some((a) => f.accents.has(a)) &&
-    (song.band !== null ? f.band : f.solo) &&
     (song.status === 'ready' ? f.ready : f.inProgress)
   );
 }
@@ -61,8 +56,6 @@ export function toggle(set: ReadonlySet<string>, id: string, on: boolean): Set<s
 export interface FilterCounts {
   styles: Record<string, number>;
   accents: Record<string, number>;
-  band: number;
-  solo: number;
   ready: number;
   inProgress: number;
 }
@@ -71,12 +64,10 @@ export interface FilterCounts {
 export function countOptions(songs: readonly Song[], taxonomy: Taxonomy): FilterCounts {
   const styles = Object.fromEntries(taxonomy.styles.map((s) => [s, 0]));
   const accents = Object.fromEntries(taxonomy.accents.map((a) => [a.id, 0]));
-  const counts: FilterCounts = { styles, accents, band: 0, solo: 0, ready: 0, inProgress: 0 };
+  const counts: FilterCounts = { styles, accents, ready: 0, inProgress: 0 };
   for (const s of songs) {
     if (s.style in styles) styles[s.style]!++;
     for (const a of s.accents) if (a in accents) accents[a]!++;
-    if (s.band !== null) counts.band++;
-    else counts.solo++;
     if (s.status === 'ready') counts.ready++;
     else counts.inProgress++;
   }
@@ -107,8 +98,6 @@ export function toQuery(f: FilterState, taxonomy: Taxonomy): Record<string, stri
   }
   if (f.min !== d.min) q.min = String(f.min);
   if (f.max !== d.max) q.max = String(f.max);
-  const band = pair(f.band, f.solo, ['band', 'solo']);
-  if (band) q.band = band;
   const status = pair(f.ready, f.inProgress, ['ready', 'in-progress']);
   if (status) q.status = status;
   return q;
@@ -141,10 +130,6 @@ export function fromQuery(q: URLSearchParams, taxonomy: Taxonomy): FilterState {
   const min = num('min');
   if (max !== null) f = setRange(f, 'max', max);
   if (min !== null) f = setRange(f, 'min', min);
-  const band = q.get('band');
-  if (band === 'band' || band === 'solo' || band === 'none') {
-    f = { ...f, band: band === 'band', solo: band === 'solo' };
-  }
   const status = q.get('status');
   if (status === 'ready' || status === 'in-progress' || status === 'none') {
     f = { ...f, ready: status === 'ready', inProgress: status === 'in-progress' };
