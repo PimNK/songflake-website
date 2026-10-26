@@ -302,24 +302,26 @@ fits, propose a new module and update this table in the same change.
 | `render/record-label.ts` | the centre label: paper, ice ring, style arcs, and the fitted text (`drawCentreLabel`) | layout maths (sizes come from `labelLineSize`), the rest of the vinyl |
 | `render/record-flakes.ts` | the snowflakes with their titles on the record; draws only the titles `visibleTitles` allows (all on hover); `drawBeat`, the ice glow ring behind the playing track's snowflake (`pulse` on the node) | layout maths, deciding snowflake parameters |
 | `render/sky.ts` | the seeded star field drawn on the page's fixed background canvas | layout maths, song data |
-| `render/radar.ts` | the five-axis radar as an SVG string | any chart library |
+| `render/radar.ts` | the five-axis radar as an SVG string; the viewBox is framed tight round the labels so it fills its cell | any chart library |
 | `views/record.ts` | the record canvas: DPR sizing, animation loop, composing the input, controls and motion modules, click → card, `setPlaying` (the current track's snowflake swells +16 % every 2.2 s (`PULSE_MS`) with `drawBeat`; held enlarged under reduced motion). Takes only the stage. Mounted once for the page's lifetime: its observers and listeners are never released | layout or drawing maths |
 | `views/record-input.ts` | pointer input on the canvas: wheel and pinch zoom anchored at the pointer, drag turns the disc (never pans), hover, click; a drag over 4 px is not a click | layout or drawing maths |
 | `views/record-controls.ts` | the stage template (canvas and tooltip element) and the hover tooltip | layout or drawing maths |
 | `views/record-motion.ts` | spin state (disc and snowflake turn): always on, except under `prefers-reduced-motion` | layout maths (spin rate comes from `domain/record-layout.ts`) |
 | `views/content-overlay.ts` | the dev-only overlay: one panel at the top listing content errors and warnings, each message shown once per page load; also used for the dev «pin past the end» warning (`main.ts` calls it under `import.meta.env.DEV`); messages inserted as text | parsing or validation, production use |
-| `views/page.ts` | the static page frame: the star sky canvas (mounts `render/sky.ts`, redrawn on resize), the `.page` with `.intro-sec` (title, the «About» heading `.about` (`strings.hero.about`) and the intro from `strings.ts`; the page takes no content) and `.map-sec`, `.rplayer` (wraps the random-player slot `.rp` and the Filters toggle; the slot is `player`), the bar (the «View» label `.vlabel` with the Record / List tabs, which take `aria-labelledby` from it; the Filters toggle is not in the bar; their order is set by CSS), the scroll cue (`wireScrollCue`: one down arrow with a «scroll» caption in the intro, smooth scroll to the map section; fades out once the page is scrolled more than 24 px), the filter anchor and the view slots; `data-view` on `.page` tells CSS which view is shown; returns the slots other views fill. Also the view switch: `showView` (shows one view, sets `data-view`, marks its tab, sets the notice) and `onViewTab` (tab clicks; roving tabindex, ← / → move between tabs) | filtering, state, drawing maths |
+| `views/page.ts` | the static page frame: the star sky canvas (mounts `render/sky.ts`, redrawn on resize), the `.page` with `.intro-sec` (title, the on-page «About» section `.about` (`strings.hero.about`) and the intro from `strings.ts`, both hidden from 1100 px; the `.about-btn` shown from 1100 px, exposed as `PageSlots.aboutButton`; the page takes no content) and `.map-sec`, `.rplayer` (wraps the random-player slot `.rp` and the Filters toggle; the slot is `player`), the bar (`.viewbar`: the «View» label `.vlabel` with the Record / List tabs, which take `aria-labelledby` from it) inside `.fanchor`, before `.fpanel` — from 1100 px it is the top row of the filter block, below 1100 px it stays above the view; the Filters toggle is not in the bar; their order is set by CSS), the scroll cue (`wireScrollCue`: one down arrow with a «scroll» caption in the intro, smooth scroll to the map section; fades out once the page is scrolled more than 24 px), the filter anchor and the view slots; `data-view` on `.page` tells CSS which view is shown; returns the slots other views fill. Also the view switch: `showView` (shows one view, sets `data-view`, marks its tab, sets the notice) and `onViewTab` (tab clicks; roving tabindex, ← / → move between tabs) | filtering, state, drawing maths |
+| `views/modal.ts` | `trapFocus` (Tab wraps inside a modal window), shared by the track card and About | everything else |
+| `views/about.ts` | `mountAbout(button)`: the About window for wide screens — the About button opens the intro (`strings.hero.about`, `hero.intro`) in a modal using the card's `.modal` / `.sheet` frame (`.about-sheet`, styled in `styles/card.css`); ✕, Esc and backdrop close; focus trapped (`views/modal.ts`) and returned to the button; scroll lock (`body.locked`). Narrower, the intro stays on the page | the intro text (it is in `strings.ts`), card logic |
 | `views/seek.ts` | `wireSeek`: seeking on a bar by click / drag and keys (← / → 5 s, Home / End), shared by the card waveform (`views/player.ts`) and the random player's line | audio element, rendering, time parsing |
 | `views/html.ts` | the `esc()` helper for author text interpolated into `innerHTML`, `bandRing` (the dashed band ring SVG), `info(bubble)` (the ⓘ with its bubble; `.qi` / `.bubble` CSS is in `styles/base.css`), `SKIP_ICON` (the previous / next glyph, shared by the card and the random player) and `turnStyle` (inline style that starts a snowflake's CSS turn) | anything else |
 | `views/list.ts` | the tile grid (`TILE_RADIUS` 40; snowflakes scale with the tile via `tileFlake` and turn via CSS), its empty state, flakes centred in the square box so their centres line up across a row, and `setPlaying` (the `playing` class on the current track's tile: its flake box beats, stronger than a record beat, no ring; held enlarged under reduced motion) | filtering logic |
-| `views/filter-panel.ts` | filter controls generated from taxonomy + songs (styles, instruments, complexity, year from / to sliders, status): each group has an ⓘ note (`strings.filters.info`); no counts beside options (zero-count options are still dimmed); always open from 1100 px; below, a bottom sheet above the player opened by the Filters toggle (no `<details>`): `aria-expanded`, the «N / total» on the toggle, Esc and outside click closing (§4.2) | filtering logic, hard-coded options |
-| `views/track-card.ts` | the modal shell (§4.3): title and ✕, the transport row (previous / next buttons around the play slot), swipe stepping on touch, `PlayerSlots {play, body}` passed to `CardHooks.player` (a disabled play button and «Recording coming soon» when there is no audio, otherwise a hook to `views/player.ts`), focus trap and focus return, scroll lock, key handling (Esc, ← / →; arrows ignore modified keys) | the card's sections, audio element management |
-| `views/card-body.ts` | the card sections: the left column (idea → recording, story) and the right block (what to listen for with the band marker, the turning snowflake beside the radar with total); the ⓘ bubbles | rules (those are in `domain/`), audio |
+| `views/filter-panel.ts` | filter controls generated from taxonomy + songs (styles, instruments, complexity, year from / to sliders, status): each group has an ⓘ note (`strings.filters.info`); options are drum-machine pads — one size in one grid (`.pads`: 3 columns below 600 px, 4 from 600; 52 px tall below 1100, 42 from), each with a light in the instrument colour (`--led` inline from the taxonomy; ice for styles and status), the checkbox hidden but focusable; complexity and year sliders side by side from 600 px (`.franges`); no counts beside options (zero-count options are still dimmed); always open from 1100 px; below, a bottom sheet above the player opened by the Filters toggle (no `<details>`): a round funnel icon with no count, `aria-expanded`, `aria-label` = `strings.filters.toggleLabel(n, total)`, a dot (`.fdot`) while the filters differ from default (`isDefault`), Esc and outside click closing (§4.2) | filtering logic, hard-coded options |
+| `views/track-card.ts` | the modal shell (§4.3): title and ✕, the top row `.mtop` (the player section, laid out like the random player — previous · play / pause · next at the left — and the turning snowflake slot `.mflake` at its right, above the player below 900 px), then `.mgrid` of four equal cells; swipe stepping on touch, `PlayerSlots {play, body}` passed to `CardHooks.player` (no audio: `emptyPlayer()` from `views/player.ts` — same rows, a flat line, «Recording coming soon» in the caption — and a disabled play button; otherwise a hook to `views/player.ts`), focus return (the trap itself is `trapFocus` from `views/modal.ts`), scroll lock, key handling (Esc, ← / →; arrows ignore modified keys) | the card's sections, audio element management, the focus-trap helper |
+| `views/card-body.ts` | `renderCardBody(grid, flakeSlot, song, taxonomy, bands)`: the four equal cells, 2×2 from 900 px — From idea to recording | What to listen for (with the band marker), Story | Total complexity with the radar; the timeline and chips are centred vertically in their cells; only the story scrolls, inside its cell; one column below 900 px. The turning snowflake goes into `flakeSlot`; the ⓘ bubbles | rules (those are in `domain/`), audio |
 | `views/markdown.ts` | story Markdown → HTML; raw HTML is shown as text; only http(s), mailto and relative links are kept | anything else |
-| `views/player.ts` | the card's player UI: the round play / pause button (created in `slots.play`), time, waveform seek slider (click/drag and keyboard) and active-pin note (rendered into `slots.body`), hiding pins past the end of the recording (§4.6); `PlayerHooks` only carry the dev warning | the `<audio>` element, pin markers, a pin list or copy link, time parsing (that is `domain/pins.ts`) |
+| `views/player.ts` | the card's player UI, laid out like the random player: the round play / pause button (created in `slots.play`); in `slots.body` the caption `.pstate` («Now playing» / «Paused» / «Press play to listen», `strings.player.ready`) with the active-pin note under it (two lines at most), then the waveform seek slider (click/drag and keyboard) with a thumb (`--at`) and `m:ss / m:ss` at its right; exports `emptyPlayer`; hiding pins past the end of the recording (§4.6); `PlayerHooks` only carry the dev warning | the `<audio>` element, pin markers, a pin list or copy link, time parsing (that is `domain/pins.ts`) |
 | `views/playback.ts` | the one shared `<audio>` element; pending positions for songs that are not loaded; per-song waveform and duration cache, falling back to a metadata probe when decoding fails; failures are not cached; the run's `mode` (`order` = started from a card, `shuffle` = started by the random player; set when `play` switches song); `autoAdvance(next(ended, mode), moved)` (when a track ends, play the one the callback picks for the mode and report the move); a finished track's end position is not kept | DOM beyond the audio element, rendering |
 | `views/pin-markers.ts` | pin diamonds and popovers (near either end of the bar they open inwards, by pixel distance); markers under 12 px apart merge; on touch the first tap shows the popover and the second seeks; a merged marker seeks to its first pin | audio, time parsing, grouping maths (that is `domain/pins.ts`) |
-| `views/random-player.ts` | the random-track player in the page's controls: `mountRandomPlayer(el, playback, taxonomy, hooks)`: previous · play / pause · next, the playing track's turning snowflake (a button that opens the card; its slot keeps its size when idle), the caption («⤮ Plays a random track», then «Now playing» / «Paused» and the title, which opens the card) and a progress line (a `role=slider` that seeks via `views/seek.ts`) with the time `m:ss / m:ss` at its right. A rAF loop moves only the line; time and `aria-valuenow` follow `timeupdate`. Styles in `styles/random-player.css`. Keeps a `ShuffleHistory`; a track started elsewhere joins it. Starts plays with mode `shuffle`; ⏮ steps back, at the history's start it restarts the track | the audio element, the pool rule (main.ts passes `pool()`), pick maths (that is `domain/shuffle.ts`) |
+| `views/random-player.ts` | the random-track player in the page's controls: `mountRandomPlayer(el, playback, taxonomy, hooks)`: previous · play / pause · next, the playing track's turning snowflake (a button that opens the card; its slot keeps its size when idle), the caption («⤮ Plays a random track», then «Now playing» / «Paused» and the title, which opens the card) and a progress line (a `role=slider` that seeks via `views/seek.ts`) with the time `m:ss / m:ss` at its right. A rAF loop moves only the line; time and `aria-valuenow` follow `timeupdate`. A title too long for its line runs as a ticker (`fitTitle`; a second aria-hidden copy closes the loop; re-fitted on width change by a ResizeObserver; it runs under `prefers-reduced-motion` too). The snowflake is hidden below 600 px (the title gets the room). The Filters toggle sits at the right of the bottom player's top row, not beside the line. Styles in `styles/random-player.css`. Keeps a `ShuffleHistory`; a track started elsewhere joins it. Starts plays with mode `shuffle`; ⏮ steps back, at the history's start it restarts the track | the audio element, the pool rule (main.ts passes `pool()`), pick maths (that is `domain/shuffle.ts`) |
 | `views/hints.ts` | the first-visit hints (§4.1): ring and note per step, auto-advance every 6 s (not while the note is hovered), Next / Got it, Skip, Esc, click elsewhere; the seen flag in `localStorage` (`obychno.hints`, best effort) | deciding when the page opens on a card (main.ts does) |
 | `app/state.ts` | the single app state (`view`, `filters`, `openSlug`, `cue`, `notice`) and change notifications | DOM |
 | `app/router.ts` | URL ⇄ state (§4.5), the history policy (`historyAction`): opening a card or switching views pushes an entry; closing a card that has its own entry goes back; filter changes replace; a malformed or unknown slug gives the «Track not found» notice; an empty hash keeps the starting view and is replaced at start with that view's hash. `startRouter(store, space, known, fitView)` (`space` is the `FilterSpace`; `stateToHash(s, space)` likewise) maps a view to one the screen has (phones: list only), corrects a `#/` URL to `#/list` (replace) and returns `{ refit }`, a re-read of the URL that replaces the entry, never pushes | rendering |
@@ -345,11 +347,13 @@ split. Say so when you cross it.
   playing track's turning snowflake — a button that opens the card, its slot
   keeps its size when idle — the caption «⤮ Plays a random track» or «Now
   playing» + the title, which opens the card, and a seekable progress line with
-  a thumb and the time `m:ss / m:ss`); the filter panel, always open (no
-  Filters toggle; in flow, scrolls, covers nothing); the view bar (a visible
-  «View» label `.vlabel`, `aria-labelledby` on the tabs, and the Record / List
-  tabs); then the «About» heading and the intro (several lines, «_» opens a
-  list line, `--mist`, `white-space: pre-line`). Right: the view at full
+  a thumb and the time `m:ss / m:ss`); the filter block, always open (no
+  Filters toggle): a filled, rounded box whose top row is the view bar (a
+  visible «View» label `.vlabel`, `aria-labelledby` on the tabs, and the
+  Record / List tabs); it scrolls inside itself on a low window; then the
+  About button, which opens the intro (several lines, «_» opens a list line,
+  `--mist`, `white-space: pre-line`) in a window (`views/about.ts`). No «About»
+  heading and intro text in the column. Right: the view at full
   height; the list scrolls inside it. No legend, no «How to read a snowflake»
   section, no footer. Text in `strings.ts`.
 - **Below 1100 px: two sections**, each at least a screen high — the intro
@@ -357,10 +361,12 @@ split. Say so when you cross it.
   in the record view, proximity in the list. The second section holds the bar —
   the «View» label and the Record / List tabs — its left edge aligned with the
   intro. The random player is **fixed at the bottom** of the screen
-  (`--player-room`, 104 px plus the safe-area inset), with the Filters toggle
-  beside its line; it is no longer sticky at the top. The scroll cue sits above
-  it. Under 600 px the tab glyphs are hidden; under 360 px the Filters toggle
-  shows ≡ instead of the word (still read out). No horizontal scroll anywhere.
+  (`--player-room`, 104 px plus the safe-area inset), with the Filters toggle (a
+  funnel icon) at the right of the player's top row; it is no longer sticky at
+  the top. The scroll cue sits above it. Under 600 px the tab glyphs are
+  hidden and the player's snowflake is hidden; under 360 px the skip buttons
+  get smaller. Long titles in the player run as a ticker. No horizontal scroll
+  anywhere.
 - **Phones (below 600 px):** the list only. No Record / List switch and no
   record view; the whole bar is hidden. A `#/` URL is corrected to `#/list` (replace, §4.5). The
   breakpoint in `main.ts` must match `styles/layout.css`.
@@ -381,8 +387,8 @@ split. Say so when you cross it.
   `100svh` minus `--bar-room` (64 px) and `--player-room`, at least 360 px.
 - **One background** for the page, the record and the list: a radial glow plus
   a fixed star canvas (`render/sky.ts`, mounted by `views/page.ts`). The record
-  and the list have no borders or panels; the filter panel has no box either (§4.2); the bar's buttons sit on it
-  without a fill.
+  and the list have no borders or panels; from 1100 px the filter block is a
+  filled box (§4.2).
 - **Track card below 900 px** (`styles/card.css`): a full-height sheet with one
   column. That breakpoint belongs to the card only.
 - **Single dark theme.** Tokens in `styles/tokens.css`, values from the mockup:
@@ -408,20 +414,26 @@ split. Say so when you cross it.
 The band is not a filter; it drives only the marker and the halo.
 
 From 1100 px the panel is **always open**, with no toggle. Below 1100 px it is
-**collapsed by default**: the Filters toggle beside the random player
-(`aria-expanded`) opens it and carries the counter «N / total». The panel has
-no header. Each group has an ⓘ note; options show no counts (an option no song
-uses is dimmed). «Reset
-filters» button at the bottom. The panel sits straight on the page background
-with no box, and options have no fill. Style options carry no colour dot
-(instrument dots stay).
-- **From 1100 px** the panel is in flow in the left column, under the random
-  player: Style beside What to listen for, then Complexity and Year side by
-  side, then Status and Reset. It covers nothing.
+**collapsed by default**: the Filters toggle (a round funnel icon, at the
+right of the random player's top row, `aria-expanded`) opens it. The toggle
+shows no text count: «N of total tracks shown» is in its `aria-label`
+(`strings.filters.toggleLabel`), and a dot shows while the filters differ from
+the default. The panel has no header. Each group has an ⓘ note; options show
+no counts (an option no song uses is dimmed). «Reset filters» button at the
+bottom.
+- **Options are pads**, one size in one grid (3 columns below 600 px, 4 from
+  600), 52 px tall below 1100 px and 42 px from it. Each pad has a light: the
+  instrument's colour for instruments (from the taxonomy), ice for styles and
+  status. The checkbox is hidden but stays focusable. Status pads are hidden
+  while no song is in progress.
+- **Order, at all widths:** Style, What to listen for, then Complexity and
+  Year side by side (from 600 px), then Status, then Reset.
+- **From 1100 px** the panel is a filled, rounded block in the left column,
+  under the random player, with the Record / List switch as its top row. It
+  scrolls inside itself on a low window and covers nothing.
 - **Below 1100 px** it is a bottom sheet above the player (filled background,
-  rounded top, at most 70svh) with pill options at least 44 px high; the
-  checkboxes are hidden but stay focusable. An outside click or Esc closes it.
-  There is no panel floating over the record any more.
+  rounded top, at most 70svh) with pads at least 44 px high. An outside click
+  or Esc closes it. There is no panel floating over the record any more.
 - **Esc** closes the sheet (focus returns to the toggle if it was inside the panel);
   not while the track card is open.
 
@@ -437,28 +449,29 @@ Both views reflect the same filter state instantly:
 Opened from the record, a tile, or a deep link. Top to bottom:
 1. **Header:** title and ✕. No ← / → buttons
    in the header, no eyebrow line.
-2. **Player with pins**, full width (§4.6). A centred transport row: previous ·
-   round play / pause in the lead colour · next. The skip buttons are round,
-   the same size, in the card's background colour. Below it: time, the waveform
-   with pins, the pin note. No audio → a disabled play button and a quiet
-   «Recording coming soon» line.
-3. Two columns, 35 / 65 (one below 900 px). From 900 px the card fits the
-   window and only the left column scrolls. From 900 px the card also has a
-   fixed height (`min(100%, 880px)`), a one-line title with an ellipsis (the
-   full title on hover), a fixed-height player body (the no-audio line is
-   centred in it), reserved rows for the chips and the band marker, and a
-   stable scrollbar gutter, so stepping between tracks moves nothing:
-   - left:
-     - **From idea to recording** with an ⓘ: Idea = the main melody or idea
+2. **Top row:** the player with pins (§4.6) and, at its right, the turning
+   snowflake (radius 80, shown ~132 px; above the player below 900 px). The
+   player is laid out like the random player: the transport at the left —
+   previous · round play / pause in the lead colour (56 px) · next (skip
+   buttons round, 46 px, in the card's background colour) — then the caption,
+   the waveform with pins and the time. No audio → a disabled play button, a
+   flat line and «Recording coming soon» in the caption (same rows as with
+   audio).
+3. **Four equal cells**, 2×2 from 900 px (one column below). From 900 px the
+   card fits the window and has a fixed height (`min(100%, 880px)`), a
+   one-line title with an ellipsis (the full title on hover), a fixed-height
+   top row, and reserved rows for the chips and the band marker, so stepping
+   between tracks moves nothing. Only the story scrolls, inside its cell. The
+   cells, in order:
+   - **From idea to recording** with an ⓘ, centred vertically in its cell: Idea = the main melody or idea
        appears; Concept = the song has a structure for the main instruments;
        Ready = recorded, you can listen. Three stations Idea → Concept → Ready with
        years; dots in the lead colour (hollow, half, full); connecting line
        segments proportional to the years between them (minimum length for 0),
        labelled «1 year» / «same year». No summary sentence. A missing
        `years.concept` shows «—», a missing `years.ready` shows «not yet».
-     - **Story** — the Markdown body (raw HTML disabled).
-   - right, one block, on the card's background with no box:
-     - **What to listen for** with an ⓘ that explains on hover/focus: «What I'd
+   - **What to listen for** (chips and band marker centred vertically in the cell)
+     with an ⓘ that explains on hover/focus: «What I'd
        like you to notice while listening — the parts this track is built
        around. They also colour the rays of the snowflake.» Then one chip per
        instrument (colour dot with glow, display name), the first marked
@@ -467,13 +480,15 @@ Opened from the record, a tile, or a deep link. Top to bottom:
        with name, description and years from `bands.yaml` on hover/focus;
        `band: ""` → «Recorded with a band» and a hint that the name is not filled
        in; no band → no band marker at all.
-     - the **«Total complexity N / 15»** heading, in the same style as What to
-       listen for, with its ⓘ explaining each axis (`strings.card.totalInfo`).
-     - the **snowflake** (radius 80), turning slowly on its own axis as on the
-       record (static under `prefers-reduced-motion`), and beside it the
-       **radar** of the five axes (scale 0–3, grid rings at 1/2/3, polygon
-       in the lead colour, axis labels with values). They stack below 900 px; their
-       height is `clamp(…, 29svh, …)`. No mapping legend in the card.
+   - **Story** — the Markdown body (raw HTML disabled).
+   - the **«Total complexity N / 15»** heading, in the same style as What to
+     listen for, with its ⓘ explaining each axis (`strings.card.totalInfo`),
+     and the **radar** of the five axes (scale 0–3, grid rings at 1/2/3,
+     polygon in the lead colour, axis labels with values), filling its cell.
+     No mapping legend in the card.
+
+The snowflake in the top row turns slowly on its own axis as on the record
+(static under `prefers-reduced-motion`); it is no longer beside the radar.
 
 Closing: ✕, Esc, click on the backdrop, browser Back. ← / → keys = prev / next.
 On touch, swiping left / right on the card steps to the next / previous track
@@ -535,8 +550,11 @@ opens the view with a short «Track not found» notice, never a broken modal.
 
 ### 4.6 Player and pins
 
-- Round play/pause button in the lead colour (in the transport row, §4.3);
-  `m:ss / m:ss` time. The random player's progress line seeks too (click,
+- Card player layout (like the random player): round play/pause button in the
+  lead colour (in the transport at the left, §4.3); a caption («Now playing» /
+  «Paused» / «Press play to listen») with the active-pin note under it (two
+  lines at most); then the waveform with a thumb and the time `m:ss / m:ss` at
+  its right. The random player's progress line seeks too (click,
   drag, ← / → 5 s, Home / End), like the card's waveform.
 - **When a track ends**, what follows depends on who started the run. Started
   from a card: the next track with a recording in the card's order (filtered,
@@ -559,7 +577,7 @@ opens the view with a short «Track not found» notice, never a broken modal.
   second seeks. Markers closer than ~12 px merge into one whose popover lists
   both. Popovers near either end of the bar open inwards (decided by pixel
   distance).
-- **Active-pin note** under the bar during playback: the most recent pin
+- **Active-pin note** under the caption during playback: the most recent pin
   passed, shown until the next pin or ~8 s; seeking updates it.
 - There is no pin list and no copy link: the markers and the note are the whole
   pin UI.

@@ -52,8 +52,7 @@ export const strings = {
   },
 
   filters: {
-    toggle: 'Filters',
-    count: (n: number, total: number) => `${n} / ${total}`,
+    toggleLabel: (n: number, total: number) => `Filters: ${n} of ${total} tracks shown`,
     style: 'Style',
     complexity: 'Total complexity',
     range: (min: number, max: number) => `${min} – ${max}`,
@@ -143,6 +142,7 @@ export const strings = {
     playGlyph: '▶',
     pauseGlyph: '❚❚',
     noAudio: 'Recording coming soon',
+    ready: 'Press play to listen',
     pinAt: (time: string, text: string) => `Pin at ${time}: ${text}`,
     seek: 'Seek',
     pastEnd: (slug: string, time: string) =>

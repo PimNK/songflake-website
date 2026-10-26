@@ -1,6 +1,6 @@
 /* The random-track player: keys · snowflake · caption and title, then the seekable line with the
    time. From 1100 px it heads the left column; narrower it is frozen at the bottom of the screen
-   (layout.css) with the Filters toggle beside the line. */
+   (layout.css) with the Filters toggle at the right of its top row. */
 .rp {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr);
@@ -58,6 +58,8 @@
   color: var(--mist);
 }
 .rp-title {
+  display: block;
+  max-width: 100%;
   background: none;
   border: 0;
   padding: 0;
@@ -68,6 +70,30 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* A title too long for its line runs as a ticker (views/random-player.ts adds the loop's copy). */
+.rp-title.run {
+  text-overflow: clip;
+  mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+}
+.rp-run {
+  display: inline-flex;
+}
+.rp-title.run .rp-run {
+  animation: run var(--run, 8s) linear infinite;
+}
+.rp-title.run .rp-run > span {
+  padding-right: 3em;
+}
+@keyframes run {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rp-title.run .rp-run {
+    animation: none;
+  }
 }
 .rp-title:hover {
   color: var(--ice);
@@ -128,20 +154,38 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-/* The Filters toggle lives in the player; from 1100 px the panel is always open and it hides. */
+/* The Filters toggle lives in the player: a round funnel, with a dot while filters are set. From
+   1100 px the panel is always open and it hides. */
 .ftoggle {
-  background: none;
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
   border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 8px 14px;
-  font-size: 13px;
+  border-radius: 50%;
+  background: none;
   color: var(--frost);
   cursor: pointer;
-  white-space: nowrap;
+}
+.ftoggle:hover {
+  border-color: var(--mist);
 }
 .ftoggle[aria-expanded='true'] {
+  border-color: var(--frost);
   background: var(--frost);
   color: var(--void);
+}
+.fdot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ice);
+  box-shadow: 0 0 6px var(--ice);
 }
 @media (min-width: 1100px) {
   .ftoggle {
@@ -156,8 +200,8 @@
     display: grid;
     grid-template-columns: auto auto minmax(0, 1fr) auto;
     grid-template-areas:
-      'keys flake text text'
-      'line line line tog';
+      'keys flake text tog'
+      'line line line line';
     align-items: center;
     column-gap: 10px;
     row-gap: 4px;
@@ -196,28 +240,24 @@
   }
   .ftoggle {
     grid-area: tog;
-    padding: 7px 12px;
-  }
-  .ftoggle .count {
-    margin-left: 2px;
-    padding-inline: 5px;
   }
 }
-/* The smallest phones: the toggle keeps its «N / total» (so active filters show) and drops the
-   word (still read out), with a ≡ in its place, so the player fits. */
-@media (max-width: 359.98px) {
-  .ftoggle .fword {
-    font-size: 0;
+/* Phones: the snowflake gives its room to the title (which still opens the card). */
+@media (max-width: 599.98px) {
+  .rplayer {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'keys text tog'
+      'line line line';
   }
+  .rp-flake {
+    display: none;
+  }
+}
+/* The smallest phones: smaller skip buttons, so the player fits. */
+@media (max-width: 359.98px) {
   .rp-keys .nav {
     width: 34px;
     height: 34px;
-  }
-  .ftoggle {
-    padding-inline: 10px;
-  }
-  .ftoggle .fword::before {
-    content: '≡';
-    font-size: 14px;
   }
 }

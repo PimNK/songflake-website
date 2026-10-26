@@ -1,7 +1,8 @@
 /* Page frame. Below 1100 px: two sections, each a screen high — the intro, then the bar and the
    view — and scrolling snaps to them; the random-track player is frozen at the bottom of the
-   screen. From 1100 px: one screen; a left column with the title, the player, the filters, the
-   labelled Record / List switch and About; the view fills the rest. */
+   screen. From 1100 px: one screen; a left column with the title, the player, the filter block
+   (the labelled Record / List switch on top) and the About button, which opens the intro in a
+   window; the view fills the rest. */
 :root {
   --gutter: clamp(16px, 3vw, 36px);
   /* above the view below 1100 px: top padding + the bar + gap */
@@ -23,6 +24,10 @@
 .about {
   display: grid;
   gap: 8px;
+}
+/* The About button is for wide screens; narrower, the intro is on the page. */
+.about-btn {
+  display: none;
 }
 .lead {
   max-width: 64ch;
@@ -174,13 +179,13 @@
     display: grid;
     height: 100svh;
     grid-template-columns: minmax(0, clamp(420px, 34vw, 600px)) minmax(0, 1fr);
-    grid-template-rows: auto auto auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, auto) auto minmax(0, 1fr);
     grid-template-areas:
       'title view'
       'play view'
       'filt view'
-      'bar view'
-      'intro view';
+      'about view'
+      '. view';
     column-gap: 28px;
     padding-left: var(--gutter);
   }
@@ -188,32 +193,40 @@
   .map-sec {
     display: contents;
   }
-  .scroll-cue {
+  .scroll-cue,
+  .about {
     display: none;
   }
   .intro-sec h1 {
     grid-area: title;
     font-size: clamp(44px, 3.5vw, 56px);
-    padding-block: 28px 16px;
+    padding-block: 24px 12px;
   }
   .rplayer {
     grid-area: play;
-    padding-bottom: 22px;
+    padding-bottom: 14px;
   }
   .fanchor {
     grid-area: filt;
-    padding-bottom: 20px;
   }
-  .viewbar {
-    grid-area: bar;
-    padding-bottom: 20px;
+  .about-btn {
+    grid-area: about;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-self: start;
+    height: 42px;
+    margin-block: 12px 18px;
+    padding: 0 20px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: linear-gradient(180deg, var(--panel2), var(--panel));
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.35);
+    font-size: 13px;
+    cursor: pointer;
   }
-  .about {
-    grid-area: intro;
-    align-content: start;
-    min-height: 0;
-    overflow: auto;
-    padding-bottom: 24px;
+  .about-btn:hover {
+    border-color: var(--mist);
   }
   .views {
     grid-area: view;

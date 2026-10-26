@@ -1,15 +1,4 @@
 /* Track card sections: what to listen for, band marker, story, idea → recording. */
-.blk {
-  display: grid;
-  gap: 10px;
-}
-/* What to listen for opens the snowflake block: it is part of it, not a box of its own. */
-.spot {
-  display: grid;
-  gap: 10px;
-  justify-self: stretch;
-  margin-bottom: 10px;
-}
 .spot-row {
   display: flex;
   flex-wrap: wrap;
@@ -40,9 +29,19 @@
   font-weight: 400;
 }
 .spot-h {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
+}
+/* The ⓘ bubbles hang from their cell's heading row, so they stay over the card. */
+.cell .qi {
+  position: static;
+}
+.cell .spot-h .bubble {
+  left: 0;
+  transform: none;
+  max-width: min(290px, 100%);
 }
 .bandchip:hover .bubble,
 .bandchip:focus-visible .bubble {
@@ -66,7 +65,6 @@
 .story {
   font-size: 15px;
   line-height: 1.6;
-  max-width: 60ch;
   display: grid;
   gap: 0.8em;
 }
@@ -134,16 +132,4 @@
 }
 .bubble .term b {
   display: inline;
-}
-/* Its bubble is wide: anchor it to the whole heading row so it stays inside the block. */
-.total {
-  position: relative;
-}
-.total .qi {
-  position: static;
-}
-.total .bubble {
-  left: 0;
-  transform: none;
-  max-width: min(290px, 100%);
 }

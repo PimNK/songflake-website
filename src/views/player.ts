@@ -1,6 +1,8 @@
-// The card's player (CLAUDE.md §4.6): the round play/pause in the lead colour (in the card's
-// transport row), m:ss / m:ss, the waveform seek bar with pin markers, and the note of the active
-// pin (pins have no list of their own: a marker shows its text on hover and once reached).
+// The card's player (CLAUDE.md §4.6), laid out like the random player: the round play/pause in the
+// lead colour (between the card's skip keys), a caption (playing / paused / press play) with the
+// note of the active pin under it, then the waveform seek bar with pin markers and a thumb, and
+// m:ss / m:ss at its right (pins have no list of their own: a marker shows its text on hover and
+// once reached).
 // The <audio> element lives in views/playback.ts; time maths lives in domain/pins.ts.
 import type { Song } from '../content/parse';
 import { activePin, formatTime, type Pin } from '../domain/pins';
@@ -19,15 +21,23 @@ export interface PlayerHooks {
 }
 
 const p = strings.player;
+const r = strings.random;
 const PLAYED_REST = 'rgba(232,238,255,.22)';
 
 const template = (): string => `
-  <div class="ptop"><b data-now>0:00</b> / <span data-dur>–:––</span></div>
-  <div class="wave-wrap">
-    <div class="wave" role="slider" tabindex="0" aria-label="${p.seek}" aria-valuemin="0"><canvas></canvas></div>
-    <div class="pins-layer"></div>
-  </div>
-  <div class="pnote" aria-live="polite"></div>`;
+  <div class="pcap"><small class="pstate"></small><div class="pnote" aria-live="polite"></div></div>
+  <div class="pline">
+    <div class="wave-wrap">
+      <div class="wave" role="slider" tabindex="0" aria-label="${p.seek}" aria-valuemin="0"><canvas></canvas><b></b></div>
+      <div class="pins-layer"></div>
+    </div>
+    <small class="ptime"><b data-now>0:00</b> / <span data-dur>–:––</span></small>
+  </div>`;
+
+/** A card with no recording: the same rows as the player's, so the card keeps its shape. */
+export const emptyPlayer = (): string => `
+  <div class="pcap"><p class="no-audio">${p.noAudio}</p></div>
+  <div class="pline"><div class="wave-wrap"><div class="wave off"></div></div><small class="ptime">–:––</small></div>`;
 
 /** Mounts the player for one song into the card's slot; returns a cleanup function. */
 export function mountPlayer(
@@ -111,6 +121,7 @@ class CardPlayer {
     const d = this.duration();
     const progress = d ? this.playback.position(this.song) / d : 0;
     drawWave(this.q('canvas'), this.size, this.rec, progress, this.colour);
+    this.q('.wave').style.setProperty('--at', `${(progress * 100).toFixed(2)}%`);
   }
 
   private markers(): void {
@@ -124,6 +135,8 @@ class CardPlayer {
     const d = this.duration();
     const playing = this.playback.isPlaying(this.song);
     const pin = activePin(this.song.pins, t);
+    const current = this.playback.isCurrent(this.song);
+    this.write('.pstate', 'text', playing ? r.nowPlaying : current ? r.paused : p.ready);
     this.write('[data-now]', 'text', formatTime(t));
     if (d) this.write('[data-dur]', 'text', formatTime(d));
     if (this.play.dataset.playing !== String(playing)) {

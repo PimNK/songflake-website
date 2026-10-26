@@ -1,8 +1,9 @@
 // The static page frame: the star sky behind everything and two sections — the intro (title,
-// About and its text) and the map (the random-track player with the Filters toggle, the bar with
-// the labelled Record / List switch, the filter panel, the views). On wide screens CSS lays them
-// out as one left column beside the view; narrower, the player is frozen at the bottom. Returns
-// the slots other views fill in.
+// About and its text, and the About button that opens it in a window on wide screens) and the map
+// (the random-track player with the Filters toggle, the filter block — the labelled Record / List
+// switch, then the filter panel — and the views). On wide screens CSS lays them out as one left
+// column beside the view; narrower, the player is frozen at the bottom. Returns the slots other
+// views fill in.
 import { drawSky } from '../render/sky';
 import { devicePixelRatioCapped } from '../render/snowflake';
 import { strings } from '../strings';
@@ -10,6 +11,7 @@ import { strings } from '../strings';
 export interface PageSlots {
   page: HTMLElement;
   filterToggle: HTMLButtonElement;
+  aboutButton: HTMLButtonElement;
   filters: HTMLElement;
   player: HTMLElement;
   tabRecord: HTMLButtonElement;
@@ -19,9 +21,8 @@ export interface PageSlots {
   notice: HTMLElement;
 }
 
-export function renderPage(root: HTMLElement): PageSlots {
-  const v = strings.views;
-  root.innerHTML = `
+/** The page markup; CSS places its parts for each width. */
+const frame = (v = strings.views): string => `
     <canvas class="sky" aria-hidden="true"></canvas>
     <div class="page" data-view="record">
       <header class="intro-sec">
@@ -30,6 +31,7 @@ export function renderPage(root: HTMLElement): PageSlots {
           <h2 class="label" id="about-h">${strings.hero.about}</h2>
           <p class="lead">${strings.hero.intro}</p>
         </section>
+        <button type="button" class="about-btn" aria-haspopup="dialog">${strings.hero.about}</button>
         <button type="button" class="scroll-cue" aria-label="${v.toRecord}">${CHEVRON}<small>${v.scroll}</small></button>
       </header>
       <main class="map-sec" aria-label="${v.mapLabel}">
@@ -37,14 +39,16 @@ export function renderPage(root: HTMLElement): PageSlots {
           <div class="rp" data-slot="player"></div>
           <button type="button" class="ftoggle" aria-expanded="false" aria-controls="filters"></button>
         </div>
-        <div class="viewbar">
-          <span class="vlabel label" id="view-label">${v.label}</span>
-          <div class="vseg tabs" role="tablist" aria-labelledby="view-label">
-            <button type="button" role="tab" id="tab-record" aria-controls="stage"><span class="glyph">${v.recordGlyph} </span>${v.record}</button>
-            <button type="button" role="tab" id="tab-list" aria-controls="listview"><span class="glyph">${v.listGlyph} </span>${v.list}</button>
+        <div class="fanchor">
+          <div class="viewbar">
+            <span class="vlabel label" id="view-label">${v.label}</span>
+            <div class="vseg tabs" role="tablist" aria-labelledby="view-label">
+              <button type="button" role="tab" id="tab-record" aria-controls="stage"><span class="glyph">${v.recordGlyph} </span>${v.record}</button>
+              <button type="button" role="tab" id="tab-list" aria-controls="listview"><span class="glyph">${v.listGlyph} </span>${v.list}</button>
+            </div>
           </div>
+          <div class="fpanel" id="filters" data-slot="filters" hidden></div>
         </div>
-        <div class="fanchor"><div class="fpanel" id="filters" data-slot="filters" hidden></div></div>
         <div class="views">
           <p class="notice" role="status" data-slot="notice" hidden></p>
           <div class="stage" id="stage" role="tabpanel" aria-labelledby="tab-record"></div>
@@ -52,12 +56,16 @@ export function renderPage(root: HTMLElement): PageSlots {
         </div>
       </main>
     </div>`;
+
+export function renderPage(root: HTMLElement): PageSlots {
+  root.innerHTML = frame();
   mountSky(root.querySelector<HTMLCanvasElement>('.sky')!);
   wireScrollCue(root);
   const q = <T extends HTMLElement>(sel: string): T => root.querySelector<T>(sel)!;
   return {
     page: q('.page'),
     filterToggle: q('.ftoggle'),
+    aboutButton: q('.about-btn'),
     filters: q('[data-slot="filters"]'),
     player: q('[data-slot="player"]'),
     tabRecord: q('#tab-record'),

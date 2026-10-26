@@ -48,7 +48,7 @@ h3 {
    blocks, the timeline's stations, the scroll caption and the hint step. */
 .label,
 .flabel,
-.blk > h3,
+.cell > h3,
 .spot-h h3,
 .st span,
 .scroll-cue small,

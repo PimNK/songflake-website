@@ -23,6 +23,7 @@ import { mountRecord } from '../views/record';
 import { mountTrackCard } from '../views/track-card';
 import { mountRandomPlayer } from '../views/random-player';
 import { startHints } from '../views/hints';
+import { mountAbout } from '../views/about';
 import { Playback } from '../views/playback';
 import { mountPlayer } from '../views/player';
 import { leadColour } from '../views/card-body';
@@ -97,6 +98,7 @@ const card = mountTrackCard(content, {
     }),
 });
 onViewTab(slots, (view) => store.set({ view, notice: null }));
+mountAbout(slots.aboutButton);
 
 store.subscribe((s, prev) => {
   if (s.openSlug !== prev.openSlug || s.cue !== prev.cue) {

@@ -46,5 +46,6 @@ export function radarSvg(complexity: Complexity, colour: string): string {
     })
     .join('');
   const label = strings.card.radarLabel(names.map((n, i) => [n, values[i]!]));
-  return `<svg viewBox="-10 0 320 300" role="img" aria-label="${label}">${g}</svg>`;
+  // Framed tight round the labels (the side ones reach past the grid), so the radar fills its cell.
+  return `<svg viewBox="-34 26 368 226" role="img" aria-label="${label}">${g}</svg>`;
 }

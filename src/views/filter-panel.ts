@@ -1,6 +1,7 @@
 // Filter controls generated from the taxonomy, the songs' years and the counts (CLAUDE.md §4.2).
-// Each group has an ⓘ note. From 1100 px the panel is always open, in three columns; narrower,
-// it is a sheet above the bottom player, opened by the player's Filters toggle (closed by default).
+// Options are pads of one size in one grid, each with a light (the instrument's colour). Each group
+// has an ⓘ note. From 1100 px the panel is always open under the player; narrower, it is a sheet
+// above the bottom player, opened by the player's funnel toggle (closed by default).
 // No filtering logic: every change goes through domain/filters.ts and back to the store.
 import type { Content } from '../content/load';
 import {
@@ -8,6 +9,7 @@ import {
   COMPLEXITY_MIN,
   countOptions,
   defaultFilters,
+  isDefault,
   setRange,
   setYears,
   toggle,
@@ -31,12 +33,17 @@ interface Option {
   colour?: string;
 }
 
-// No count is shown; an option no song carries is dimmed.
+// A pad: its light takes the instrument's colour (ice for the rest). No count is shown; an
+// option no song carries is dimmed.
 const option = (o: Option): string => `
-  <label class="fopt${o.count ? '' : ' zero'}">
+  <label class="fopt${o.count ? '' : ' zero'}"${o.colour ? ` style="--led:${esc(o.colour)}"` : ''}>
     <input type="checkbox" data-kind="${o.kind}" data-id="${esc(o.id)}">
-    ${o.colour ? `<i style="background:${esc(o.colour)}"></i>` : ''}<span>${esc(o.label)}</span>
+    <i></i><span>${esc(o.label)}</span>
   </label>`;
+
+/** A funnel: the Filters toggle's icon (the word is its accessible name). */
+const FUNNEL =
+  '<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4.5h14l-5.4 6.3v4.6l-3.2 1.6v-6.2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>';
 
 /** A group's heading: its name with an ⓘ note, then whatever goes at its right. */
 const label = (name: string, note: string, right = ''): string =>
@@ -76,19 +83,19 @@ function template(content: Content, space: FilterSpace): string {
   const all = `<button type="button" data-all>${f.allNone}</button>`;
   return `
       <div class="fbody">
-        <div class="fgroup">${label(f.style, f.info.style)}<div class="flist">${styles.join('')}</div></div>
+        <div class="fgroup">${label(f.style, f.info.style)}<div class="pads">${styles.join('')}</div></div>
         <div class="fgroup">${label(f.listen, f.info.listen, all)}
-          <div class="fgrid">${accents.join('')}</div></div>
-        <div class="fcol">
+          <div class="pads">${accents.join('')}</div></div>
+        <div class="franges">
           <div class="fgroup">${label(f.complexity, f.info.complexity, '<b data-range-label></b>')}
             <div class="range">${range('range', ['min', 'max'], COMPLEXITY_MIN, COMPLEXITY_MAX)}</div></div>
           <div class="fgroup">${label(f.year, f.info.year, '<b data-years-label></b>')}
             <div class="range">${range('years', ['from', 'to'], years.first, years.last)}</div></div>
-          <div class="fgroup" ${c.inProgress ? '' : 'hidden'}>${label(f.status, f.info.status)}<div class="flist">
-            ${option({ kind: 'status', id: 'ready', label: f.ready, count: c.ready })}
-            ${option({ kind: 'status', id: 'inProgress', label: f.inProgress, count: c.inProgress })}</div></div>
-          <button type="button" class="btn freset" data-reset>${f.reset}</button>
         </div>
+        <div class="fgroup" ${c.inProgress ? '' : 'hidden'}>${label(f.status, f.info.status)}<div class="pads">
+          ${option({ kind: 'status', id: 'ready', label: f.ready, count: c.ready })}
+          ${option({ kind: 'status', id: 'inProgress', label: f.inProgress, count: c.inProgress })}</div></div>
+        <button type="button" class="freset" data-reset>${f.reset}</button>
       </div>`;
 }
 
@@ -108,8 +115,9 @@ function withOption(filters: FilterState, kind: string, id: string, on: boolean)
 const WIDE = window.matchMedia('(min-width: 1100px)');
 
 /**
- * Narrow screens: the toggle (in the bottom player) shows «Filters N / total» and opens the
- * sheet. Esc or a click outside closes it (Esc returns focus to the toggle when it was inside).
+ * Narrow screens: the toggle (in the bottom player) is a funnel that opens the sheet; a dot on it
+ * says the filters are set. Esc or a click outside closes it (Esc returns focus to the toggle
+ * when it was inside).
  */
 function wireToggle(toggle: HTMLButtonElement, el: HTMLElement): void {
   const isOpen = (): boolean => toggle.getAttribute('aria-expanded') === 'true';
@@ -142,7 +150,7 @@ export function mountFilterPanel(
   onChange: (filters: FilterState) => void,
 ): FilterPanel {
   el.innerHTML = template(content, space);
-  toggle.innerHTML = `<span class="fword">${f.toggle}</span> <span class="count" data-count></span>`;
+  toggle.innerHTML = `${FUNNEL}<span class="fdot" hidden></span>`;
   wireToggle(toggle, el);
   const total = content.songs.length;
   const allAccents = content.taxonomy.accents.map((a) => a.id);
@@ -170,7 +178,8 @@ export function mountFilterPanel(
 
   return {
     update(filters, matching) {
-      toggle.querySelector('[data-count]')!.textContent = f.count(matching, total);
+      toggle.setAttribute('aria-label', f.toggleLabel(matching, total));
+      toggle.querySelector<HTMLElement>('.fdot')!.hidden = isDefault(filters, space);
       el.querySelector('[data-range-label]')!.textContent = f.range(filters.min, filters.max);
       el.querySelector('[data-years-label]')!.textContent = f.range(filters.from, filters.to);
       el.querySelectorAll<HTMLInputElement>('input[data-kind]').forEach((input) => {

@@ -1,6 +1,6 @@
-// The track card's sections (CLAUDE.md §4.3): idea → recording and the story on the left; on the
-// right what to listen for (and the band marker), then the turning snowflake beside the radar.
-// DOM only; rules come from domain/.
+// The track card's sections (CLAUDE.md §4.3): four equal cells — idea → recording, what to listen
+// for (and the band marker), the story, total complexity with the radar — and the turning
+// snowflake, which sits beside the player. DOM only; rules come from domain/.
 import { AXES, type Song } from '../content/parse';
 import type { Bands, Taxonomy } from '../content/taxonomy';
 import { rgba } from '../domain/colour';
@@ -68,33 +68,37 @@ function stations(song: Song, colour: string): string {
   return station(st[0]!) + link(gaps[0]!) + station(st[1]!) + link(gaps[1]!) + station(st[2]!);
 }
 
-/** Fills the card's grid for one song. */
+/** Fills the card's cells and its snowflake slot for one song. */
 export function renderCardBody(
-  el: HTMLElement,
+  grid: HTMLElement,
+  flakeSlot: HTMLElement,
   song: Song,
   taxonomy: Taxonomy,
   bands: Bands,
 ): void {
   const colour = leadColour(song, taxonomy);
   const story = song.story ? renderMarkdown(song.story) : `<p class="muted">${c.storyEmpty}</p>`;
-  el.innerHTML = `
-    <div class="mleft">
-      <section class="blk"><div class="spot-h"><h3>${c.timeline}</h3>${info(timelineInfo())}</div>
-        <div class="stations">${stations(song, colour)}</div></section>
-      <section class="blk"><h3>${c.story}</h3><div class="story">${story}</div></section>
-    </div>
-    <div class="mright">
-      <section class="spot" aria-labelledby="spot-h">
-        <div class="spot-h"><h3 id="spot-h">${c.listen}</h3>${info(c.listenInfo)}</div>
+  grid.innerHTML = `
+    <section class="cell mid"><div class="spot-h"><h3>${c.timeline}</h3>${info(timelineInfo())}</div>
+      <div class="stations">${stations(song, colour)}</div></section>
+    <section class="cell mid" aria-labelledby="spot-h">
+      <div class="spot-h"><h3 id="spot-h">${c.listen}</h3>${info(c.listenInfo)}</div>
+      <div class="spot-body">
         <div class="spot-row">${listenChips(song, taxonomy)}</div>
         <div class="band-row">${bandMarker(song, bands)}</div>
-      </section>
-      <div class="spot-h total"><h3>${c.total(song.complexityTotal)}</h3>${info(totalInfo())}</div>
-      <div class="flake-radar">
-        <div class="flake-clip"><canvas class="turn" style="${turnStyle(song)}"></canvas></div>
-        <div class="radar-box">${radarSvg(song.complexity, colour)}</div>
       </div>
-    </div>`;
+    </section>
+    <section class="cell story-cell"><h3>${c.story}</h3><div class="story">${story}</div></section>
+    <section class="cell total-cell">
+      <div class="spot-h total"><h3>${c.total(song.complexityTotal)}</h3>${info(totalInfo())}</div>
+      <div class="radar-box">${radarSvg(song.complexity, colour)}</div>
+    </section>`;
+  flakeSlot.innerHTML = `<canvas class="turn" style="${turnStyle(song)}"></canvas>`;
   const flake = flakeOf(song, taxonomy);
-  paintSnowflake(el.querySelector('canvas')!, flake.params, flake.colours, CARD_FLAKE_RADIUS);
+  paintSnowflake(
+    flakeSlot.querySelector('canvas')!,
+    flake.params,
+    flake.colours,
+    CARD_FLAKE_RADIUS,
+  );
 }

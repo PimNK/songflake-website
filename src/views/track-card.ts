@@ -1,5 +1,6 @@
-// The track card modal (CLAUDE.md §4.3): title and ✕; the transport row (previous,
-// play / pause, next) above the player; the body. Swiping left / right on touch steps tracks.
+// The track card modal (CLAUDE.md §4.3): title and ✕; the player laid out like the random player
+// (previous · play / pause · next, then its caption and the waveform line), the turning snowflake
+// beside it; the four cells below. Swiping left / right on touch steps tracks.
 // Focus is trapped while open and returned to the opener; page scroll is locked.
 // Closing (✕, Esc, backdrop) and prev/next go through the caller, which owns the state.
 import type { Content } from '../content/load';
@@ -7,6 +8,8 @@ import type { Song } from '../content/parse';
 import { strings } from '../strings';
 import { renderCardBody } from './card-body';
 import { SKIP_ICON } from './html';
+import { trapFocus } from './modal';
+import { emptyPlayer } from './player';
 
 export interface CardHooks {
   close(): void;
@@ -18,7 +21,7 @@ export interface CardHooks {
 export interface PlayerSlots {
   /** Between the previous and next buttons: the round play / pause button goes here. */
   play: HTMLElement;
-  /** Under the transport row: time, waveform with pins, the pin note. */
+  /** Beside and under the keys: the caption with the pin note, the waveform with pins, the time. */
   body: HTMLElement;
 }
 
@@ -30,7 +33,6 @@ export interface TrackCard {
 const c = strings.card;
 const p = strings.player;
 const SWIPE_PX = 60;
-const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
   const modal = createModal();
@@ -39,7 +41,8 @@ export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
     play: modal.querySelector<HTMLElement>('.play-slot')!,
     body: modal.querySelector<HTMLElement>('.player-body')!,
   };
-  const body = modal.querySelector<HTMLElement>('.mgrid')!;
+  const grid = modal.querySelector<HTMLElement>('.mgrid')!;
+  const flake = modal.querySelector<HTMLElement>('.mflake')!;
   const sheet = modal.querySelector<HTMLElement>('.sheet')!;
   let opener: HTMLElement | null = null;
   let disposePlayer: (() => void) | null = null;
@@ -61,9 +64,9 @@ export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
       if (song.audioSrc) disposePlayer = hooks.player(slots, song, cue);
       else {
         slots.play.innerHTML = `<button class="play" type="button" disabled aria-label="${p.play}">${p.playGlyph}</button>`;
-        slots.body.innerHTML = `<p class="no-audio">${p.noAudio}</p>`;
+        slots.body.innerHTML = emptyPlayer();
       }
-      renderCardBody(body, song, content.taxonomy, content.bands);
+      renderCardBody(grid, flake, song, content.taxonomy, content.bands);
       const opening = modal.hidden;
       modal.hidden = false;
       document.body.classList.add('locked');
@@ -83,23 +86,6 @@ export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
   };
 }
 
-function trapFocus(e: KeyboardEvent, root: HTMLElement): void {
-  const items = [...root.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
-    (x) => !(x as HTMLButtonElement).disabled && x.offsetParent !== null,
-  );
-  if (!items.length) return;
-  const first = items[0]!;
-  const last = items[items.length - 1]!;
-  const active = document.activeElement;
-  if (e.shiftKey && (active === first || !root.contains(active))) {
-    e.preventDefault();
-    last.focus();
-  } else if (!e.shiftKey && (active === last || !root.contains(active))) {
-    e.preventDefault();
-    first.focus();
-  }
-}
-
 function createModal(): HTMLElement {
   const modal = document.createElement('div');
   modal.className = 'modal';
@@ -115,14 +101,17 @@ function createModal(): HTMLElement {
           <button class="btn" type="button" data-close aria-label="${c.close}">✕</button>
         </div>
       </header>
-      <section class="player-blk" aria-label="${p.label}">
-        <div class="transport">
-          <button class="nav" type="button" data-step="-1" aria-label="${c.prev}">${SKIP_ICON}</button>
-          <div class="play-slot"></div>
-          <button class="nav next" type="button" data-step="1" aria-label="${c.next}">${SKIP_ICON}</button>
-        </div>
-        <div class="player-body"></div>
-      </section>
+      <div class="mtop">
+        <section class="player-blk" aria-label="${p.label}">
+          <div class="transport">
+            <button class="nav" type="button" data-step="-1" aria-label="${c.prev}">${SKIP_ICON}</button>
+            <div class="play-slot"></div>
+            <button class="nav next" type="button" data-step="1" aria-label="${c.next}">${SKIP_ICON}</button>
+          </div>
+          <div class="player-body"></div>
+        </section>
+        <div class="mflake flake-clip" aria-hidden="true"></div>
+      </div>
       <div class="mgrid"></div>
     </article>`;
   document.body.append(modal);

@@ -1,7 +1,8 @@
 // The random-track player in the page's controls (CLAUDE.md §4.6): previous · play / pause ·
 // next, the playing track's snowflake (it opens the card), a caption that says it plays a random
-// track (then the title of what is playing, which opens its card too) and a progress line with
-// the time; the line seeks (click, drag, keys). Picks come from domain/shuffle.ts.
+// track (then the title of what is playing, which opens its card too; a title too long for its
+// line runs as a ticker) and a progress line with the time; the line seeks (click, drag, keys).
+// Picks come from domain/shuffle.ts.
 import type { Song } from '../content/parse';
 import type { Taxonomy } from '../content/taxonomy';
 import { formatTime } from '../domain/pins';
@@ -59,9 +60,12 @@ function render(el: HTMLElement, playback: Playback, canStart: boolean): void {
   q('.rp-cap').textContent = song ? (playing ? r.nowPlaying : r.paused) : r.idle;
   const title = q('.rp-title');
   title.hidden = !song;
-  if (song) {
-    title.innerHTML = esc(song.title);
+  // Nothing loaded: forget the title, so the next one is fitted afresh.
+  if (!song) delete title.dataset.text;
+  if (song && title.dataset.text !== song.title) {
+    title.dataset.text = song.title;
     title.setAttribute('aria-label', r.openCard(song.title));
+    fitTitle(title);
   }
   const d = playback.audio.duration || 0;
   const t = song ? playback.audio.currentTime : 0;
@@ -75,6 +79,33 @@ function render(el: HTMLElement, playback: Playback, canStart: boolean): void {
   bar.setAttribute('aria-valuenow', String(Math.round(t)));
   bar.setAttribute('aria-valuetext', time);
   q('.rp-time').textContent = time;
+}
+
+/** Ticker speed of a title too long for its line, in px per second. */
+const RUN_SPEED = 40;
+
+/**
+ * Sets the title; when it does not fit its line it runs as a ticker (a second, hidden copy closes
+ * the loop). Called again when the line changes width.
+ */
+function fitTitle(title: HTMLElement): void {
+  const text = esc(title.dataset.text ?? '');
+  title.innerHTML = `<span class="rp-run"><span>${text}</span></span>`;
+  const run = title.firstElementChild as HTMLElement;
+  const over = run.offsetWidth > title.clientWidth + 1;
+  title.classList.toggle('run', over);
+  if (!over) return;
+  run.insertAdjacentHTML('beforeend', `<span aria-hidden="true">${text}</span>`);
+  run.style.setProperty('--run', `${(run.offsetWidth / 2 / RUN_SPEED).toFixed(1)}s`);
+}
+
+/** Re-fits the title (ticker or not) when its line changes width. */
+function refitOnResize(title: HTMLElement): void {
+  let width = 0;
+  new ResizeObserver(([entry]) => {
+    const w = Math.round(entry!.contentRect.width);
+    if (w !== width && (width = w) && title.dataset.text) fitTitle(title);
+  }).observe(title);
 }
 
 /** The played part and the thumb only: cheap enough for every animation frame. */
@@ -145,6 +176,7 @@ export function mountRandomPlayer(
     b.addEventListener('click', () => playback.song && h.open(playback.song.slug));
   }
   wireLine(el, playback);
+  refitOnResize(el.querySelector<HTMLElement>('.rp-title')!);
   let painted: Song | null | undefined;
   let raf = 0;
   const update = (): void => {
