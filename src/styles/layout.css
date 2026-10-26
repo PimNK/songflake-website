@@ -1,11 +1,11 @@
 /* Page frame. Below 1100 px: two sections, each a screen high — the intro, then the random-track
-   player, the bar and the view — and scrolling snaps to them. From 1100 px: one screen; on the
-   left the title with the player and Record / List beside it, then the intro beside the
-   always-open filter panel; the view fills the rest. */
+   player (pinned to the top while the tiles scroll), the bar and the view — and scrolling snaps
+   to them. From 1100 px: one screen; a left column with the title, the player, the filters, then
+   the intro beside the labelled Record / List switch; the view fills the rest. */
 :root {
   --gutter: clamp(16px, 3vw, 36px);
-  /* above the view below 1100 px: top padding + up arrow + player + bar + gaps */
-  --bar-room: 172px;
+  /* above the view below 1100 px: top padding + player + bar + gaps */
+  --bar-room: 150px;
 }
 .intro-sec {
   padding: clamp(28px, 6vw, 52px) var(--gutter) 24px;
@@ -51,11 +51,19 @@
   position: relative;
   min-width: 0;
 }
-/* One bar: Record / List and Filters, in the same segmented style, on the page background. */
+/* One bar: Record / List (with its label) and Filters, in the same segmented style, on the page
+   background. */
 .viewbar {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.vlabel {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mist);
 }
 .viewbar .tabs {
   order: 1;
@@ -102,31 +110,37 @@
     transition: none !important;
   }
 }
-/* Narrow screens: arrows that show (and do) the way between the two sections. */
+/* Narrow screens: a large arrow that shows (and does) the way to the tracks; it fades out once
+   the page is scrolled (views/page.ts). */
+.intro-sec {
+  position: relative;
+}
 .scroll-cue {
-  justify-self: center;
+  position: absolute;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  margin-left: -36px;
+  width: 72px;
   display: grid;
-  place-items: center;
-  width: 44px;
-  height: 36px;
-  padding: 0;
+  justify-items: center;
+  gap: 0;
+  padding: 4px 0;
   border: 0;
   background: none;
   color: var(--ice);
   cursor: pointer;
   animation: cue 2.4s ease-in-out infinite;
+  transition: opacity 0.3s;
 }
-.scroll-cue.up svg {
-  transform: rotate(180deg);
+.scroll-cue small {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
-.intro-sec {
-  position: relative;
-}
-.scroll-cue.down {
-  position: absolute;
-  left: 50%;
-  bottom: max(16px, env(safe-area-inset-bottom, 0px));
-  margin-left: -22px;
+.scroll-cue.gone {
+  opacity: 0;
+  pointer-events: none;
 }
 @keyframes cue {
   50% {
@@ -150,18 +164,23 @@
     min-height: 100svh;
     scroll-snap-align: start;
   }
+  /* The player stays at the top while the tiles scroll under it. */
+  .rplayer {
+    position: sticky;
+    top: 0;
+    z-index: 7;
+    margin-inline: calc(-1 * var(--gutter));
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) var(--gutter) 8px;
+    background: color-mix(in srgb, var(--void) 92%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
 }
-/* Phones: the bar stays on one line; the tabs lose their glyphs. */
+/* Phones: the list only — no Record / List switch (app/main.ts keeps the view on the list; its
+   PHONE query must match this breakpoint). */
 @media (max-width: 599.98px) {
-  .viewbar {
-    gap: 5px;
-  }
-  .vseg button {
-    padding: 6px 9px;
-    font-size: 11px;
-    letter-spacing: 0.02em;
-  }
-  .tabs .glyph {
+  .vlabel,
+  .viewbar .tabs {
     display: none;
   }
 }
@@ -169,12 +188,13 @@
   .page {
     display: grid;
     height: 100svh;
-    grid-template-columns: 290px 80px 210px minmax(0, 1fr);
-    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, clamp(260px, 21vw, 330px))) minmax(0, 1fr);
+    grid-template-rows: auto auto auto minmax(0, 1fr);
     grid-template-areas:
-      'title title play view'
-      'title title bar view'
-      'intro filt filt view';
+      'title title view'
+      'play play view'
+      'filt filt view'
+      'intro bar view';
     column-gap: 24px;
     padding-left: var(--gutter);
   }
@@ -186,16 +206,18 @@
   .viewbar .filt {
     display: none;
   }
-  /* sized so «OBYCHNO_» fits its two columns, beside the player */
   .intro-sec h1 {
     grid-area: title;
     font-size: clamp(44px, 3.5vw, 56px);
-    align-self: center;
-    padding-block: 32px 20px;
+    padding-block: 28px 16px;
   }
   .rplayer {
     grid-area: play;
-    margin-top: 32px;
+    padding-bottom: 20px;
+  }
+  .fanchor {
+    grid-area: filt;
+    padding-bottom: 20px;
   }
   .lead {
     grid-area: intro;
@@ -206,19 +228,12 @@
   .viewbar {
     grid-area: bar;
     align-self: start;
-    padding-block: 12px 20px;
-  }
-  .viewbar .vseg {
-    flex: 1;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
   }
   .viewbar .vseg button {
     flex: 1;
-  }
-  .fanchor {
-    grid-area: filt;
-    min-height: 0;
-    overflow: auto;
-    padding-bottom: 24px;
   }
   .views {
     grid-area: view;

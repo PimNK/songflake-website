@@ -51,10 +51,6 @@
   color: var(--mist);
   font-variant-numeric: tabular-nums;
 }
-.dl {
-  text-decoration: none;
-  white-space: nowrap;
-}
 .ptop b {
   color: var(--frost);
   font-weight: 500;
@@ -167,7 +163,7 @@
 }
 .rplayer {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto auto minmax(0, 1fr);
   align-items: center;
   column-gap: 14px;
   row-gap: 8px;
@@ -185,6 +181,29 @@
   background: var(--ice);
   width: 46px;
   height: 46px;
+}
+/* The playing track's snowflake; its slot keeps its size while nothing is loaded. */
+.rp-flake {
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.rp-flake canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+.rp-flake.empty {
+  visibility: hidden;
+}
+.rp-flake:hover {
+  background: color-mix(in srgb, var(--panel2) 70%, transparent);
 }
 .rp-text {
   display: grid;
@@ -216,20 +235,27 @@
 }
 .rp-line {
   grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 14px;
+}
+.rp-bar {
+  flex: 1;
   height: 2px;
   border-radius: 1px;
   background: rgba(232, 238, 255, 0.12);
   overflow: hidden;
 }
-.rp-line i {
+.rp-bar i {
   display: block;
   height: 100%;
   width: 0;
   background: var(--ice);
 }
-/* From 1100 px it stands in its own column: the keys over the caption and the line. */
-@media (min-width: 1100px) {
-  .rplayer {
-    grid-template-columns: minmax(0, 1fr);
-  }
+.rp-time {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--mist);
+  font-variant-numeric: tabular-nums;
 }

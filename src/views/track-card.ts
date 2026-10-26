@@ -1,4 +1,4 @@
-// The track card modal (CLAUDE.md §4.3): title with Download and ✕; the transport row (previous,
+// The track card modal (CLAUDE.md §4.3): title and ✕; the transport row (previous,
 // play / pause, next) above the player; the body. Swiping left / right on touch steps tracks.
 // Focus is trapped while open and returned to the opener; page scroll is locked.
 // Closing (✕, Esc, backdrop) and prev/next go through the caller, which owns the state.
@@ -6,7 +6,7 @@ import type { Content } from '../content/load';
 import type { Song } from '../content/parse';
 import { strings } from '../strings';
 import { renderCardBody } from './card-body';
-import { esc, SKIP_ICON } from './html';
+import { SKIP_ICON } from './html';
 
 export interface CardHooks {
   close(): void;
@@ -39,7 +39,6 @@ export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
     play: modal.querySelector<HTMLElement>('.play-slot')!,
     body: modal.querySelector<HTMLElement>('.player-body')!,
   };
-  const download = modal.querySelector<HTMLElement>('.dl-slot')!;
   const body = modal.querySelector<HTMLElement>('.mgrid')!;
   const sheet = modal.querySelector<HTMLElement>('.sheet')!;
   let opener: HTMLElement | null = null;
@@ -58,7 +57,6 @@ export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
       if (modal.hidden) opener = document.activeElement as HTMLElement | null;
       title.textContent = song.title;
       clearPlayer();
-      download.innerHTML = song.audioSrc ? downloadLink(song, song.audioSrc) : '';
       if (song.audioSrc) disposePlayer = hooks.player(slots, song, cue);
       else {
         slots.play.innerHTML = `<button class="play" type="button" disabled aria-label="${p.play}">${p.playGlyph}</button>`;
@@ -101,13 +99,6 @@ function trapFocus(e: KeyboardEvent, root: HTMLElement): void {
   }
 }
 
-/** The saved file is named after the track, keeping the recording's own extension. */
-function downloadLink(song: Song, src: string): string {
-  const ext = /\.(mp3|m4a|ogg)(?:[?#]|$)/i.exec(src)?.[1] ?? 'mp3';
-  const name = `${song.title}.${ext.toLowerCase()}`;
-  return `<a class="btn dl" href="${esc(src)}" download="${esc(name)}" aria-label="${esc(p.downloadLabel(song.title))}">${p.download}</a>`;
-}
-
 function createModal(): HTMLElement {
   const modal = document.createElement('div');
   modal.className = 'modal';
@@ -120,7 +111,6 @@ function createModal(): HTMLElement {
       <header class="mhead">
         <h2 id="card-title"></h2>
         <div class="mnav">
-          <span class="dl-slot"></span>
           <button class="btn" type="button" data-close aria-label="${c.close}">✕</button>
         </div>
       </header>

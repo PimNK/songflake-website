@@ -1,7 +1,7 @@
 // The static page frame: the star sky behind everything and two sections — the intro (title and
-// text) and the map (the random-track player, the bar with Record / List and Filters, the filter
-// panel, the views). On wide screens CSS lays them out side by side. Returns the slots other
-// views fill in.
+// text) and the map (the random-track player, the bar with the labelled Record / List switch and
+// Filters, the filter panel, the views). On wide screens CSS lays them out as one left column
+// beside the view. Returns the slots other views fill in.
 import { drawSky } from '../render/sky';
 import { devicePixelRatioCapped } from '../render/snowflake';
 import { strings } from '../strings';
@@ -26,13 +26,13 @@ export function renderPage(root: HTMLElement): PageSlots {
       <header class="intro-sec">
         <h1>${strings.hero.title}</h1>
         <p class="lead">${strings.hero.intro}</p>
-        <button type="button" class="scroll-cue down" aria-label="${v.toRecord}">${CHEVRON}</button>
+        <button type="button" class="scroll-cue" aria-label="${v.toRecord}">${CHEVRON}<small>${v.scroll}</small></button>
       </header>
       <main class="map-sec" aria-label="${v.mapLabel}">
-        <button type="button" class="scroll-cue up" aria-label="${v.toIntro}">${CHEVRON}</button>
         <div class="rplayer" data-slot="player"></div>
         <div class="viewbar">
-          <div class="vseg tabs" role="tablist" aria-label="${v.label}">
+          <span class="vlabel" id="view-label">${v.label}</span>
+          <div class="vseg tabs" role="tablist" aria-labelledby="view-label">
             <button type="button" role="tab" id="tab-record" aria-controls="stage"><span class="glyph">${v.recordGlyph} </span>${v.record}</button>
             <button type="button" role="tab" id="tab-list" aria-controls="listview"><span class="glyph">${v.listGlyph} </span>${v.list}</button>
           </div>
@@ -47,7 +47,7 @@ export function renderPage(root: HTMLElement): PageSlots {
       </main>
     </div>`;
   mountSky(root.querySelector<HTMLCanvasElement>('.sky')!);
-  wireScrollCues(root);
+  wireScrollCue(root);
   const q = <T extends HTMLElement>(sel: string): T => root.querySelector<T>(sel)!;
   return {
     page: q('.page'),
@@ -62,16 +62,21 @@ export function renderPage(root: HTMLElement): PageSlots {
   };
 }
 
-/** A chevron pointing down; the «up» cue turns it with CSS. */
+/** A chevron pointing down, to the second section. */
 const CHEVRON =
-  '<svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M6 10l8 8 8-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  '<svg width="40" height="40" viewBox="0 0 28 28" aria-hidden="true"><path d="M6 10l8 8 8-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-/** Narrow screens: the arrows scroll to the record section and back to the intro. */
-function wireScrollCues(root: HTMLElement): void {
-  const go = (selector: string): void =>
-    root.querySelector(selector)!.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  root.querySelector('.scroll-cue.down')!.addEventListener('click', () => go('.map-sec'));
-  root.querySelector('.scroll-cue.up')!.addEventListener('click', () => go('.intro-sec'));
+/** Narrow screens: the arrow scrolls to the second section; it fades out once the page moves. */
+function wireScrollCue(root: HTMLElement): void {
+  const cue = root.querySelector<HTMLElement>('.scroll-cue')!;
+  cue.addEventListener('click', () =>
+    root.querySelector('.map-sec')!.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+  );
+  const fade = (): void => {
+    cue.classList.toggle('gone', window.scrollY > 24);
+  };
+  window.addEventListener('scroll', fade, { passive: true });
+  fade();
 }
 
 /** The fixed star sky, redrawn only when the window size changes. */

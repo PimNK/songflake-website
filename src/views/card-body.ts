@@ -1,6 +1,6 @@
-// The track card's sections (CLAUDE.md §4.3): idea → recording and the story on the left; one
-// block on the right with what to listen for (and the band marker), the large turning snowflake
-// and the radar. DOM only; rules come from domain/.
+// The track card's sections (CLAUDE.md §4.3): idea → recording and the story on the left; on the
+// right what to listen for (and the band marker), then the turning snowflake beside the radar.
+// DOM only; rules come from domain/.
 import { AXES, type Song } from '../content/parse';
 import type { Bands, Taxonomy } from '../content/taxonomy';
 import { rgba } from '../domain/colour';
@@ -14,7 +14,7 @@ import { bandRing, esc, turnStyle } from './html';
 import { renderMarkdown } from './markdown';
 
 const c = strings.card;
-const CARD_FLAKE_RADIUS = 92;
+const CARD_FLAKE_RADIUS = 80;
 
 export const leadColour = (song: Song, taxonomy: Taxonomy): string =>
   taxonomy.accents.find((a) => a.id === song.accents[0])?.colour ?? FROST_LINE;
@@ -46,7 +46,7 @@ const totalInfo = (): string =>
   ) + `<small>${c.totalInfoNote}</small>`;
 
 function bandMarker(song: Song, bands: Bands): string {
-  if (song.band === null) return `<span class="bandchip solo">${c.soloRecording}</span>`;
+  if (song.band === null) return '';
   if (song.band.trim() === '') {
     return `<span class="bandchip" tabindex="0">${bandRing(16)}${c.recordedWithBand}<span class="bubble" role="tooltip"><b>${c.bandUnnamed}</b>${c.bandUnnamedHint}</span></span>`;
   }
@@ -80,6 +80,7 @@ export function renderCardBody(
   bands: Bands,
 ): void {
   const colour = leadColour(song, taxonomy);
+  const band = bandMarker(song, bands);
   const story = song.story ? renderMarkdown(song.story) : `<p class="muted">${c.storyEmpty}</p>`;
   el.innerHTML = `
     <div class="mleft">
@@ -88,13 +89,13 @@ export function renderCardBody(
       <section class="blk"><h3>${c.story}</h3><div class="story">${story}</div></section>
     </div>
     <div class="mright">
-      <div class="flake-box">
-        <section class="spot" aria-labelledby="spot-h">
-          <div class="spot-h"><h3 id="spot-h">${c.listen}</h3>${info(c.listenInfo)}</div>
-          <div class="spot-row">${listenChips(song, taxonomy)}</div>
-          <div>${bandMarker(song, bands)}</div>
-        </section>
-        <div class="spot-h total"><h3>${c.total(song.complexityTotal)}</h3>${info(totalInfo())}</div>
+      <section class="spot" aria-labelledby="spot-h">
+        <div class="spot-h"><h3 id="spot-h">${c.listen}</h3>${info(c.listenInfo)}</div>
+        <div class="spot-row">${listenChips(song, taxonomy)}</div>
+        ${band ? `<div>${band}</div>` : ''}
+      </section>
+      <div class="spot-h total"><h3>${c.total(song.complexityTotal)}</h3>${info(totalInfo())}</div>
+      <div class="flake-radar">
         <div class="flake-clip"><canvas class="turn" style="${turnStyle(song)}"></canvas></div>
         <div class="radar-box">${radarSvg(song.complexity, colour)}</div>
       </div>

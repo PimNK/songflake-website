@@ -86,24 +86,23 @@ body.locked {
 }
 .mgrid {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 35fr) minmax(0, 65fr);
   gap: 28px;
 }
 .mleft,
 .mright {
   display: grid;
-  gap: 22px;
+  gap: 18px;
   align-content: start;
   min-width: 0;
 }
-.flake-box {
+/* The snowflake beside the radar, on the card's own background. */
+.flake-radar {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
   justify-items: center;
-  gap: 4px;
-  background: radial-gradient(circle at 50% 45%, var(--panel2), var(--panel) 70%);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 16px;
+  gap: 12px;
 }
 .flake-clip canvas {
   max-width: 100%;
@@ -117,7 +116,7 @@ body.locked {
 }
 .radar-box svg {
   width: 100%;
-  max-width: 300px;
+  max-width: 260px;
   height: auto;
   overflow: visible;
 }
@@ -146,6 +145,39 @@ body.locked {
   .mgrid {
     grid-template-columns: 1fr;
   }
+  .flake-radar {
+    grid-template-columns: 1fr;
+  }
+}
+/* Wide: the card fits the window; only a long story scrolls, inside its column. */
+@media (min-width: 900px) {
+  .sheet {
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: 16px;
+    padding: 22px 28px;
+  }
+  .mhead h2 {
+    font-size: clamp(26px, 3vw, 36px);
+  }
+  .player-blk {
+    padding-bottom: 14px;
+  }
+  /* the snowflake and the radar shrink with a low window, so the card does not scroll */
+  .flake-radar canvas {
+    height: clamp(140px, 29svh, 232px) !important;
+    width: auto !important;
+  }
+  .radar-box svg {
+    max-height: clamp(150px, 29svh, 260px);
+  }
+  .mgrid {
+    min-height: 0;
+  }
+  .mleft {
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
 }
 /* The turning snowflake's square canvas would stick out at the corners; they are transparent. */
 .flake-clip {
@@ -153,4 +185,17 @@ body.locked {
   display: grid;
   place-items: center;
   max-width: 100%;
+}
+/* The left column scrolls on wide cards, so its ⓘ bubble opens downwards, inside it. */
+.mleft .bubble {
+  bottom: auto;
+  top: calc(100% + 8px);
+  left: 0;
+  transform: none;
+}
+.mleft .qi {
+  position: static;
+}
+.mleft .spot-h {
+  position: relative;
 }

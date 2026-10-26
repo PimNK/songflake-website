@@ -2,6 +2,7 @@
 // Lengths are fractions of the flake radius R; render/snowflake.ts multiplies them out.
 import type { Song } from '../content/parse';
 import type { Taxonomy } from '../content/taxonomy';
+import { COMPLEXITY_MAX } from './filters';
 import { rayColours } from './ray-colours';
 import { hash01 } from './seed';
 
@@ -68,6 +69,22 @@ export const centreDotRadius = (R: number): number => Math.max(1.4, 0.045 * R);
 
 /** complexityTotal (5–15) → size factor, 1 at the middle total of 10. */
 export const sizeFactor = (complexityTotal: number): number => (6 + complexityTotal) / 16;
+
+/** Side of the canvas a static snowflake of radius `R` needs, halo and glow included (CSS px). */
+export const paintedSize = (R: number): number => Math.ceil(R * 2.7 + 16);
+
+/**
+ * A list tile's snowflake: its radius for a tile radius, the largest tile canvas (`full`, the top
+ * total) and this canvas as a share of it, so all tile snowflakes scale together with the tile.
+ */
+export function tileFlake(
+  complexityTotal: number,
+  tileRadius: number,
+): { R: number; full: number; share: number } {
+  const R = tileRadius * sizeFactor(complexityTotal);
+  const full = paintedSize(tileRadius * sizeFactor(COMPLEXITY_MAX));
+  return { R, full, share: paintedSize(R) / full };
+}
 
 /** Each snowflake turns slowly on its own, in rad/s; more rays turn a little faster. */
 export const turnRate = (structure: number): number => 0.08 * (1 + structure * 0.3);

@@ -3,7 +3,7 @@
 // caller.
 import type { Content } from '../content/load';
 import type { Song } from '../content/parse';
-import { flakeOf, sizeFactor } from '../domain/snowflake';
+import { flakeOf, tileFlake } from '../domain/snowflake';
 import { paintSnowflake } from '../render/snowflake';
 import { strings } from '../strings';
 import { bandRing, esc, turnStyle } from './html';
@@ -13,7 +13,8 @@ export interface ListView {
   setPlaying(slug: string | null): void;
 }
 
-const TILE_RADIUS = 32;
+const TILE_RADIUS = 40;
+
 function tile(song: Song, content: Content): HTMLButtonElement {
   const { taxonomy } = content;
   const b = document.createElement('button');
@@ -24,12 +25,11 @@ function tile(song: Song, content: Content): HTMLButtonElement {
   const canvas = document.createElement('canvas');
   canvas.className = 'turn';
   canvas.style.cssText = turnStyle(song);
-  paintSnowflake(
-    canvas,
-    flake.params,
-    flake.colours,
-    TILE_RADIUS * sizeFactor(song.complexityTotal),
-  );
+  // The flake box is as wide as the largest tile snowflake at most and scales with the tile.
+  const { R, full, share } = tileFlake(song.complexityTotal, TILE_RADIUS);
+  paintSnowflake(canvas, flake.params, flake.colours, R);
+  canvas.style.width = `${share * 100}%`;
+  canvas.style.height = 'auto';
   const year = song.years.ready !== undefined ? String(song.years.ready) : strings.list.inProgress;
   const dots = song.accents
     .map((id) => {
@@ -39,6 +39,7 @@ function tile(song: Song, content: Content): HTMLButtonElement {
     .join('');
   const box = document.createElement('span');
   box.className = 'flake';
+  box.style.maxWidth = `${full}px`;
   box.append(canvas);
   b.append(box);
   b.insertAdjacentHTML(

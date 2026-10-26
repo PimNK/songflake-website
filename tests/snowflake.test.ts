@@ -6,8 +6,10 @@ import {
   flakeOf,
   flakeTurn,
   lineWidth,
+  paintedSize,
   sizeFactor,
   snowflakeParams,
+  tileFlake,
   turnTiming,
 } from '../src/domain/snowflake';
 import { sampleComplexity, song, taxonomy } from './fixtures';
@@ -99,5 +101,17 @@ describe('own turn', () => {
     expect(flakeTurn(3, 1, 0)).toBeCloseTo(rate);
     expect(delay).toBeLessThanOrEqual(0);
     expect(-delay * rate).toBeCloseTo(hash01('lady') * 6);
+  });
+});
+
+describe('tile snowflake', () => {
+  it('scales every tile snowflake against the largest one', () => {
+    const top = tileFlake(15, 40);
+    expect(top.share).toBe(1);
+    expect(top.full).toBe(paintedSize(top.R));
+    const small = tileFlake(5, 40);
+    expect(small.R).toBeCloseTo(40 * sizeFactor(5));
+    expect(small.share).toBeCloseTo(paintedSize(small.R) / top.full);
+    expect(small.share).toBeLessThan(1);
   });
 });

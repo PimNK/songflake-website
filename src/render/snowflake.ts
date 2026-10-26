@@ -3,6 +3,7 @@
 import { rgba } from '../domain/colour';
 import { FROST_LINE, GRADIENT_RADIUS, rayGradientStops } from '../domain/ray-colours';
 import {
+  paintedSize,
   BRANCH_ANGLE,
   BRANCH_AT,
   BRANCH_LENGTH,
@@ -193,7 +194,7 @@ export function paintSnowflake(
   R: number,
 ): void {
   const dpr = devicePixelRatioCapped();
-  const size = Math.ceil(R * 2.7 + 16);
+  const size = paintedSize(R);
   canvas.width = size * dpr;
   canvas.height = size * dpr;
   canvas.style.width = `${size}px`;

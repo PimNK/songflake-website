@@ -45,8 +45,8 @@ export const strings = {
     recordGlyph: '◉',
     listGlyph: '☰',
     mapLabel: 'Track map',
-    toRecord: 'Scroll down to the record',
-    toIntro: 'Back to the intro',
+    toRecord: 'Scroll down to the tracks',
+    scroll: 'scroll',
   },
 
   filters: {
@@ -97,7 +97,6 @@ export const strings = {
     bandUnnamed: 'Band not named yet',
     bandUnnamedHint: 'The name of the band is not filled in yet.',
     bandNoAbout: 'No description yet.',
-    soloRecording: 'Solo recording',
     story: 'Story',
     storyEmpty: 'The story of this track is still to be written.',
     timeline: 'From idea to recording',
@@ -134,8 +133,6 @@ export const strings = {
     noAudio: 'Recording coming soon',
     pinAt: (time: string, text: string) => `Pin at ${time}: ${text}`,
     seek: 'Seek',
-    download: '↓ Download',
-    downloadLabel: (title: string) => `Download “${title}”`,
     pastEnd: (slug: string, time: string) =>
       `songs/${slug}/index.md: pin at ${time} is past the end of the recording`,
   },

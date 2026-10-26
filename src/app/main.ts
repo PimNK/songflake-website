@@ -25,14 +25,17 @@ import { Playback } from '../views/playback';
 import { mountPlayer } from '../views/player';
 import { leadColour } from '../views/card-body';
 import { startRouter } from './router';
-import { Store } from './state';
+import { Store, type ViewName } from './state';
 
 const content = loadContent();
 if (import.meta.env.DEV) showContentOverlay(content.errors, content.warnings);
 const { songs, taxonomy } = content;
 
-// Phones and tablets open on the list; wide screens on the record.
+// Phones and tablets open on the list; wide screens on the record. Phones have the list only.
 const narrow = window.matchMedia('(max-width: 1099.98px)').matches;
+// Must match the phone breakpoint in styles/layout.css, which hides the Record / List switch.
+const PHONE = window.matchMedia('(max-width: 599.98px)');
+const fitView = (view: ViewName): ViewName => (PHONE.matches ? 'list' : view);
 const store = new Store({
   view: narrow ? 'list' : 'record',
   filters: defaultFilters(taxonomy),
@@ -55,7 +58,7 @@ const panel = mountFilterPanel(
 const playback = new Playback();
 const bySlug = (slug: string | null): Song | undefined => songs.find((x) => x.slug === slug);
 const playable = songs.filter((x) => !!x.audioSrc);
-const random = mountRandomPlayer(slots.player, playback, {
+const random = mountRandomPlayer(slots.player, playback, taxonomy, {
   // Playable tracks that match the filters; all playable ones when none match.
   pool: () => {
     const on = playable.filter((x) => matches(x, store.get().filters));
@@ -111,5 +114,6 @@ playback.subscribe(() => {
   record.setPlaying(slug);
   list.setPlaying(slug);
 });
-startRouter(store, taxonomy, (slug) => songs.some((x) => x.slug === slug));
+const router = startRouter(store, taxonomy, (slug) => songs.some((x) => x.slug === slug), fitView);
+PHONE.addEventListener('change', () => router.refit());
 if (!store.get().openSlug) startHints(slots);

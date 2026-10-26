@@ -1,22 +1,21 @@
-/* Filter panel. Wide screens: always open in the left column beside the intro, covering nothing.
-   Narrower: over the record it floats under the bar; in the List view it sits above the tiles.
-   Option colours are set inline from the taxonomy. */
+/* Filter panel, straight on the page background. Wide screens: always open under the player, in
+   three columns, covering nothing. Narrower: over the record it floats under the bar (only then
+   with a backdrop, to stay readable); in the List view it sits above the tiles.
+   Instrument colours are set inline from the taxonomy; styles have none here. */
 .fanchor {
   position: relative;
   z-index: 6;
-}
-.fpanel {
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--panel) 90%, transparent);
-  backdrop-filter: blur(6px);
-  padding: 12px 12px 14px;
 }
 @media (max-width: 1099.98px) {
   .page[data-view='record'] .fanchor {
     height: 0;
   }
   .page[data-view='record'] .fpanel {
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--panel) 92%, transparent);
+    backdrop-filter: blur(6px);
+    padding: 12px 12px 14px;
     position: absolute;
     top: 0;
     left: 0;
@@ -41,9 +40,17 @@
   background: color-mix(in srgb, var(--void) 12%, transparent);
   color: var(--void);
 }
-.fbody {
+.fbody,
+.fcol {
   display: grid;
   gap: 12px;
+  align-content: start;
+}
+@media (min-width: 1100px) {
+  .fbody {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr) minmax(0, 1fr);
+    column-gap: 18px;
+  }
 }
 .fgroup {
   display: grid;
@@ -61,6 +68,7 @@
   gap: 8px;
 }
 .flabel b {
+  white-space: nowrap;
   color: var(--frost);
   font-weight: 500;
   letter-spacing: 0.04em;
@@ -84,14 +92,12 @@
   align-items: center;
   gap: 9px;
   font-size: 13px;
-  padding: 3px 8px;
+  padding: 3px 6px;
   border-radius: 8px;
-  background: var(--panel2);
-  border: 1px solid transparent;
   cursor: pointer;
 }
 .fopt:hover {
-  border-color: var(--line);
+  background: color-mix(in srgb, var(--panel2) 60%, transparent);
 }
 .fopt.zero {
   opacity: 0.45;
@@ -125,9 +131,7 @@
 .range {
   display: grid;
   gap: 2px;
-  background: var(--panel2);
-  border-radius: 8px;
-  padding: 4px 10px;
+  padding: 2px 6px;
 }
 .range label {
   display: grid;
@@ -144,4 +148,5 @@
 }
 .freset {
   justify-self: start;
+  background: none;
 }

@@ -1,5 +1,6 @@
 // Filter controls generated from the taxonomy and the counts (CLAUDE.md §4.2). From 1100 px the
-// panel is always open; narrower, the Filters toggle opens and closes it (closed by default).
+// panel is always open, in three columns; narrower, the Filters toggle opens and closes it
+// (closed by default).
 // No filtering logic: every change goes through domain/filters.ts and back to the store.
 import type { Content } from '../content/load';
 import {
@@ -38,14 +39,9 @@ const option = (o: Option): string => `
 function template(content: Content): string {
   const { taxonomy, songs } = content;
   const c = countOptions(songs, taxonomy);
+  // Styles carry no colour dot here: they would read as instrument colours.
   const styles = taxonomy.styles.map((s) =>
-    option({
-      kind: 'style',
-      id: s,
-      label: s,
-      count: c.styles[s] ?? 0,
-      colour: taxonomy.styleColours[s],
-    }),
+    option({ kind: 'style', id: s, label: s, count: c.styles[s] ?? 0 }),
   );
   const accents = taxonomy.accents.map((a) =>
     option({
@@ -61,14 +57,16 @@ function template(content: Content): string {
   return `
       <div class="fbody">
         <div class="fgroup"><div class="flabel">${f.style}</div><div class="flist">${styles.join('')}</div></div>
-        <div class="fgroup"><div class="flabel">${f.complexity} <b data-range-label></b></div>
-          <div class="range">${range('min')}${range('max')}</div></div>
         <div class="fgroup"><div class="flabel">${f.listen} <button type="button" data-all>${f.allNone}</button></div>
           <div class="fgrid">${accents.join('')}</div></div>
-        <div class="fgroup" ${c.inProgress ? '' : 'hidden'}><div class="flabel">${f.status}</div><div class="flist">
-          ${option({ kind: 'status', id: 'ready', label: f.ready, count: c.ready })}
-          ${option({ kind: 'status', id: 'inProgress', label: f.inProgress, count: c.inProgress })}</div></div>
-        <button type="button" class="btn freset" data-reset>${f.reset}</button>
+        <div class="fcol">
+          <div class="fgroup"><div class="flabel">${f.complexity} <b data-range-label></b></div>
+            <div class="range">${range('min')}${range('max')}</div></div>
+          <div class="fgroup" ${c.inProgress ? '' : 'hidden'}><div class="flabel">${f.status}</div><div class="flist">
+            ${option({ kind: 'status', id: 'ready', label: f.ready, count: c.ready })}
+            ${option({ kind: 'status', id: 'inProgress', label: f.inProgress, count: c.inProgress })}</div></div>
+          <button type="button" class="btn freset" data-reset>${f.reset}</button>
+        </div>
       </div>`;
 }
 

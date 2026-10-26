@@ -66,23 +66,35 @@ export function stateToHash(s: AppState, taxonomy: Taxonomy): string {
   return `#${path}${search ? `?${search}` : ''}`;
 }
 
-/** Keeps the store and the URL in step. `known` tells whether a slug exists. */
+/** Writes the state's hash unless it is already there; pushes a history entry or replaces. */
+function writeHash(s: AppState, taxonomy: Taxonomy, push: boolean): void {
+  const hash = stateToHash(s, taxonomy);
+  if (hash === (location.hash || '#/')) return;
+  if (push) history.pushState(null, '', hash);
+  else history.replaceState(null, '', hash);
+}
+
+export interface Router {
+  /** Moves to a view the screen has after it changed size; replaces the entry, never pushes. */
+  refit(): void;
+}
+
+/**
+ * Keeps the store and the URL in step. `known` tells whether a slug exists; `fitView` maps a
+ * view to one the screen has (phones have the list only).
+ */
 export function startRouter(
   store: Store,
   taxonomy: Taxonomy,
   known: (slug: string) => boolean,
-): void {
+  fitView: (view: ViewName) => ViewName = (view) => view,
+): Router {
   let reading = false;
   // True while the open card has its own history entry (opened in the app, not by a deep link):
   // closing it then goes back instead of adding an entry, so Back never reopens it.
   let cardEntry = false;
 
-  const write = (push: boolean): void => {
-    const hash = stateToHash(store.get(), taxonomy);
-    if (hash === (location.hash || '#/')) return;
-    if (push) history.pushState(null, '', hash);
-    else history.replaceState(null, '', hash);
-  };
+  const write = (push: boolean): void => writeHash(store.get(), taxonomy, push);
 
   const read = (): void => {
     const route = parseHash(location.hash);
@@ -95,7 +107,7 @@ export function startRouter(
     } else {
       store.set({
         filters,
-        view: route.view ?? store.get().view,
+        view: fitView(route.view ?? store.get().view),
         openSlug: route.slug,
         cue: route.slug && t ? parseTime(t) : null,
         notice: null,
@@ -103,6 +115,8 @@ export function startRouter(
     }
     if (!route.slug) cardEntry = false;
     reading = false;
+    // A view the screen does not have (the record on a phone) is corrected in the URL too.
+    if (route.view && fitView(route.view) !== route.view) write(false);
   };
 
   store.subscribe((s, prev) => {
@@ -120,4 +134,7 @@ export function startRouter(
   read();
   // An empty hash becomes the starting view's own, so Back to it never keeps another view.
   if (!location.hash) history.replaceState(null, '', stateToHash(store.get(), taxonomy));
+
+  // Re-reading the URL fits the view to the screen and replaces the entry, never pushes.
+  return { refit: read };
 }
