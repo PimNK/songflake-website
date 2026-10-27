@@ -7,7 +7,10 @@ const colour = z.string().regex(/^#[0-9a-fA-F]{6}$/, { error: 'must be a colour 
 const taxonomySchema = z.object({
   styles: z.array(z.string().min(1)).min(1),
   style_colours: z.record(z.string(), colour),
-  accents: z.record(z.string(), z.object({ name: z.string().min(1), colour })),
+  accents: z.record(
+    z.string(),
+    z.object({ name: z.string().min(1), ru: z.string().min(1).optional(), colour }),
+  ),
 });
 
 const bandsSchema = z.record(
@@ -18,6 +21,8 @@ const bandsSchema = z.record(
 export interface Accent {
   id: string;
   name: string;
+  /** The Russian display name; the English `name` when absent. */
+  ru?: string;
   colour: string;
 }
 
@@ -55,7 +60,7 @@ export function toTaxonomy(raw: unknown, file = 'content/taxonomy.yaml'): Taxono
   return {
     styles,
     styleColours: style_colours,
-    accents: Object.entries(accents).map(([id, a]) => ({ id, name: a.name, colour: a.colour })),
+    accents: Object.entries(accents).map(([id, a]) => ({ id, ...a })),
   };
 }
 

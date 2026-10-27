@@ -1,10 +1,11 @@
 // The About window (wide screens): the About button in the left column opens the intro in a modal
 // like the track card's. ✕, Esc and a click on the backdrop close it; focus is trapped while open
-// and returned to the button; page scroll is locked. Narrower, the intro is on the page itself.
+// and returned to the button; page scroll is locked; `closed` runs after (main.ts starts the
+// hints then). Narrower, the intro is on the page itself.
 import { strings } from '../strings';
 import { trapFocus } from './modal';
 
-export function mountAbout(button: HTMLButtonElement): void {
+export function mountAbout(button: HTMLButtonElement, closed: () => void): void {
   const modal = document.createElement('div');
   modal.className = 'modal';
   modal.hidden = true;
@@ -27,6 +28,7 @@ export function mountAbout(button: HTMLButtonElement): void {
     modal.hidden = true;
     document.body.classList.remove('locked');
     button.focus({ preventScroll: true });
+    closed();
   };
   button.addEventListener('click', () => {
     modal.hidden = false;

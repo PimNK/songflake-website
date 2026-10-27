@@ -4,6 +4,7 @@ import { parse as parseYaml } from 'yaml';
 import bandsRaw from '/content/bands.yaml?raw';
 import taxonomyRaw from '/content/taxonomy.yaml?raw';
 import { displayOrder, parseSong, type AudioFile, type Song } from './parse';
+import { lang } from '../lang';
 import { toBands, toTaxonomy, type Bands, type Taxonomy } from './taxonomy';
 
 const indexFiles = import.meta.glob<string>('/songs/*/index.md', {
@@ -28,13 +29,17 @@ export interface Content {
 
 const slugOf = (path: string): string => path.split('/')[2] ?? '';
 
+/** Instrument names in the page's language; styles are never translated. */
+const localised = (t: Taxonomy): Taxonomy =>
+  lang === 'ru' ? { ...t, accents: t.accents.map((a) => ({ ...a, name: a.ru ?? a.name })) } : t;
+
 const EMPTY_TAXONOMY: Taxonomy = { styles: [], styleColours: {}, accents: [] };
 
 export function loadContent(): Content {
   let taxonomy: Taxonomy;
   let bands: Bands;
   try {
-    taxonomy = toTaxonomy(parseYaml(taxonomyRaw));
+    taxonomy = localised(toTaxonomy(parseYaml(taxonomyRaw)));
     bands = toBands(parseYaml(bandsRaw));
   } catch (e) {
     // The build fails on this in check-content; in dev it reaches the overlay instead of crashing.

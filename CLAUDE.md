@@ -22,9 +22,15 @@ Where this file and the mockup differ, this file wins: the author's later
 changes (page frame, record placement and interaction, card order) supersede
 the mockup.
 
-**UI language: English.** Every user-visible string lives in `src/strings.ts`.
-Song titles and stories are the author's and stay in whatever language they are
-written in (e.g. «На луну»).
+**UI language: English and Russian.** Every user-visible string lives in
+`src/strings/` (`en.ts`, `ru.ts`, same shape). The language is fixed per page
+load (`src/lang.ts`): `?lang=` in the URL, else the stored choice
+(`localStorage` `obychno.lang`), else the browser's language (`ru*` → Russian,
+otherwise English). A language switch in the hero stores the choice and reloads.
+Not translated: style names, song titles, the record's centre label (it reuses
+the English text), the dev overlay, glyphs. Song titles, stories, pins and band
+texts are the author's and stay in whatever language they are written in (e.g.
+«На луну»).
 
 The rest of this file is the contract for building and changing the site.
 Anything it does not cover: choose the simplest option, and say which one you
@@ -77,12 +83,13 @@ src/
   render/                    drawing: snowflake (canvas), record (canvas), star sky (canvas), radar (SVG)
   views/                     DOM: record, list, filter panel, track card, player
   app/                       state, URL router, bootstrap
-  strings.ts                 every UI string (English)
+  lang.ts                    the page's language and the switch (§3)
+  strings/                   every UI string: en.ts, ru.ts, index.ts (the table for the page's language)
   styles/                    CSS; tokens in styles/tokens.css
 scripts/
   new-song.ts                scaffolds a song folder (§2.5)
   check-content.ts           validates every song; part of `build` and `test`
-tests/                       vitest unit tests (*.test.ts) for content/parse.ts and domain/; fixtures.ts holds shared sample songs and sampleComplexity
+tests/                       vitest unit tests (*.test.ts) for content/parse.ts, domain/ and strings/ (ru / en key parity, plural forms); fixtures.ts holds shared sample songs and sampleComplexity
 public/                      favicon and nothing else
 ```
 
@@ -155,7 +162,7 @@ written around a bass line.
 | `hidden` | no | boolean | `true` keeps the song out of the build — a draft |
 
 The **body** is the story, in Markdown. It may be empty; the card then shows a
-neutral placeholder from `strings.ts`.
+neutral placeholder from `strings/`.
 
 **Derived, never stored** (computed in `src/content/`):
 - `complexityTotal` = sum of the five axes (5–15)
@@ -190,14 +197,14 @@ style_colours:     # sector tint, rim band, labels
   Electronic:  "#4dd8ff"
   Ambient:     "#9be7b9"
 
-accents:           # id → display name + colour; the only place these exist
-  Guitar:   { name: Guitar,      colour: "#ff9100" }
-  Vox:      { name: Vocals,      colour: "#00e5ff" }
-  Keys:     { name: Keys,        colour: "#d500f9" }
-  Drums:    { name: Drums,       colour: "#ff1744" }
-  Bass:     { name: Bass,        colour: "#00e676" }
-  Flute:    { name: Flute,       colour: "#ffee58" }
-  Electric: { name: Electronics, colour: "#2979ff" }
+accents:           # id → display name (ru: the Russian one, optional) + colour; the only place these exist
+  Guitar:   { name: Guitar,      ru: Гитара,       colour: "#ff9100" }
+  Vox:      { name: Vocals,      ru: Вокал,        colour: "#00e5ff" }
+  Keys:     { name: Keys,        ru: Клавишные,    colour: "#d500f9" }
+  Drums:    { name: Drums,       ru: Барабаны,     colour: "#ff1744" }
+  Bass:     { name: Bass,        ru: Бас,          colour: "#00e676" }
+  Flute:    { name: Flute,       ru: Флейта,       colour: "#ffee58" }
+  Electric: { name: Electronics, ru: Электроника,  colour: "#2979ff" }
 ```
 
 Filter checkboxes, chips, ray colours and record sectors are
@@ -283,8 +290,8 @@ fits, propose a new module and update this table in the same change.
 | Module | Owns | Must NOT contain |
 |---|---|---|
 | `content/parse.ts` | **pure**: frontmatter split, YAML parse, zod schema, cross-field rules, derived fields, errors and warnings | DOM, `import.meta.glob`, file system |
-| `content/load.ts` | the two `import.meta.glob` calls, taxonomy and bands import, handing raw input to `parse.ts`, dropping `hidden` songs | validation rules |
-| `content/taxonomy.ts` | taxonomy and bands zod schemas, the `Taxonomy` / `Band` types, `toTaxonomy` / `toBands` validators | hard-coded names or colours, lookups |
+| `content/load.ts` | the two `import.meta.glob` calls, taxonomy and bands import, handing raw input to `parse.ts`, dropping `hidden` songs; `localised` swaps each instrument's `name` for its `ru` (when set) on a Russian page; styles are never translated | validation rules |
+| `content/taxonomy.ts` | taxonomy and bands zod schemas (an accent has `name`, optional `ru`, `colour`), the `Taxonomy` / `Band` / `Accent` types (`Accent.ru?`), `toTaxonomy` / `toBands` validators | hard-coded names or colours, lookups |
 | `content/slug.ts` | **pure**: the slug pattern and `slugify` (Cyrillic transliteration, diacritics and apostrophes stripped), shared by `parse.ts` and `scripts/new-song.ts` | DOM, file system, validation of anything but the slug |
 | `domain/filters.ts` | **pure**: `FilterState` (styles, instruments, complexity range, year range `from` / `to` — inclusive, over `placementYear` (§5.3) — and status; the band is not a filter), `FilterSpace {taxonomy, years}` (what the filters range over; passed to `defaultFilters`, `toQuery`, `fromQuery` and `isDefault`), `matches(song, state, years)`, counts per option, `countMatching(songs, state, years)`, default state from the space, range clamping (`setRange`; `setYears(f, end, value, years)` clamps to the songs' years, `from` ≤ `to`), the filter ⇄ URL-query conversion (`toQuery` / `fromQuery`, keys in §4.5), and `neighbour` (the card's prev/next over the filtered order, wrapping; falls back to the full order when the open song is filtered out) and `nextPlayable` (the next track after a given one in that order, wrapping, that passes a predicate; null when none), both taking `years` | DOM, `location`, hash handling (that is `app/router.ts`, which only wires it) |
 | `domain/timeline.ts` | **pure**: the three stations (idea, concept, ready) with their fill, and the gaps between them, proportional to the years with a minimum length for 0 or unknown | DOM |
@@ -308,9 +315,9 @@ fits, propose a new module and update this table in the same change.
 | `views/record-controls.ts` | the stage template (canvas and tooltip element) and the hover tooltip | layout or drawing maths |
 | `views/record-motion.ts` | spin state (disc and snowflake turn): always on, except under `prefers-reduced-motion` | layout maths (spin rate comes from `domain/record-layout.ts`) |
 | `views/content-overlay.ts` | the dev-only overlay: one panel at the top listing content errors and warnings, each message shown once per page load; also used for the dev «pin past the end» warning (`main.ts` calls it under `import.meta.env.DEV`); messages inserted as text | parsing or validation, production use |
-| `views/page.ts` | the static page frame: the star sky canvas (mounts `render/sky.ts`, redrawn on resize), the `.page` with `.intro-sec` (title, the on-page «About» section `.about` (`strings.hero.about`) and the intro from `strings.ts`, both hidden from 1100 px; the `.about-btn` shown from 1100 px (centred in the left column, one Record / List tab wide and `--pad-h` high; `--tab-gap` in `layout.css` is shared with `filters.css`), exposed as `PageSlots.aboutButton`; the page takes no content) and `.map-sec`, `.rplayer` (wraps the Filters toggle, first in the DOM, and the random-player slot `.rp`; the slot is `player`), the bar (`.viewbar`: the «View» label `.vlabel` with the Record / List tabs, which take `aria-labelledby` from it) inside `.fanchor`, before `.fpanel` — from 1100 px it is the top row of the filter block, below 1100 px it stays above the view; the Filters toggle is not in the bar; their order is set by CSS), the scroll cue (`wireScrollCue`: one down arrow with a «scroll» caption at the bottom of the intro, smooth scroll to the map section; fades out once the page is scrolled more than 24 px; the same scroll / resize handler toggles `at-intro` on `.page` while the intro's bottom is below half the window, and `layout.css` then slides the bottom player out and hides the filter sheet), the filter anchor and the view slots; `data-view` on `.page` tells CSS which view is shown; returns the slots other views fill. Also the view switch: `showView` (shows one view, sets `data-view`, marks its tab, sets the notice) and `onViewTab` (tab clicks; roving tabindex, ← / → move between tabs) | filtering, state, drawing maths |
+| `views/page.ts` | the static page frame: the star sky canvas (mounts `render/sky.ts`, redrawn on resize), sets `document.documentElement.lang`; the `.page` with `.intro-sec` (the `.hero` row: the title `h1` at the left and `.hero-keys` at the top right with `.hero-btn.about-btn` (About, shown from 1100 px, exposed as `PageSlots.aboutButton`) and `.hero-btn.lang-btn` (the language switch at all widths: shows the current language, `strings.hero.lang`, labelled by `hero.langLabel`; click → `switchLang(otherLang)`); `--tab-gap` in `layout.css` spaces the hero buttons and the tabs; then the on-page «About» section `.about` (`strings.hero.about`) and the intro from `strings/`, both hidden from 1100 px; the page takes no content) and `.map-sec`, `.rplayer` (wraps the Filters toggle, first in the DOM, and the random-player slot `.rp`; the slot is `player`), the bar (`.viewbar`: the «View» label `.vlabel` with the Record / List tabs, which take `aria-labelledby` from it) inside `.fanchor`, before `.fpanel` — from 1100 px it is the top row of the filter block, below 1100 px it stays above the view; the Filters toggle is not in the bar; their order is set by CSS), the scroll cue (`wireScrollCue`: one down arrow with a «scroll» caption at the bottom of the intro, smooth scroll to the map section; fades out once the page is scrolled more than 24 px; the same scroll / resize handler toggles `at-intro` on `.page` while the intro's bottom is below half the window, and `layout.css` then slides the bottom player out and hides the filter sheet), the filter anchor (`.fanchor`, exposed as `PageSlots.filterBlock`) and the view slots; `data-view` on `.page` tells CSS which view is shown; returns the slots other views fill. Also the view switch: `showView` (shows one view, sets `data-view`, marks its tab, sets the notice) and `onViewTab` (tab clicks; roving tabindex, ← / → move between tabs) | filtering, state, drawing maths |
 | `views/modal.ts` | `trapFocus` (Tab wraps inside a modal window), shared by the track card and About | everything else |
-| `views/about.ts` | `mountAbout(button)`: the About window for wide screens — the About button opens the intro (`strings.hero.about`, `hero.intro`) in a modal using the card's `.modal` / `.sheet` frame (`.about-sheet`, styled in `styles/card.css`); ✕, Esc and backdrop close; focus trapped (`views/modal.ts`) and returned to the button; scroll lock (`body.locked`). Narrower, the intro stays on the page | the intro text (it is in `strings.ts`), card logic |
+| `views/about.ts` | `mountAbout(button, closed)`: the About window for wide screens — the About button opens the intro (`strings.hero.about`, `hero.intro`) in a modal using the card's `.modal` / `.sheet` frame (`.about-sheet`, styled in `styles/card.css`); ✕, Esc and backdrop close; focus trapped (`views/modal.ts`) and returned to the button; scroll lock (`body.locked`); `closed` runs after the window closes (`main.ts` passes `() => startHints(slots, true)`). Narrower, the intro stays on the page | the intro text (it is in `strings/`), card logic |
 | `views/seek.ts` | `wireSeek`: seeking on a bar by click / drag and keys (← / → 5 s, Home / End), shared by the card waveform (`views/player.ts`) and the random player's line | audio element, rendering, time parsing |
 | `views/html.ts` | the `esc()` helper for author text interpolated into `innerHTML`, `bandRing` (the dashed band ring SVG), `info(bubble)` (the ⓘ with its bubble; `.qi` / `.bubble` CSS is in `styles/base.css`), `SKIP_ICON` (the previous / next glyph, shared by the card and the random player) and `turnStyle` (inline style that starts a snowflake's CSS turn) | anything else |
 | `views/list.ts` | the tile grid (`TILE_RADIUS` 40; snowflakes scale with the tile via `tileFlake` and turn via CSS), its empty state, flakes centred in the square box so their centres line up across a row, and `setPlaying` (the `playing` class on the current track's tile: its flake box beats, stronger than a record beat, no ring; held enlarged under reduced motion) | filtering logic |
@@ -321,12 +328,13 @@ fits, propose a new module and update this table in the same change.
 | `views/player.ts` | the card's player UI, laid out like the random player: the round play / pause button (created in `slots.play`); in `slots.body` the caption `.pstate` («Now playing» / «Paused» / «Press play to listen», `strings.player.ready`) with the active-pin note under it (two lines at most; `.pnote.none` when the song has no pins), then the waveform seek slider (click/drag and keyboard) with a thumb (`--at`) and `m:ss / m:ss` at its right; exports `emptyPlayer`; below 900 px no caption: `.player-blk` and `.pcap` become `display: contents` (`player.css`), the line sits under the keys and the note under the line, two lines reserved when the song has pins; hiding pins past the end of the recording (§4.6); `PlayerHooks` only carry the dev warning | the `<audio>` element, pin markers, a pin list or copy link, time parsing (that is `domain/pins.ts`) |
 | `views/playback.ts` | the one shared `<audio>` element; pending positions for songs that are not loaded; per-song waveform and duration cache, falling back to a metadata probe when decoding fails; failures are not cached; the run's `mode` (`order` = started from a card, `shuffle` = started by the random player; set when `play` switches song); `autoAdvance(next(ended, mode), moved)` (when a track ends, play the one the callback picks for the mode and report the move); a finished track's end position is not kept | DOM beyond the audio element, rendering |
 | `views/pin-markers.ts` | pin diamonds and popovers (below 900 px the markers only mark: no popover, `pointer-events: none` so a tap seeks the waveform, `tabindex=-1` and `aria-hidden` via the `NARROW` media query, re-rendered by the player on width change); (near either end of the bar they open inwards, by pixel distance); markers under 12 px apart merge; on touch the first tap shows the popover and the second seeks; a merged marker seeks to its first pin | audio, time parsing, grouping maths (that is `domain/pins.ts`) |
-| `views/random-player.ts` | the random-track player in the page's controls: `mountRandomPlayer(el, playback, taxonomy, hooks)`: previous · play / pause · next, the playing track's turning snowflake (a button that opens the card; its slot keeps its size when idle), the caption («⤮ Plays a random track», then «Now playing» / «Paused» and the title, which opens the card) and a progress line (a `role=slider` that seeks via `views/seek.ts`) with the time `m:ss / m:ss` at its right. A rAF loop moves only the line; time and `aria-valuenow` follow `timeupdate`. A title too long for its line runs as a ticker (`fitTitle`; a second aria-hidden copy closes the loop; re-fitted on width change by a ResizeObserver; it runs under `prefers-reduced-motion` too). Below 1100 px the bottom player's top row is the Filters toggle (left) · keys · caption and title · the snowflake at the right (46 px, 42 px below 600), not beside the line. Styles in `styles/random-player.css`. Keeps a `ShuffleHistory`; a track started elsewhere joins it. Starts plays with mode `shuffle`; ⏮ steps back, at the history's start it restarts the track | the audio element, the pool rule (main.ts passes `pool()`), pick maths (that is `domain/shuffle.ts`) |
-| `views/hints.ts` | the first-visit hints (§4.1): ring and note per step, auto-advance every 6 s (not while the note is hovered), Next / Got it, Skip, Esc, click elsewhere; the seen flag in `localStorage` (`obychno.hints`, best effort) | deciding when the page opens on a card (main.ts does) |
+| `views/random-player.ts` | the random-track player in the page's controls: `mountRandomPlayer(el, playback, taxonomy, hooks)`: previous · play / pause · next, the playing track's turning snowflake (a button that opens the card; its slot keeps its size when idle), the caption («⤮ Plays a random track», then «Now playing» / «Paused») and the title, which opens the card and a progress line (a `role=slider` that seeks via `views/seek.ts`) with the time `m:ss / m:ss` at its right. A rAF loop moves only the line; time and `aria-valuenow` follow `timeupdate`. The caption and the title each run as a ticker when too long for their line (`setRun` / `fitRun`; a second aria-hidden copy closes the loop; re-fitted on width change by a ResizeObserver on both lines; it runs under `prefers-reduced-motion` too). Below 1100 px the bottom player's top row is the Filters toggle (left) · keys · caption and title · the snowflake at the right (46 px, 42 px below 600), not beside the line. Styles in `styles/random-player.css`. Keeps a `ShuffleHistory`; a track started elsewhere joins it. Starts plays with mode `shuffle`; ⏮ steps back, at the history's start it restarts the track | the audio element, the pool rule (main.ts passes `pool()`), pick maths (that is `domain/shuffle.ts`) |
+| `views/hints.ts` | the first-visit hints (§4.1): `startHints(slots, again = false)` (`again` ignores the seen flag; nothing starts while a `.hints` layer is showing); ring and note per step (step 3 rings the whole filter block, `PageSlots.filterBlock`; the disc's note sits inside the ring under the label, other targets: right, else left, else inside), auto-advance every 6 s (not while the note is hovered), Next / Got it, Skip, Esc, click elsewhere; the seen flag in `localStorage` (`obychno.hints`, best effort); shown on their own once per browser and again every time About closes | deciding when the page opens on a card (main.ts does) |
 | `app/state.ts` | the single app state (`view`, `filters`, `openSlug`, `cue`, `notice`) and change notifications | DOM |
 | `app/router.ts` | URL ⇄ state (§4.5), the history policy (`historyAction`): opening a card or switching views pushes an entry; closing a card that has its own entry goes back; filter changes replace; a malformed or unknown slug gives the «Track not found» notice; an empty hash keeps the starting view and is replaced at start with that view's hash. `startRouter(store, space, known, fitView)` (`space` is the `FilterSpace`; `stateToHash(s, space)` likewise) maps a view to one the screen has (phones: list only), corrects a `#/` URL to `#/list` (replace) and returns `{ refit }`, a re-read of the URL that replaces the entry, never pushes | rendering |
-| `app/main.ts` | bootstrap: load content, wire views to state; default view by width (list below 1100 px, record from it); a `PHONE`-based `fitView` for the router (must match the phone breakpoint in `styles/layout.css`) and `router.refit()` on media change; `years = yearRange(songs)` and the `FilterSpace`; the random player's pool (playable tracks matching the filters, all playable ones when none match); auto-advance by mode (`shuffle` → `random.next()`, `order` → `nextPlayable` over the current filters, and moving an open card to the next track); syncing the current track (playing or paused) to `setPlaying`; starting the hints unless a card is open | logic of any kind |
-| `strings.ts` | every user-visible UI string (English), including the play / pause glyphs (`strings.player.playGlyph`, `pauseGlyph`), `strings.random` and `strings.hints` | — |
+| `app/main.ts` | bootstrap: load content, wire views to state; default view by width (list below 1100 px, record from it); a `PHONE`-based `fitView` for the router (must match the phone breakpoint in `styles/layout.css`) and `router.refit()` on media change; `years = yearRange(songs)` and the `FilterSpace`; the random player's pool (playable tracks matching the filters, all playable ones when none match); auto-advance by mode (`shuffle` → `random.next()`, `order` → `nextPlayable` over the current filters, and moving an open card to the next track); syncing the current track (playing or paused) to `setPlaying`; starting the hints unless a card is open, and again when About closes | logic of any kind |
+| `lang.ts` | `lang` (`'en'` / `'ru'`), fixed per page load: `?lang=` in the URL, else `localStorage` `obychno.lang`, else `navigator.language` (`ru*` → `ru`); `'en'` outside a browser; `otherLang`; `switchLang(to)` stores the choice (best effort) and reloads with `?lang=` (hash kept; playback stops) | DOM beyond `location` and storage, strings |
+| `strings/` | `en.ts` (the shape; exports `en`, `site`, type `Strings`), `ru.ts` (same shape; `forms` for Russian noun plurals), `index.ts` (exports `strings` for `lang`). Every user-visible UI string, including the play / pause glyphs (`strings.player.playGlyph`, `pauseGlyph`), `strings.random` and `strings.hints`. Not translated: style names, the record's centre label (`labelSide` / `labelTracks` / `labelShort` / `labelName` reuse `en`), the dev overlay (`en.overlay`), glyphs. `tests/strings.test.ts` checks ru / en key parity and plural forms | — |
 
 `domain/` and `content/parse.ts` are pure and are where tests live. Views hold
 no rules — only wiring and DOM.
@@ -340,8 +348,8 @@ split. Say so when you cross it.
 
 ### 4.1 Layout and look
 
-- **From 1100 px: one screen.** One left column, top to bottom: the title
-  (hero, the site name `site` in `strings.ts`, «OBYCHNO_»); the random-track
+- **From 1100 px: one screen.** One left column, top to bottom: the hero row
+  (the title at the left, the site name `site` in `strings/en.ts`, «OBYCHNO_»; at its top right the About button and the language switch; 64 px of room before the player); the random-track
   player at the column's full width and bigger than on narrow screens (play
   56 px, skip 46 px, snowflake 76 px; previous · play / pause · next, the
   playing track's turning snowflake — a button that opens the card, its slot
@@ -350,12 +358,13 @@ split. Say so when you cross it.
   a thumb and the time `m:ss / m:ss`); the filter block, always open (no
   Filters toggle): a block on the page background (no fill or border) whose top row is the view bar (a
   visible «View» label `.vlabel`, `aria-labelledby` on the tabs, and the
-  Record / List tabs); it scrolls inside itself on a low window; then the
-  About button, which opens the intro (several lines, «_» opens a list line,
+  Record / List tabs); it scrolls inside itself on a low window. The About button
+  (in the hero row) opens the intro (several lines, «_» opens a list line,
   `--mist`, `white-space: pre-line`) in a window (`views/about.ts`). No «About»
-  heading and intro text in the column. Right: the view at full
+  heading and intro text in the column. The language switch (`EN` / `RU`, the
+  current language) sits beside it. Right: the view at full
   height; the list scrolls inside it. No legend, no «How to read a snowflake»
-  section, no footer. Text in `strings.ts`.
+  section, no footer. Text in `strings/`.
 - **Below 1100 px: two sections**, each at least a screen high — the intro
   (title + text), then the bar and the view. Scrolling snaps to them: mandatory
   in the record view, proximity in the list. The second section holds the bar —
@@ -363,7 +372,7 @@ split. Say so when you cross it.
   intro. The random player is **fixed at the bottom** of the screen
   (`--player-room`, 104 px plus the safe-area inset), with the Filters toggle (a
   funnel icon) at the left of the player's top row, before the keys, the caption and the snowflake (at the right); it is no longer sticky at
-  the top. The scroll cue sits at the bottom of the intro, above the safe area. While the intro fills the screen (its bottom below half the window) the player is slid out and the filter sheet hidden (`at-intro` on `.page`). Under 600 px the tab glyphs are
+  the top. The hero row shows the title and the language switch only (no About button). The scroll cue sits at the bottom of the intro, above the safe area. While the intro fills the screen (its bottom below half the window) the player is slid out and the filter sheet hidden (`at-intro` on `.page`). Under 600 px the tab glyphs are
   hidden and the player's snowflake shrinks to 42 px; under 360 px the skip buttons
   get smaller. Long titles in the player run as a ticker. No horizontal scroll
   anywhere.
@@ -374,10 +383,12 @@ split. Say so when you cross it.
   screens on the Record.
 - **First-visit hints (from 1100 px with hover):** three steps, each a glowing
   ring and a note beside it — a round ring on the record disc (the list when
-  that is shown): «Select a snowflake…»; the random player; the filter panel.
-  They advance every 6 s (not while the note is hovered); Next / Got it, Skip,
-  Esc or a click elsewhere end them. Remembered in `localStorage`
-  (`obychno.hints`, best effort). None on narrow screens or when the page opens
+  that is shown; its note sits inside the ring, under the label): «Select a
+  snowflake…»; the random player; the whole filter block (view switch and
+  filters). They advance every 6 s (not while the note is hovered); Next / Got
+  it, Skip, Esc or a click elsewhere end them. They show on their own once per
+  browser (`localStorage` `obychno.hints`, best effort) and again every time the
+  About window closes. None on narrow screens or when the page opens
   on a card.
 - **Scroll cue (below 1100 px):** a down arrow with a «scroll» caption at the
   bottom of the intro scrolls smoothly to the map section. It fades out once
@@ -709,8 +720,8 @@ background (§4.1), not part of the stage.
 ## 6. Explicitly out of scope (for now)
 
 The 3D pyramid view. A CMS or admin page. Comments, likes, accounts. Lyrics as
-a separate field (they can go in the story). Photos/covers. Multiple UI
-languages (strings are centralised so this stays cheap later). Sort controls in
+a separate field (they can go in the story). Photos/covers. Languages
+other than English and Russian. Sort controls in
 the list.
 
 Each of these is a deliberate omission; propose it before building it.

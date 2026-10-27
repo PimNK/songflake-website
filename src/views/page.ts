@@ -1,11 +1,13 @@
-// The static page frame: the star sky behind everything and two sections — the intro (title,
-// About and its text, and the About button that opens it in a window on wide screens) and the map
+// The static page frame: the star sky behind everything and two sections — the intro (the hero
+// row: the title, the About button that opens the intro in a window on wide screens and the
+// language switch; then About and its text, on the page narrower) and the map
 // (the random-track player with the Filters toggle, the filter block — the labelled Record / List
 // switch, then the filter panel — and the views). On wide screens CSS lays them out as one left
 // column beside the view; narrower, the player is frozen at the bottom. Returns the slots other
 // views fill in.
 import { drawSky } from '../render/sky';
 import { devicePixelRatioCapped } from '../render/snowflake';
+import { lang, otherLang, switchLang } from '../lang';
 import { strings } from '../strings';
 
 export interface PageSlots {
@@ -13,6 +15,8 @@ export interface PageSlots {
   filterToggle: HTMLButtonElement;
   aboutButton: HTMLButtonElement;
   filters: HTMLElement;
+  /** The filter block on wide screens: the Record / List switch and the filter panel. */
+  filterBlock: HTMLElement;
   player: HTMLElement;
   tabRecord: HTMLButtonElement;
   tabList: HTMLButtonElement;
@@ -26,12 +30,17 @@ const frame = (v = strings.views): string => `
     <canvas class="sky" aria-hidden="true"></canvas>
     <div class="page" data-view="record">
       <header class="intro-sec">
-        <h1>${strings.hero.title}</h1>
+        <div class="hero">
+          <h1>${strings.hero.title}</h1>
+          <div class="hero-keys">
+            <button type="button" class="hero-btn about-btn" aria-haspopup="dialog">${strings.hero.about}</button>
+            <button type="button" class="hero-btn lang-btn" aria-label="${strings.hero.langLabel}">${strings.hero.lang}</button>
+          </div>
+        </div>
         <section class="about" aria-labelledby="about-h">
           <h2 class="label" id="about-h">${strings.hero.about}</h2>
           <p class="lead">${strings.hero.intro}</p>
         </section>
-        <button type="button" class="about-btn" aria-haspopup="dialog">${strings.hero.about}</button>
         <button type="button" class="scroll-cue" aria-label="${v.toRecord}">${CHEVRON}<small>${v.scroll}</small></button>
       </header>
       <main class="map-sec" aria-label="${v.mapLabel}">
@@ -58,7 +67,9 @@ const frame = (v = strings.views): string => `
     </div>`;
 
 export function renderPage(root: HTMLElement): PageSlots {
+  document.documentElement.lang = lang;
   root.innerHTML = frame();
+  root.querySelector('.lang-btn')!.addEventListener('click', () => switchLang(otherLang));
   mountSky(root.querySelector<HTMLCanvasElement>('.sky')!);
   wireScrollCue(root);
   const q = <T extends HTMLElement>(sel: string): T => root.querySelector<T>(sel)!;
@@ -67,6 +78,7 @@ export function renderPage(root: HTMLElement): PageSlots {
     filterToggle: q('.ftoggle'),
     aboutButton: q('.about-btn'),
     filters: q('[data-slot="filters"]'),
+    filterBlock: q('.fanchor'),
     player: q('[data-slot="player"]'),
     tabRecord: q('#tab-record'),
     tabList: q('#tab-list'),

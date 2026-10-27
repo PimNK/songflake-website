@@ -1,7 +1,8 @@
 // The first-visit hints on wide screens (CLAUDE.md §4.1): three steps, each a glowing ring round
 // a part of the page and a note beside it — the snowflakes, the random-track player, the
-// filters. They move on by themselves (not while the pointer is on the note), by Next, and end
-// with Got it, Skip, Esc or a click elsewhere. Seen once per browser (localStorage, best effort).
+// filter block. They move on by themselves (not while the pointer is on the note), by Next, and
+// end with Got it, Skip, Esc or a click elsewhere. Shown once per browser on their own
+// (localStorage, best effort), and again whenever the About window closes.
 import { strings } from '../strings';
 import type { PageSlots } from './page';
 
@@ -55,7 +56,10 @@ const LAYER = `
     </div>
   </div>`;
 
-/** Rings the target; the note goes beside it — right if there is room, else left, else inside. */
+/**
+ * Rings the target; the note goes beside it — right if there is room, else left, else inside.
+ * The disc's note sits inside the ring, under the label, so it covers no filters.
+ */
 function place(ring: HTMLElement, note: HTMLElement, target: Target): void {
   const { box, round } = target();
   Object.assign(ring.style, {
@@ -66,6 +70,13 @@ function place(ring: HTMLElement, note: HTMLElement, target: Target): void {
     height: `${box.height + 12}px`,
   });
   const w = note.offsetWidth;
+  if (round) {
+    Object.assign(note.style, {
+      left: `${box.left + (box.width - w) / 2}px`,
+      top: `${box.top + box.height * 0.64}px`,
+    });
+    return;
+  }
   const left =
     box.right + GAP + w < innerWidth - GAP
       ? box.right + GAP
@@ -87,11 +98,14 @@ function fill(note: HTMLElement, i: number, total: number): void {
   note.classList.add('in');
 }
 
-/** Starts the hints (snowflakes, player, filters) unless seen or the screen is narrow. */
-export function startHints(slots: PageSlots): void {
+/**
+ * Starts the hints (snowflakes, player, filter block) unless the screen is narrow, they are
+ * already showing, or — unless `again` — they were seen.
+ */
+export function startHints(slots: PageSlots, again = false): void {
   const wide = window.matchMedia('(min-width: 1100px) and (hover: hover)').matches;
-  if (!wide || seen()) return;
-  const targets = [disc(slots), around(slots.player), around(slots.filters)];
+  if (!wide || (!again && seen()) || document.querySelector('.hints')) return;
+  const targets = [disc(slots), around(slots.player), around(slots.filterBlock)];
   const layer = document.createElement('div');
   layer.className = 'hints';
   layer.innerHTML = LAYER;

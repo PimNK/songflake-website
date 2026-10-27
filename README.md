@@ -35,6 +35,15 @@ repo grows past a few hundred MB, use `audio_url` or Git LFS (CLAUDE.md §2.1).
 A brand-new style or instrument goes in `content/taxonomy.yaml`; a band that has
 never appeared before goes in `content/bands.yaml`.
 
+## Language
+
+The interface is in English and Russian. The page picks the language from
+`?lang=en` / `?lang=ru` in the URL, else the stored choice, else the browser's
+language. The EN / RU button in the page header switches it and reloads the
+page. UI strings are in `src/strings/` (`en.ts`, `ru.ts`). Song titles, stories,
+pins and band texts stay as the author wrote them. To give an instrument a
+Russian name, add `ru:` to its line in `content/taxonomy.yaml`.
+
 ## What you see while developing
 
 In `npm run dev`, content errors and warnings appear in a panel at the top of

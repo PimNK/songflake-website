@@ -12,11 +12,11 @@ style_colours:
   Electronic:  "#4dd8ff"
   Ambient:     "#9be7b9"
 
-accents:
-  Guitar:   { name: Guitar,      colour: "#ff9100" }
-  Vox:      { name: Vocals,      colour: "#00e5ff" }
-  Keys:     { name: Keys,        colour: "#d500f9" }
-  Drums:    { name: Drums,       colour: "#ff1744" }
-  Bass:     { name: Bass,        colour: "#00e676" }
-  Flute:    { name: Flute,       colour: "#ffee58" }
-  Electric: { name: Electronics, colour: "#2979ff" }
+accents:           # id → display name (ru: the Russian one) + colour
+  Guitar:   { name: Guitar,      ru: Гитара,       colour: "#ff9100" }
+  Vox:      { name: Vocals,      ru: Вокал,        colour: "#00e5ff" }
+  Keys:     { name: Keys,        ru: Клавишные,    colour: "#d500f9" }
+  Drums:    { name: Drums,       ru: Барабаны,     colour: "#ff1744" }
+  Bass:     { name: Bass,        ru: Бас,          colour: "#00e676" }
+  Flute:    { name: Flute,       ru: Флейта,       colour: "#ffee58" }
+  Electric: { name: Electronics, ru: Электроника,  colour: "#2979ff" }

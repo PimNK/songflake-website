@@ -1,18 +1,21 @@
-// Every user-visible UI string lives here (English). Song titles and stories are the author's.
-import type { Axis } from './content/parse';
+// The English UI strings; ru.ts has the same shape. Song titles and stories are the author's.
+import type { Axis } from '../content/parse';
 
 /** The site's name: the page title and the record's centre label. */
-const site = 'OBYCHNO_';
+export const site = 'OBYCHNO_';
 
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
 
-export const strings = {
+export const en = {
   years: (n: number) => plural(n, 'year'),
   aboutBlock: 'About this block',
 
   hero: {
     title: site,
     about: 'About',
+    // The language switch shows the current language.
+    lang: 'EN',
+    langLabel: 'Language: English. Switch to Russian',
     // Shown with its line breaks; «_» opens a list line.
     intro: [
       'You are looking at my music diary:',
@@ -165,7 +168,7 @@ export const strings = {
     steps: [
       'Select a snowflake to play the song and read about it.',
       'Or press play here for a random track. ⏭ picks another one.',
-      'Narrow the tracks down by style, complexity and instrument.',
+      'Narrow the tracks down by style, instrument, complexity and year, or switch the view.',
     ],
     step: (n: number, total: number) => `${n} / ${total}`,
     next: 'Next',
@@ -179,4 +182,6 @@ export const strings = {
     hint: 'Shown in development only. Fix the files and the page reloads.',
     close: 'Close',
   },
-} as const;
+};
+
+export type Strings = typeof en;

@@ -1,15 +1,16 @@
 /* Page frame. Below 1100 px: two sections, each a screen high — the intro, then the bar and the
    view — and scrolling snaps to them; the random-track player is frozen at the bottom of the
-   screen, from the second section on. From 1100 px: one screen; a left column with the title,
-   the player, the filter block (the labelled Record / List switch on top) and the About button,
-   which opens the intro in a window; the view fills the rest. */
+   screen, from the second section on. From 1100 px: one screen; a left column with the hero row
+   (the title, the About button, which opens the intro in a window, and the language switch), the
+   player and the filter block (the labelled Record / List switch on top); the view fills the rest.
+   Narrower, the hero row holds the title and the language switch only. */
 :root {
   --gutter: clamp(16px, 3vw, 36px);
   /* above the view below 1100 px: top padding + the bar + gap */
   --bar-room: 64px;
   /* the bottom player below 1100 px (player.css sizes its rows to fit) */
   --player-room: calc(104px + env(safe-area-inset-bottom, 0px));
-  /* between the Record / List tabs (filters.css); the About button is one tab wide */
+  /* between the Record / List tabs (filters.css) and between the hero's buttons */
   --tab-gap: 6px;
 }
 .intro-sec {
@@ -23,13 +24,46 @@
   letter-spacing: -0.01em;
   line-height: 1.02;
 }
+/* The hero row: the title at the left, its buttons at the top right. */
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.hero-keys {
+  display: flex;
+  flex: none;
+  gap: var(--tab-gap);
+}
+.hero-btn {
+  display: grid;
+  place-items: center;
+  height: 44px;
+  min-width: 56px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.35);
+  font-size: 13px;
+  cursor: pointer;
+}
+.hero-btn:hover {
+  border-color: var(--mist);
+}
 .about {
   display: grid;
   gap: 8px;
 }
 /* The About button is for wide screens; narrower, the intro is on the page. */
-.about-btn {
+.hero-btn.about-btn {
   display: none;
+}
+@media (min-width: 1100px) {
+  .hero-btn.about-btn {
+    display: grid;
+  }
 }
 .lead {
   max-width: 64ch;
@@ -190,12 +224,11 @@
     display: grid;
     height: 100svh;
     grid-template-columns: minmax(0, clamp(420px, 34vw, 600px)) minmax(0, 1fr);
-    grid-template-rows: auto auto minmax(0, auto) auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, auto) minmax(0, 1fr);
     grid-template-areas:
       'title view'
       'play view'
       'filt view'
-      'about view'
       '. view';
     column-gap: 28px;
     padding-left: var(--gutter);
@@ -208,10 +241,13 @@
   .about {
     display: none;
   }
-  .intro-sec h1 {
+  /* Room between the hero and the player. */
+  .hero {
     grid-area: title;
+    padding-block: 18px 64px;
+  }
+  .intro-sec h1 {
     font-size: clamp(44px, 3.5vw, 56px);
-    padding-block: 24px 12px;
   }
   .rplayer {
     grid-area: play;
@@ -219,26 +255,6 @@
   }
   .fanchor {
     grid-area: filt;
-  }
-  /* Centred in the column, the size of a Record / List tab (filters.css). */
-  .about-btn {
-    grid-area: about;
-    display: grid;
-    place-items: center;
-    justify-self: center;
-    width: calc((100% - var(--tab-gap)) / 2);
-    height: var(--pad-h);
-    margin-block: 22px 18px;
-    padding: 0 12px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: linear-gradient(180deg, var(--panel2), var(--panel));
-    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.35);
-    font-size: 13px;
-    cursor: pointer;
-  }
-  .about-btn:hover {
-    border-color: var(--mist);
   }
   .views {
     grid-area: view;

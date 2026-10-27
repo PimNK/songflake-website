@@ -98,7 +98,7 @@ const card = mountTrackCard(content, {
     }),
 });
 onViewTab(slots, (view) => store.set({ view, notice: null }));
-mountAbout(slots.aboutButton);
+mountAbout(slots.aboutButton, () => startHints(slots, true));
 
 store.subscribe((s, prev) => {
   if (s.openSlug !== prev.openSlug || s.cue !== prev.cue) {

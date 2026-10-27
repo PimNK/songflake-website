@@ -1,7 +1,8 @@
 // The random-track player in the page's controls (CLAUDE.md §4.6): previous · play / pause ·
 // next, the playing track's snowflake (it opens the card), a caption that says it plays a random
-// track (then the title of what is playing, which opens its card too; a title too long for its
-// line runs as a ticker) and a progress line with the time; the line seeks (click, drag, keys).
+// track (then the title of what is playing, which opens its card too; a caption or title too
+// long for its line runs as a ticker) and a progress line with the time; the line seeks (click,
+// drag, keys).
 // Picks come from domain/shuffle.ts.
 import type { Song } from '../content/parse';
 import type { Taxonomy } from '../content/taxonomy';
@@ -57,15 +58,14 @@ function render(el: HTMLElement, playback: Playback, canStart: boolean): void {
   play.textContent = playing ? p.pauseGlyph : p.playGlyph;
   play.setAttribute('aria-label', playing ? p.pause : song ? p.play : r.play);
   play.disabled = !song && !canStart;
-  q('.rp-cap').textContent = song ? (playing ? r.nowPlaying : r.paused) : r.idle;
+  setRun(q('.rp-cap'), song ? (playing ? r.nowPlaying : r.paused) : r.idle);
   const title = q('.rp-title');
   title.hidden = !song;
   // Nothing loaded: forget the title, so the next one is fitted afresh.
   if (!song) delete title.dataset.text;
   if (song && title.dataset.text !== song.title) {
-    title.dataset.text = song.title;
     title.setAttribute('aria-label', r.openCard(song.title));
-    fitTitle(title);
+    setRun(title, song.title);
   }
   const d = playback.audio.duration || 0;
   const t = song ? playback.audio.currentTime : 0;
@@ -81,31 +81,38 @@ function render(el: HTMLElement, playback: Playback, canStart: boolean): void {
   q('.rp-time').textContent = time;
 }
 
-/** Ticker speed of a title too long for its line, in px per second. */
+/** Ticker speed of a line too long for its width, in px per second. */
 const RUN_SPEED = 40;
 
+/** Puts new text on a ticker line (the caption or the title); unchanged text is left running. */
+function setRun(line: HTMLElement, text: string): void {
+  if (line.dataset.text === text) return;
+  line.dataset.text = text;
+  fitRun(line);
+}
+
 /**
- * Sets the title; when it does not fit its line it runs as a ticker (a second, hidden copy closes
+ * Sets the line's text; when it does not fit, it runs as a ticker (a second, hidden copy closes
  * the loop). Called again when the line changes width.
  */
-function fitTitle(title: HTMLElement): void {
-  const text = esc(title.dataset.text ?? '');
-  title.innerHTML = `<span class="rp-run"><span>${text}</span></span>`;
-  const run = title.firstElementChild as HTMLElement;
-  const over = run.offsetWidth > title.clientWidth + 1;
-  title.classList.toggle('run', over);
+function fitRun(line: HTMLElement): void {
+  const text = esc(line.dataset.text ?? '');
+  line.innerHTML = `<span class="rp-run"><span>${text}</span></span>`;
+  const run = line.firstElementChild as HTMLElement;
+  const over = run.offsetWidth > line.clientWidth + 1;
+  line.classList.toggle('run', over);
   if (!over) return;
   run.insertAdjacentHTML('beforeend', `<span aria-hidden="true">${text}</span>`);
   run.style.setProperty('--run', `${(run.offsetWidth / 2 / RUN_SPEED).toFixed(1)}s`);
 }
 
-/** Re-fits the title (ticker or not) when its line changes width. */
-function refitOnResize(title: HTMLElement): void {
+/** Re-fits a ticker line when it changes width. */
+function refitOnResize(line: HTMLElement): void {
   let width = 0;
   new ResizeObserver(([entry]) => {
     const w = Math.round(entry!.contentRect.width);
-    if (w !== width && (width = w) && title.dataset.text) fitTitle(title);
-  }).observe(title);
+    if (w !== width && (width = w) && line.dataset.text) fitRun(line);
+  }).observe(line);
 }
 
 /** The played part and the thumb only: cheap enough for every animation frame. */
@@ -176,7 +183,7 @@ export function mountRandomPlayer(
     b.addEventListener('click', () => playback.song && h.open(playback.song.slug));
   }
   wireLine(el, playback);
-  refitOnResize(el.querySelector<HTMLElement>('.rp-title')!);
+  for (const line of el.querySelectorAll<HTMLElement>('.rp-cap, .rp-title')) refitOnResize(line);
   let painted: Song | null | undefined;
   let raf = 0;
   const update = (): void => {
