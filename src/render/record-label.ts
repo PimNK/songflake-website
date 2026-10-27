@@ -1,14 +1,6 @@
 // The paper label in the centre of the record: it spins with the disc, and its text is shrunk
 // to stay inside the label circle (or left out when too small to read).
-import type { Taxonomy } from '../content/taxonomy';
-import { rgba } from '../domain/colour';
-import {
-  labelLineSize,
-  R_LABEL,
-  type Sector,
-  type Transform,
-  type YearRange,
-} from '../domain/record-layout';
+import { labelLineSize, R_LABEL, type Transform, type YearRange } from '../domain/record-layout';
 import { strings } from '../strings';
 import { BODY, DISPLAY, letterSpacing } from './record';
 
@@ -54,13 +46,11 @@ function labelText(ctx: Ctx, LR: number, range: YearRange, trackCount: number): 
   letterSpacing(ctx, '0px');
 }
 
-/** The centre label spins with the disc: paper, ice ring, style arcs, name, side and count. */
+/** The centre label spins with the disc: paper, ice ring, name, side and count. */
 export function drawCentreLabel(
   ctx: Ctx,
   t: Transform,
   phi: number,
-  secs: readonly Sector[],
-  taxonomy: Taxonomy,
   range: YearRange,
   trackCount: number,
 ): void {
@@ -80,14 +70,6 @@ export function drawCentreLabel(
   ctx.strokeStyle = 'rgba(166,220,255,.35)';
   ctx.lineWidth = 1;
   ctx.stroke();
-  for (const w of secs) {
-    const a = (w.a0 + w.a1) / 2;
-    ctx.beginPath();
-    ctx.arc(0, 0, LR * 0.86, a - 0.18, a + 0.18);
-    ctx.strokeStyle = rgba(taxonomy.styleColours[w.style] ?? '#ffffff', 0.9);
-    ctx.lineWidth = Math.max(2, LR * 0.04);
-    ctx.stroke();
-  }
   labelText(ctx, LR, range, trackCount);
   ctx.beginPath();
   ctx.arc(0, 0, Math.max(2.5, LR * 0.07), 0, Math.PI * 2);

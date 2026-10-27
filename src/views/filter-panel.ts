@@ -36,7 +36,7 @@ interface Option {
 // A pad: its light takes the instrument's colour (ice for the rest). No count is shown; an
 // option no song carries is dimmed.
 const option = (o: Option): string => `
-  <label class="fopt${o.count ? '' : ' zero'}"${o.colour ? ` style="--led:${esc(o.colour)}"` : ''}>
+  <label class="fopt pad${o.count ? '' : ' zero'}"${o.colour ? ` style="--led:${esc(o.colour)}"` : ''}>
     <input type="checkbox" data-kind="${o.kind}" data-id="${esc(o.id)}">
     <i></i><span>${esc(o.label)}</span>
   </label>`;

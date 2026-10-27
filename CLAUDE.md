@@ -1,4 +1,4 @@
-# CLAUDE.md — OBYCHNO_ (music diary)
+# CLAUDE.md — SONGFLAKE (music diary)
 
 A personal music diary published as a static website: every track gets an
 audio player with pinned notes, a written story, a few facts (style, what to
@@ -6,7 +6,7 @@ listen for, band or solo, how it matured over the years) and a **generated
 snowflake** that is unique to that track. Visitors browse the collection in
 two views behind one switch:
 
-1. **Record** — a spinning vinyl record. Style sectors, distance from the label
+1. **Record** — a spinning vinyl record. Distance from the label
    = the year the track was finished, every track a snowflake pressed into it.
    Zoomable and draggable.
 2. **List** — a plain, scannable grid of track tiles.
@@ -20,12 +20,13 @@ throwaway file, not code to copy wholesale — reimplement it along the module m
 in §3. Its demo-only parts are listed in §4.7 and must not be carried over.
 Where this file and the mockup differ, this file wins: the author's later
 changes (page frame, record placement and interaction, card order) supersede
-the mockup.
+the mockup. In particular the record has no style sectors, no style colours and
+no style names on the rim.
 
 **UI language: English and Russian.** Every user-visible string lives in
 `src/strings/` (`en.ts`, `ru.ts`, same shape). The language is fixed per page
 load (`src/lang.ts`): `?lang=` in the URL, else the stored choice
-(`localStorage` `obychno.lang`), else the browser's language (`ru*` → Russian,
+(`localStorage` `songflake.lang`), else the browser's language (`ru*` → Russian,
 otherwise English). A language switch in the hero stores the choice and reloads.
 Not translated: style names, song titles, the record's centre label (it reuses
 the English text), the dev overlay, glyphs. Song titles are the author's and stay
@@ -152,7 +153,7 @@ written around a bass line.
 |---|---|---|---|
 | `title` | yes | string | Always quoted. Titles like `98` must stay strings, never numbers |
 | `style` | yes | string | Must be a style in `taxonomy.yaml` |
-| `accents` | yes | list of strings | 1+ items, each an instrument in `taxonomy.yaml`. Shown as **What to listen for**; the first one sets the lead colour (no label on the chip) |
+| `accents` | yes | list of strings | 1+ items, each an instrument in `taxonomy.yaml`. Shown as **What to listen for**; the first one sets the lead colour (no label on the pad) |
 | `band` | no | string | Name of the band that recorded it. Absent = solo. `""` = recorded with a band whose name is not filled in yet (**warning**, the card says so). A name missing from `bands.yaml` is a warning too |
 | `complexity.*` | yes | int 1–3 each | five axes: `rhythm`, `melody`, `technique`, `instruments`, `structure` |
 | `years.idea` | yes | int | |
@@ -192,17 +193,11 @@ change.
 ### 2.2 Taxonomy — `content/taxonomy.yaml`
 
 ```yaml
-styles:            # order here = order in filters and clockwise round the record
+styles:            # order here = order in the filters
   - Alternative
   - Progressive
   - Electronic
   - Ambient
-
-style_colours:     # sector tint, rim band, labels
-  Alternative: "#ff8a65"
-  Progressive: "#b39dff"
-  Electronic:  "#4dd8ff"
-  Ambient:     "#9be7b9"
 
 accents:           # id → display name (ru: the Russian one, optional) + colour; the only place these exist
   Guitar:   { name: Guitar,      ru: Гитара,       colour: "#ff9100" }
@@ -214,14 +209,13 @@ accents:           # id → display name (ru: the Russian one, optional) + colou
   Electric: { name: Electronics, ru: Электроника,  colour: "#2979ff" }
 ```
 
-Filter checkboxes, chips, ray colours and record sectors are
+Filter pads, instrument pads, ray colours and the lists of styles are
 **generated from this file plus the songs**. Nothing in HTML, CSS or TS
 hard-codes a style name, an instrument or a colour. Adding one line here and
 using it in a song is the whole of introducing a new instrument or style.
 
 A style or instrument listed here but used by no song is shown in filters
-dimmed, not hidden. A style with no songs still gets a (minimum
-width) sector on the record.
+dimmed, not hidden. Styles have no colour and play no part on the record.
 
 ### 2.3 Bands — `content/bands.yaml`
 
@@ -304,7 +298,7 @@ fits, propose a new module and update this table in the same change.
 |---|---|---|
 | `content/parse.ts` | **pure**: frontmatter split, YAML parse, zod schema, cross-field rules, derived fields, errors and warnings; `RU_MARKER` and the body split into `story` / `storyRu`; `SongPin` (pin plus optional `textRu`) | DOM, `import.meta.glob`, file system |
 | `content/load.ts` | the two `import.meta.glob` calls, taxonomy and bands import, handing raw input to `parse.ts`, dropping `hidden` songs; parses with the unlocalised taxonomy, then applies `content/localise.ts` with `lang` from `src/lang.ts` | validation rules, localisation code of its own |
-| `content/taxonomy.ts` | taxonomy and bands zod schemas (an accent has `name`, optional `ru`, `colour`), the `Taxonomy` / `Band` / `Accent` types (`Accent.ru?`, `Band.aboutRu?` from `about_ru`), `toTaxonomy` / `toBands` validators | hard-coded names or colours, lookups |
+| `content/taxonomy.ts` | taxonomy and bands zod schemas (`styles` is the ordered list of names, no colours; an accent has `name`, optional `ru`, `colour`), the `Taxonomy` / `Band` / `Accent` types (`Accent.ru?`, `Band.aboutRu?` from `about_ru`), `toTaxonomy` / `toBands` validators | hard-coded names or colours, lookups |
 | `content/localise.ts` | **pure**: content in a given language. `localTaxonomy(t, lang)` (instrument `name` = `ru` ?? `name`), `localBands(bands, lang)` (`about` = `aboutRu` ?? `about`), `localSong(song, lang)` (`story` = `storyRu` ?? `story`, `excerpt` recomputed, pin `text` = `textRu` ?? `text`). Drops the Russian fields, so views read only `name`, `about`, `story`, `text`. Styles and titles are never translated. Tested in `tests/localise.test.ts` | DOM, language detection (`src/lang.ts`), validation |
 | `content/slug.ts` | **pure**: the slug pattern and `slugify` (Cyrillic transliteration, diacritics and apostrophes stripped), shared by `parse.ts` and `scripts/new-song.ts` | DOM, file system, validation of anything but the slug |
 | `domain/filters.ts` | **pure**: `FilterState` (styles, instruments, complexity range, year range `from` / `to` — inclusive, over `placementYear` (§5.3) — and status; the band is not a filter), `FilterSpace {taxonomy, years}` (what the filters range over; passed to `defaultFilters`, `toQuery`, `fromQuery` and `isDefault`), `matches(song, state, years)`, counts per option, `countMatching(songs, state, years)`, default state from the space, range clamping (`setRange`; `setYears(f, end, value, years)` clamps to the songs' years, `from` ≤ `to`), the filter ⇄ URL-query conversion (`toQuery` / `fromQuery`, keys in §4.5), and `neighbour` (the card's prev/next over the filtered order, wrapping; falls back to the full order when the open song is filtered out) and `nextPlayable` (the next track after a given one in that order, wrapping, that passes a predicate; null when none), both taking `years` | DOM, `location`, hash handling (that is `app/router.ts`, which only wires it) |
@@ -316,11 +310,11 @@ fits, propose a new module and update this table in the same change.
 | `domain/colour.ts` | **pure**: `rgb`, `rgba` and `mix` on `"#rrggbb"` strings | colour values of its own (they come from the taxonomy) |
 | `domain/snowflake.ts` | **pure**: `song → SnowflakeParams` — the whole mapping in §5.1, in one place, with the size factor, the line-width and glow rules, the snowflake's own turn (`turnRate`, `turnOffset`, `flakeTurn`, and `turnTiming` for the CSS animation), `paintedSize` (canvas side a static snowflake of radius R needs, halo and glow included), `tileFlake(total, tileRadius)` (a list tile's R, the largest tile canvas `full` and this canvas's `share` of it) and `flakeOf` (params and per-ray colours together, the one call renderers make) | canvas calls |
 | `domain/ray-colours.ts` | **pure**: `song → colour per ray` — the rule in §5.2 — and the radial gradient stops | canvas calls |
-| `domain/record-layout.ts` | **pure**: equal sector angles, the groove spiral, year → radius, `YEAR_DRIFT`, world ⇄ screen transform for a given zoom/pan/rotation, `rotateBy` (drag turns the disc), `zoomAt`, `clampPan`, the exported `clamp`, `fitScale`, `arcGlyphs` (letter positions for a style name along the rim) with `R_NAME`, `NAME_SPACING` and `NAME_RISE`, which ring step applies at a zoom, the year range and in-progress placement, snowflake size scaling with zoom, spin rate, collision radius (snowflake and title), `visibleTitles` (which titles are drawn), hit radius, and the centre-label text rules: `LABEL_INNER` (0.8), `LABEL_MIN_PX` (5) and `labelLineSize` (shrinks a line to fit, `null` = leave it out) (§5.3) | canvas calls, animation loop, the placement solve |
-| `domain/record-solve.ts` | **pure**: `solveLayout` — the placement solver (§5.3), returns `Placement` (x, y) per slug | canvas calls, geometry constants (those are in `record-layout.ts`) |
+| `domain/record-layout.ts` | **pure**: the groove spiral, `GOLDEN_ANGLE` and `spreadAngle(k)` (the k-th song's angle: −π/2 + k · golden angle, so the first is at the top), year → radius, `YEAR_DRIFT`, world ⇄ screen transform for a given zoom/pan/rotation, `rotateBy` (drag turns the disc), `zoomAt`, `clampPan`, the exported `clamp`, `fitScale` (fits `R_DISC`), which ring step applies at a zoom, the year range and in-progress placement, snowflake size scaling with zoom, spin rate, collision radius (snowflake and title), `visibleTitles` (which titles are drawn), hit radius, and the centre-label text rules: `LABEL_INNER` (0.8), `LABEL_MIN_PX` (5) and `labelLineSize` (shrinks a line to fit, `null` = leave it out) (§5.3) | canvas calls, animation loop, the placement solve |
+| `domain/record-solve.ts` | **pure**: `solveLayout(songs, range, radiusOf, iterations)` — the placement solver (§5.3; no styles), returns `Placement` (x, y) per slug | canvas calls, geometry constants (those are in `record-layout.ts`) |
 | `render/snowflake.ts` | drawing `SnowflakeParams` + ray colours on a 2D context at a given size; `paintSnowflake` (sizes a canvas with `paintedSize`, halo and glow included, and draws it); `SpriteCache` (pre-rendered snowflakes for the record, 4 px size buckets) | deciding parameters from song data |
-| `render/record.ts` | drawing the vinyl: body, sectors, grooves, sheen, year rings, style names along the rim (no counts), the fading rim glow; also exports the canvas font stacks (`BODY`, `DISPLAY`) and `letterSpacing` | the centre label (that is `render/record-label.ts`), layout maths |
-| `render/record-label.ts` | the centre label: paper, ice ring, style arcs, and the fitted text (`drawCentreLabel`) | layout maths (sizes come from `labelLineSize`), the rest of the vinyl |
+| `render/record.ts` | drawing the vinyl: `drawDisc(ctx, t)` (body, grooves, a neutral soft ice rim glow all round, sheen, run-out ring) and `drawYearRings`; also exports the canvas font stacks (`BODY`, `DISPLAY`) and `letterSpacing` | the centre label (that is `render/record-label.ts`), layout maths |
+| `render/record-label.ts` | the centre label: paper, ice ring and the fitted text (`drawCentreLabel(ctx, t, phi, range, trackCount)`) | layout maths (sizes come from `labelLineSize`), the rest of the vinyl |
 | `render/record-flakes.ts` | the snowflakes with their titles on the record; draws only the titles `visibleTitles` allows (all on hover); `drawBeat`, the ice glow ring behind the playing track's snowflake (`pulse` on the node) | layout maths, deciding snowflake parameters |
 | `render/sky.ts` | the seeded star field drawn on the page's fixed background canvas | layout maths, song data |
 | `render/radar.ts` | the five-axis radar as an SVG string; the viewBox is framed tight round the labels so it fills its cell | any chart library |
@@ -329,25 +323,25 @@ fits, propose a new module and update this table in the same change.
 | `views/record-controls.ts` | the stage template (canvas and tooltip element) and the hover tooltip | layout or drawing maths |
 | `views/record-motion.ts` | spin state (disc and snowflake turn): always on, except under `prefers-reduced-motion` | layout maths (spin rate comes from `domain/record-layout.ts`) |
 | `views/content-overlay.ts` | the dev-only overlay: one panel at the top listing content errors and warnings, each message shown once per page load; also used for the dev «pin past the end» warning (`main.ts` calls it under `import.meta.env.DEV`); messages inserted as text | parsing or validation, production use |
-| `views/page.ts` | the static page frame: the star sky canvas (mounts `render/sky.ts`, redrawn on resize), sets `document.documentElement.lang`; the `.page` with `.intro-sec` (the `.hero` row: the title `h1` at the left and `.hero-keys` at the top right with `.hero-btn.about-btn` (About, shown from 1100 px, exposed as `PageSlots.aboutButton`) and `.hero-btn.lang-btn` (the language switch at all widths: shows the current language, `strings.hero.lang`, labelled by `hero.langLabel`; click → `switchLang(otherLang)`); `--tab-gap` in `layout.css` spaces the hero buttons and the tabs; then the on-page «About» section `.about` (`strings.hero.about`) and the intro from `strings/`, both hidden from 1100 px; the page takes no content) and `.map-sec`, `.rplayer` (wraps the Filters toggle, first in the DOM, and the random-player slot `.rp`; the slot is `player`), the bar (`.viewbar`: the «View» label `.vlabel` with the Record / List tabs, which take `aria-labelledby` from it) inside `.fanchor`, before `.fpanel` — from 1100 px it is the top row of the filter block, below 1100 px it stays above the view; the Filters toggle is not in the bar; their order is set by CSS), the scroll cue (`wireScrollCue`: one down arrow with a «scroll» caption at the bottom of the intro, smooth scroll to the map section; fades out once the page is scrolled more than 24 px; the same scroll / resize handler toggles `at-intro` on `.page` while the intro's bottom is below half the window, and `layout.css` then slides the bottom player out and hides the filter sheet), the filter anchor (`.fanchor`, exposed as `PageSlots.filterBlock`) and the view slots; `data-view` on `.page` tells CSS which view is shown; returns the slots other views fill. Also the view switch: `showView` (shows one view, sets `data-view`, marks its tab, sets the notice) and `onViewTab` (tab clicks; roving tabindex, ← / → move between tabs) | filtering, state, drawing maths |
+| `views/page.ts` | the static page frame: the star sky canvas (mounts `render/sky.ts`, redrawn on resize), sets `document.documentElement.lang`; the `.page` with `.intro-sec` (the `.hero` row: the title `h1` at the left and `.hero-keys` at the right with `.pad.hero-btn.about-btn` (shows «?» (`strings.hero.aboutGlyph`, the same in both languages), `aria-label` = `strings.hero.about`; shown from 1100 px, exposed as `PageSlots.aboutButton`) and `.pad.hero-btn.lang-btn` (the language switch at all widths: shows the current language, `strings.hero.lang`, labelled by `hero.langLabel`; click → `switchLang(otherLang)`); the two buttons together are as wide as one filter pad (a column of the pad grid: `--pad-cols`, `--tab-gap`, both in the CSS) and a pad (`--pad-h`) high; below 1100 px only the language button shows, one pad wide; the `h1` font-size is `min(--title-max, (100cqi − buttons − gap) / --title-em)` (`--title-max` 76 px, 56 px from 1100 px); `--title-em` is the title's width in em, set by `measureTitle` after `document.fonts.ready` (7.6 until then); `--tab-gap` also spaces the pads and the tabs; then the on-page «About» section `.about` (`strings.hero.about`) and the intro from `strings/`, both hidden from 1100 px; the page takes no content) and `.map-sec`, `.rplayer` (wraps the Filters toggle, first in the DOM, and the random-player slot `.rp`; the slot is `player`), the bar (`.viewbar`: the «View» label `.vlabel` with the Record / List tabs, which take `aria-labelledby` from it) inside `.fanchor`, before `.fpanel` — from 1100 px it is the top row of the filter block, below 1100 px it stays above the view; the Filters toggle is not in the bar; their order is set by CSS), the scroll cue (`wireScrollCue`: one down arrow with a «scroll» caption at the bottom of the intro, smooth scroll to the map section; fades out once the page is scrolled more than 24 px; the same scroll / resize handler toggles `at-intro` on `.page` while the intro's bottom is below half the window, and `layout.css` then slides the bottom player out and hides the filter sheet), the filter anchor (`.fanchor`, exposed as `PageSlots.filterBlock`) and the view slots; `data-view` on `.page` tells CSS which view is shown; returns the slots other views fill. Also the view switch: `showView` (shows one view, sets `data-view`, marks its tab, sets the notice) and `onViewTab` (tab clicks; roving tabindex, ← / → move between tabs) | filtering, state, drawing maths |
 | `views/modal.ts` | `trapFocus` (Tab wraps inside a modal window), shared by the track card and About | everything else |
 | `views/about.ts` | `mountAbout(button, closed)`: the About window for wide screens — the About button opens the intro (`strings.hero.about`, `hero.intro`) in a modal using the card's `.modal` / `.sheet` frame (`.about-sheet`, styled in `styles/card.css`); ✕, Esc and backdrop close; focus trapped (`views/modal.ts`) and returned to the button; scroll lock (`body.locked`); `closed` runs after the window closes (`main.ts` passes `() => startHints(slots, true)`). Narrower, the intro stays on the page | the intro text (it is in `strings/`), card logic |
 | `views/seek.ts` | `wireSeek`: seeking on a bar by click / drag and keys (← / → 5 s, Home / End), shared by the card waveform (`views/player.ts`) and the random player's line | audio element, rendering, time parsing |
 | `views/html.ts` | the `esc()` helper for author text interpolated into `innerHTML`, `bandRing` (the dashed band ring SVG), `info(bubble)` (the ⓘ with its bubble; `.qi` / `.bubble` CSS is in `styles/base.css`), `SKIP_ICON` (the previous / next glyph, shared by the card and the random player) and `turnStyle` (inline style that starts a snowflake's CSS turn) | anything else |
 | `views/list.ts` | the tile grid (`TILE_RADIUS` 40; snowflakes scale with the tile via `tileFlake` and turn via CSS), its empty state, flakes centred in the square box so their centres line up across a row, and `setPlaying` (the `playing` class on the current track's tile: its flake box beats, stronger than a record beat, no ring; held enlarged under reduced motion) | filtering logic |
-| `views/filter-panel.ts` | filter controls generated from taxonomy + songs (styles, instruments, complexity and year two-thumb ranges, status): each group has an ⓘ note (`strings.filters.info`); options are drum-machine pads — one size in one grid (`.pads`: 3 columns below 600 px, 4 from 600; `--pad-h` below 1100 is `clamp(44px, 7svh, 52px)`, 42 from), each with a light in the instrument colour (`--led` inline from the taxonomy; ice for styles and status), the checkbox hidden but focusable; complexity and year each one line with two thumbs (a `.dual` of two stacked range inputs, 18 px thumbs, the part between lit via `--lo` / `--hi`; `showDual` sets the values and puts the lower thumb on top when it is in the upper half so it stays reachable; each input has an `aria-label` such as «Total complexity: min»), side by side at all widths (`.franges`, gap 20 px below 600, 28 from; a subgrid shares the heading row so the lines stay level when a heading wraps); 28 px between sections below 1100 px, 22 from; no counts beside options (zero-count options are still dimmed); always open from 1100 px, on the page background (no fill, border or padding); below, a bottom sheet (keeps its fill; `max-height` `calc(100svh - var(--player-room))`, meant to fit without scrolling) above the player opened by the Filters toggle (no `<details>`): a round funnel icon with no count, `aria-expanded`, `aria-label` = `strings.filters.toggleLabel(n, total)`, a dot (`.fdot`) while the filters differ from default (`isDefault`), Esc and outside click closing (§4.2) | filtering logic, hard-coded options |
+| `views/filter-panel.ts` | filter controls generated from taxonomy + songs (styles, instruments, complexity and year two-thumb ranges, status): each group has an ⓘ note (`strings.filters.info`); options are drum-machine pads, `label.fopt.pad` — the pad look is `.pad` in `styles/base.css`, shared with the card and the hero buttons (`filters.css` keeps the cursor, hover, zero dimming, hidden input and focus ring); one size in one grid (`.pads`: 3 columns below 600 px, 4 from 600, gap `--tab-gap`; `--pad-h` below 1100 is `clamp(44px, 7svh, 52px)`, 42 from), each with a light in the instrument colour (`--led` inline from the taxonomy; ice for styles and status), the checkbox hidden but focusable; complexity and year each one line with two thumbs (a `.dual` of two stacked range inputs, 18 px thumbs, the part between lit via `--lo` / `--hi`; `showDual` sets the values and puts the lower thumb on top when it is in the upper half so it stays reachable; each input has an `aria-label` such as «Total complexity: min»), side by side at all widths (`.franges`, gap 20 px below 600, 28 from; a subgrid shares the heading row so the lines stay level when a heading wraps); 28 px between sections below 1100 px, 22 from; no counts beside options (zero-count options are still dimmed); always open from 1100 px, on the page background (no fill, border or padding); below, a bottom sheet (keeps its fill; `max-height` `calc(100svh - var(--player-room))`, meant to fit without scrolling) above the player opened by the Filters toggle (no `<details>`): a round funnel icon with no count, `aria-expanded`, `aria-label` = `strings.filters.toggleLabel(n, total)`, a dot (`.fdot`) while the filters differ from default (`isDefault`), Esc and outside click closing (§4.2) | filtering logic, hard-coded options |
 | `views/track-card.ts` | the modal shell (§4.3): title and ✕, the top row `.mtop` (the player section, laid out like the random player — previous · play / pause · next at the left — and the turning snowflake slot `.mflake` at its right, above the player below 900 px; below 900 px the rows are the keys with the snowflake (96 px) at their right, the waveform line, then the pin note), then `.mgrid` of four equal cells; swipe stepping on touch, `PlayerSlots {play, body}` passed to `CardHooks.player` (no audio: `emptyPlayer()` from `views/player.ts` — same rows, a flat line, «Recording coming soon» in the caption (under the line below 900 px) — and a disabled play button; otherwise a hook to `views/player.ts`), focus return (the trap itself is `trapFocus` from `views/modal.ts`), scroll lock, key handling (Esc, ← / →; arrows ignore modified keys) | the card's sections, audio element management, the focus-trap helper |
-| `views/card-body.ts` | `renderCardBody(grid, flakeSlot, song, taxonomy, bands)`: the four equal cells, 2×2 from 900 px — From idea to recording | What to listen for (with the band marker), Story | Total complexity with the radar; the cells have no border, fill or padding (the card's background), and the timeline and the chips / band marker sit right under their headings; only the story scrolls, inside its cell; one column below 900 px. The turning snowflake goes into `flakeSlot`; the ⓘ bubbles | rules (those are in `domain/`), audio |
+| `views/card-body.ts` | `renderCardBody(grid, flakeSlot, song, taxonomy, bands)`: the four equal cells, 2×2 from 900 px — From idea to recording | What to listen for (a `.pads` grid of lit instrument pads, with the band marker), Story | Total complexity with the radar; the cells have no border, fill or padding (the card's background), and the timeline and the pads / band marker sit right under their headings; only the story scrolls, inside its cell; one column below 900 px. The turning snowflake goes into `flakeSlot`; the ⓘ bubbles | rules (those are in `domain/`), audio |
 | `views/markdown.ts` | story Markdown → HTML; raw HTML is shown as text; only http(s), mailto and relative links are kept | anything else |
 | `views/player.ts` | the card's player UI, laid out like the random player: the round play / pause button (created in `slots.play`); in `slots.body` the caption `.pstate` («Now playing» / «Paused» / «Press play to listen», `strings.player.ready`) with the active-pin note under it (two lines at most; `.pnote.none` when the song has no pins), then the waveform seek slider (click/drag and keyboard) with a thumb (`--at`) and `m:ss / m:ss` at its right; exports `emptyPlayer`; below 900 px no caption: `.player-blk` and `.pcap` become `display: contents` (`player.css`), the line sits under the keys and the note under the line, two lines reserved when the song has pins; hiding pins past the end of the recording (§4.6); `PlayerHooks` only carry the dev warning | the `<audio>` element, pin markers, a pin list or copy link, time parsing (that is `domain/pins.ts`) |
 | `views/playback.ts` | the one shared `<audio>` element; pending positions for songs that are not loaded; per-song waveform and duration cache, falling back to a metadata probe when decoding fails; failures are not cached; the run's `mode` (`order` = started from a card, `shuffle` = started by the random player; set when `play` switches song); `autoAdvance(next(ended, mode), moved)` (when a track ends, play the one the callback picks for the mode and report the move); a finished track's end position is not kept | DOM beyond the audio element, rendering |
 | `views/pin-markers.ts` | pin diamonds and popovers (below 900 px the markers only mark: no popover, `pointer-events: none` so a tap seeks the waveform, `tabindex=-1` and `aria-hidden` via the `NARROW` media query, re-rendered by the player on width change); (near either end of the bar they open inwards, by pixel distance); markers under 12 px apart merge; on touch the first tap shows the popover and the second seeks; a merged marker seeks to its first pin | audio, time parsing, grouping maths (that is `domain/pins.ts`) |
 | `views/random-player.ts` | the random-track player in the page's controls: `mountRandomPlayer(el, playback, taxonomy, hooks)`: previous · play / pause · next, the playing track's turning snowflake (a button that opens the card; its slot keeps its size when idle), the caption («⤮ Plays a random track», then «Now playing» / «Paused») and the title, which opens the card and a progress line (a `role=slider` that seeks via `views/seek.ts`) with the time `m:ss / m:ss` at its right. A rAF loop moves only the line; time and `aria-valuenow` follow `timeupdate`. The caption and the title each run as a ticker when too long for their line (`setRun` / `fitRun`; a second aria-hidden copy closes the loop; re-fitted on width change by a ResizeObserver on both lines; it runs under `prefers-reduced-motion` too). Below 1100 px the bottom player's top row is the Filters toggle (left) · keys · caption and title · the snowflake at the right (46 px, 42 px below 600), not beside the line. Styles in `styles/random-player.css`. Keeps a `ShuffleHistory`; a track started elsewhere joins it. Starts plays with mode `shuffle`; ⏮ steps back, at the history's start it restarts the track | the audio element, the pool rule (main.ts passes `pool()`), pick maths (that is `domain/shuffle.ts`) |
-| `views/hints.ts` | the first-visit hints (§4.1): `startHints(slots, again = false)` (`again` ignores the seen flag; nothing starts while a `.hints` layer is showing); ring and note per step (step 3 rings the whole filter block, `PageSlots.filterBlock`; the disc's note sits inside the ring under the label, other targets: right, else left, else inside), auto-advance every 6 s (not while the note is hovered), Next / Got it, Skip, Esc, click elsewhere; the seen flag in `localStorage` (`obychno.hints`, best effort); shown on their own once per browser and again every time About closes | deciding when the page opens on a card (main.ts does) |
+| `views/hints.ts` | the first-visit hints (§4.1): `startHints(slots, again = false)` (`again` ignores the seen flag; nothing starts while a `.hints` layer is showing); ring and note per step (step 3 rings the whole filter block, `PageSlots.filterBlock`; the disc's note sits inside the ring under the label, other targets: right, else left, else inside), auto-advance every 6 s (not while the note is hovered), Next / Got it, Skip, Esc, click elsewhere; the seen flag in `localStorage` (`songflake.hints`, best effort); shown on their own once per browser and again every time About closes | deciding when the page opens on a card (main.ts does) |
 | `app/state.ts` | the single app state (`view`, `filters`, `openSlug`, `cue`, `notice`) and change notifications | DOM |
 | `app/router.ts` | URL ⇄ state (§4.5), the history policy (`historyAction`): opening a card or switching views pushes an entry; closing a card that has its own entry goes back; filter changes replace; a malformed or unknown slug gives the «Track not found» notice; an empty hash keeps the starting view and is replaced at start with that view's hash. `startRouter(store, space, known, fitView)` (`space` is the `FilterSpace`; `stateToHash(s, space)` likewise) maps a view to one the screen has (phones: list only), corrects a `#/` URL to `#/list` (replace) and returns `{ refit }`, a re-read of the URL that replaces the entry, never pushes | rendering |
 | `app/main.ts` | bootstrap: load content, wire views to state; default view by width (list below 1100 px, record from it); a `PHONE`-based `fitView` for the router (must match the phone breakpoint in `styles/layout.css`) and `router.refit()` on media change; `years = yearRange(songs)` and the `FilterSpace`; the random player's pool (playable tracks matching the filters, all playable ones when none match); auto-advance by mode (`shuffle` → `random.next()`, `order` → `nextPlayable` over the current filters, and moving an open card to the next track); syncing the current track (playing or paused) to `setPlaying`; starting the hints unless a card is open, and again when About closes | logic of any kind |
-| `lang.ts` | `lang` (`'en'` / `'ru'`), fixed per page load: `?lang=` in the URL, else `localStorage` `obychno.lang`, else `navigator.language` (`ru*` → `ru`); `'en'` outside a browser; `otherLang`; `switchLang(to)` stores the choice (best effort) and reloads with `?lang=` (hash kept; playback stops) | DOM beyond `location` and storage, strings |
+| `lang.ts` | `lang` (`'en'` / `'ru'`), fixed per page load: `?lang=` in the URL, else `localStorage` `songflake.lang`, else `navigator.language` (`ru*` → `ru`); `'en'` outside a browser; `otherLang`; `switchLang(to)` stores the choice (best effort) and reloads with `?lang=` (hash kept; playback stops) | DOM beyond `location` and storage, strings |
 | `strings/` | `en.ts` (the shape; exports `en`, `site`, type `Strings`), `ru.ts` (same shape; `forms` for Russian noun plurals), `index.ts` (exports `strings` for `lang`). Every user-visible UI string, including the play / pause glyphs (`strings.player.playGlyph`, `pauseGlyph`), `strings.random` and `strings.hints`. Not translated: style names, the record's centre label (`labelSide` / `labelTracks` / `labelShort` / `labelName` reuse `en`), the dev overlay (`en.overlay`), glyphs. `tests/strings.test.ts` checks ru / en key parity and plural forms | — |
 
 `domain/` and `content/parse.ts` are pure and are where tests live. Views hold
@@ -363,7 +357,7 @@ split. Say so when you cross it.
 ### 4.1 Layout and look
 
 - **From 1100 px: one screen.** One left column, top to bottom: the hero row
-  (the title at the left, the site name `site` in `strings/en.ts`, «OBYCHNO_»; at its top right the About button and the language switch; 64 px of room before the player); the random-track
+  (the title at the left, the site name `site` in `strings/en.ts`, «SONGFLAKE»; at its right the ? (About) and language buttons, `.pad` buttons that together are as wide as one filter pad and a pad high, the title sized to the room they leave; 64 px of room before the player); the random-track
   player at the column's full width and bigger than on narrow screens (play
   56 px, skip 46 px, snowflake 76 px; previous · play / pause · next, the
   playing track's turning snowflake — a button that opens the card, its slot
@@ -401,7 +395,7 @@ split. Say so when you cross it.
   snowflake…»; the random player; the whole filter block (view switch and
   filters). They advance every 6 s (not while the note is hovered); Next / Got
   it, Skip, Esc or a click elsewhere end them. They show on their own once per
-  browser (`localStorage` `obychno.hints`, best effort) and again every time the
+  browser (`localStorage` `songflake.hints`, best effort) and again every time the
   About window closes. None on narrow screens or when the page opens
   on a card.
 - **Scroll cue (below 1100 px):** a down arrow with a «scroll» caption at the
@@ -421,9 +415,9 @@ split. Say so when you cross it.
   #111a33`, `--line #1c2542`, `--frost #e8eeff` (text), `--mist #8f9aba`
   (secondary), `--ice #a6dcff` (UI accent), `--alert #ff8a80` (content errors in the
   dev overlay), `--grid #2a3558` (radar grid lines). Fonts from Google Fonts:
-  **Unbounded** only for the hero «OBYCHNO_» and the record's centre label,
+  **Unbounded** only for the hero «SONGFLAKE» and the record's centre label,
   **Golos Text** for everything else (tabular figures for numbers), each with a
-  system fallback. One shared uppercase label style serves all small labels. Style and instrument colours come from
+  system fallback. One shared uppercase label style serves all small labels. Instrument colours come from
   the taxonomy at runtime, never from CSS.
 
 ### 4.2 Filters
@@ -450,7 +444,7 @@ bottom.
   600), `clamp(44px, 7svh, 52px)` tall below 1100 px and 42 px from it. Each pad has a light: the
   instrument's colour for instruments (from the taxonomy), ice for styles and
   status. The checkbox is hidden but stays focusable. Status pads are hidden
-  while no song is in progress.
+  while no song is in progress. The pad look (`.pad` in `styles/base.css`) is shared with the card's instrument and band pads and the hero buttons.
 - **Ranges** are one line with two thumbs; each thumb is an input with its own
   `aria-label` («Total complexity: min»). Sections are 28 px apart below 1100 px,
   22 px from.
@@ -488,7 +482,7 @@ Opened from the record, a tile, or a deep link. Top to bottom:
 3. **Four equal cells**, 2×2 from 900 px (one column below). From 900 px the
    card fits the window and has a fixed height (`min(100%, 880px)`), a
    one-line title with an ellipsis (the full title on hover), a fixed-height
-   top row, and reserved rows for the chips and the band marker, so stepping
+   top row, and reserved rows for the pads and the band marker, so stepping
    between tracks moves nothing. Only the story scrolls, inside its cell. The
    cells, in order:
    - **From idea to recording** with an ⓘ, right under the heading: Idea = the main melody or idea
@@ -498,11 +492,11 @@ Opened from the record, a tile, or a deep link. Top to bottom:
        segments proportional to the years between them (minimum length for 0),
        labelled «1 year» / «same year». No summary sentence. A missing
        `years.concept` shows «—», a missing `years.ready` shows «not yet».
-   - **What to listen for** (chips and band marker right under the heading)
+   - **What to listen for** (instrument pads and band marker right under the heading)
      with an ⓘ that explains on hover/focus: «What I'd
        like you to notice while listening — the parts this track is built
-       around. They also colour the rays of the snowflake.» Then one chip per
-       instrument (colour dot with glow, display name; no lead label). Then the **band marker**: a dashed ring
+       around. They also colour the rays of the snowflake.» Then one lit pad per
+       instrument (light in the instrument colour, display name; no lead label) in a `.pads` grid like the filters (3 columns below 600 px, 4 from 600). Then the **band marker**: a lit pad (`.pad.lit.bandchip`, as wide as its text) with the dashed ring
        icon (same as the snowflake's halo) and «Recorded with **Vita Brevis**»,
        with name, description and years from `bands.yaml` on hover/focus;
        `band: ""` → «Recorded with a band» and a hint that the name is not filled
@@ -666,35 +660,29 @@ background (§4.1), not part of the stage.
 
 - **World units:** grooves from radius 300 (the year of the earliest song) to
   1000 (the latest); the disc edge at 1070; the paper label radius ≈ 186. The
-  whole thing is fitted so the disc plus the style names on its rim, with
-  16 px of room outside `R_NAME`, fill the stage (`fitScale`: (min side / 2 − 16)
-  / `R_NAME` px per unit at zoom 1).
+  whole thing is fitted so the disc, with 16 px of room outside `R_DISC`,
+  fills the stage (`fitScale`: (min side / 2 − 16) / `R_DISC` px per unit at
+  zoom 1).
 - **Year → radius** is linear between the first and the last `years.ready` in
   the data (both derived, not hard-coded). In-progress songs (no `years.ready`)
   are placed at the latest year.
-- **Sectors** — one per style, in taxonomy order, clockwise from the top;
-  all sectors the same width. Sector
-  boundaries follow the **groove spiral** `θ = u + 0.85 · ln(r / 300)` and fade
-  out before the edge; each sector has a faint tint (stronger towards the rim)
-  and a **rim band that is a soft glow in the style colour** at the edge. Style names run along the rim, following its curve, in the
-  style colour, at `R_NAME` = 1.035 × `R_DISC`, letter by letter (`arcGlyphs`).
-  On the lower half they hang from the circle so they stay upright. They turn
-  with the disc. No «N tracks» under them.
 - **Vinyl:** near-black body with no outline — it fades into the page at the edge; ~110 concentric grooves at
   2–5 % white; a **fixed sheen** (two soft light wedges in a conic gradient
-  that do **not** rotate with the disc); a smooth run-out ring before the label.
+  that do **not** rotate with the disc); a smooth run-out ring before the label; a neutral, soft ice glow all round the rim (no style colours, no style names).
   The **centre label** spins with the disc: dark blue paper, a thin ice ring,
-  four short arcs in the style colours at the sectors' mid-angles, **«OBYCHNO_»**
+  **«SONGFLAKE»**
   in the display face, «SIDE A · first — last year» and «N TRACKS · 33⅓ RPM» (only
   the short line when the label is small), black spindle hole. Every text line
   is fitted inside 0.8 × the label radius (`labelLineSize`); a line that would
   need less than 5 px is left out, so text never crosses the label's edge.
 - **Placement and no overlaps:** each song sits at its exact year radius.
-  Songs of one style and year spread evenly along the groove spiral between the
-  sector borders: the k-th of n at (k + 1) / (n + 1), so a lone song sits
-  mid-sector and a column of songs repeats the border shape. A relaxation then
-  pushes overlapping songs apart, mostly along the groove, the earlier one
-  counterclockwise, with radial drift capped at `YEAR_DRIFT` = 0.45 year, so
+  Songs in year order (`placementYear`, ties by title, then slug) take the
+  k-th `spreadAngle(k)`: the first at the top, each next one a golden angle
+  on, so songs of one year never bunch up. Styles play no part (the style
+  filter only dims non-matching songs). The angle gives the song's home on the
+  groove spiral. A relaxation then
+  pushes overlapping songs apart, mostly along the groove, the one with the smaller angle
+  counterclockwise; songs are pulled back towards home, with radial drift capped at `YEAR_DRIFT` = 0.45 year, so
   different years never swap order. The collision radius covers the snowflake
   **and its title** (≈ max(1.3 × flake radius, half the label width)). Solve
   once per viewport size, not per frame. Titles that would collide with another

@@ -1,28 +1,5 @@
-/* Track card sections: what to listen for, band marker, story, idea → recording. */
-.spot-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.spot-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px 6px 8px;
-  border-radius: 999px;
-  font-weight: 500;
-  font-size: 14px;
-  border: 1px solid;
-}
-.spot-chip i {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  box-shadow: 0 0 10px currentColor;
-}
-.spot-chip .name {
-  color: var(--frost);
-}
+/* Track card sections: what to listen for (instrument pads as in the filters, styles/base.css),
+   band plate, story, idea → recording. */
 .spot-h {
   position: relative;
   display: flex;
@@ -42,16 +19,15 @@
 .bandchip:focus-visible .bubble {
   opacity: 1;
 }
+/* The band plate: a lit pad (base.css) with the dashed ring for its light, as wide as its text. */
 .bandchip {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  border: 1px dashed rgba(232, 238, 255, 0.55);
-  font-size: 13px;
+  justify-self: start;
+  max-width: 100%;
+  padding: 0 14px;
   cursor: help;
+}
+.bandchip b {
+  font-weight: 600;
 }
 .bandchip .bubble {
   left: 0;

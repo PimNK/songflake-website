@@ -12,13 +12,11 @@ import {
   ringStep,
   ringYears,
   rotateBy,
-  sectors,
   stageFlakeScale,
   toScreen,
   transform,
   yearRange,
   zoomAt,
-  type Sector,
   type Transform,
   type Viewport,
   type YearRange,
@@ -26,7 +24,7 @@ import {
 import { solveLayout, type Placement } from '../domain/record-solve';
 import { flakeOf, flakeTurn, sizeFactor, turnOffset, type Flake } from '../domain/snowflake';
 import { drawFlakes, flakeTitleFont, type FlakeNode } from '../render/record-flakes';
-import { drawDisc, drawSectorNames, drawYearRings } from '../render/record';
+import { drawDisc, drawYearRings } from '../render/record';
 import { drawCentreLabel } from '../render/record-label';
 import { devicePixelRatioCapped, SpriteCache } from '../render/snowflake';
 import { recordTemplate, showTooltip } from './record-controls';
@@ -61,7 +59,6 @@ class RecordStage implements RecordView {
   private ctx: CanvasRenderingContext2D;
   private tip: HTMLElement;
   private range: YearRange;
-  private secs: Sector[];
   private flakes: Map<string, Flake>;
   private sprites = new SpriteCache();
   private motion = new RecordMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -90,7 +87,6 @@ class RecordStage implements RecordView {
     this.tip = stage.querySelector<HTMLElement>('.tip')!;
     const { songs, taxonomy } = content;
     this.range = yearRange(songs);
-    this.secs = sectors(taxonomy.styles, songs);
     this.flakes = new Map(songs.map((s) => [s.slug, flakeOf(s, taxonomy)]));
     this.wireInput();
     this.observe();
@@ -135,7 +131,7 @@ class RecordStage implements RecordView {
   private solve(): void {
     const fit = fitScale(this.vp.width, this.vp.height);
     this.ctx.font = flakeTitleFont(false, 1);
-    this.placed = solveLayout(this.content.songs, this.secs, this.range, (s) => {
+    this.placed = solveLayout(this.content.songs, this.range, (s) => {
       const half = this.ctx.measureText(s.title).width / 2;
       return collisionRadius(this.flakeR(s, 1), half, fit);
     });
@@ -158,16 +154,15 @@ class RecordStage implements RecordView {
   }
 
   private draw(): void {
-    const { ctx, vp, secs, range } = this;
-    const { songs, taxonomy } = this.content;
+    const { ctx, vp, range } = this;
+    const { songs } = this.content;
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     ctx.clearRect(0, 0, vp.width, vp.height);
     ctx.shadowBlur = 0;
     const t = transform(vp);
-    drawDisc(ctx, t, secs, taxonomy);
+    drawDisc(ctx, t);
     drawYearRings(ctx, t, vp.width, vp.height, ringYears(range, ringStep(vp.zoom)), range);
-    drawCentreLabel(ctx, t, vp.phi, secs, taxonomy, range, songs.length);
-    drawSectorNames(ctx, t, secs, taxonomy, vp.zoom);
+    drawCentreLabel(ctx, t, vp.phi, range, songs.length);
     this.nodes = this.layoutNodes(t);
     drawFlakes(ctx, this.nodes, vp.zoom);
   }

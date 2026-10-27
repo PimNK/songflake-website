@@ -18,6 +18,7 @@ export const ru: Strings = {
   hero: {
     title: site,
     about: 'О проекте',
+    aboutGlyph: en.hero.aboutGlyph,
     lang: 'RU',
     langLabel: 'Язык: русский. Переключить на английский',
     // Shown with its line breaks; «_» opens a list line.
@@ -77,7 +78,7 @@ export const ru: Strings = {
     inProgress: 'В работе',
     reset: 'Сбросить фильтры',
     info: {
-      style: 'Жанр, к которому тяготеет трек. Каждый стиль — сектор пластинки.',
+      style: 'Жанр, к которому тяготеет трек.',
       listen:
         'Инструменты, на которых построен трек. Трек показан, если в нём есть хотя бы один из отмеченных.',
       complexity:
@@ -89,7 +90,7 @@ export const ru: Strings = {
 
   record: {
     canvasLabel:
-      'Пластинка-карта треков: секторы — стили, расстояние от центра — год. Вид «Список» показывает те же треки плитками.',
+      'Пластинка-карта треков: расстояние от центра — год. Вид «Список» показывает те же треки плитками.',
     tooltip: (style: string, band: boolean, year: string, total: number) =>
       `${style} · ${band ? 'группа' : 'соло'} · ${year} · сложность ${total}/15`,
     // Written on the record: stays as it is.

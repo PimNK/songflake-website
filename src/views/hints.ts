@@ -6,7 +6,7 @@
 import { strings } from '../strings';
 import type { PageSlots } from './page';
 
-const KEY = 'obychno.hints';
+const KEY = 'songflake.hints';
 const STEP_MS = 6000;
 const GAP = 16;
 const h = strings.hints;

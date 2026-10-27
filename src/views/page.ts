@@ -33,8 +33,8 @@ const frame = (v = strings.views): string => `
         <div class="hero">
           <h1>${strings.hero.title}</h1>
           <div class="hero-keys">
-            <button type="button" class="hero-btn about-btn" aria-haspopup="dialog">${strings.hero.about}</button>
-            <button type="button" class="hero-btn lang-btn" aria-label="${strings.hero.langLabel}">${strings.hero.lang}</button>
+            <button type="button" class="pad hero-btn about-btn" aria-haspopup="dialog" aria-label="${strings.hero.about}">${strings.hero.aboutGlyph}</button>
+            <button type="button" class="pad hero-btn lang-btn" aria-label="${strings.hero.langLabel}">${strings.hero.lang}</button>
           </div>
         </div>
         <section class="about" aria-labelledby="about-h">
@@ -72,6 +72,7 @@ export function renderPage(root: HTMLElement): PageSlots {
   root.querySelector('.lang-btn')!.addEventListener('click', () => switchLang(otherLang));
   mountSky(root.querySelector<HTMLCanvasElement>('.sky')!);
   wireScrollCue(root);
+  measureTitle(root.querySelector<HTMLElement>('.hero h1')!);
   const q = <T extends HTMLElement>(sel: string): T => root.querySelector<T>(sel)!;
   return {
     page: q('.page'),
@@ -86,6 +87,19 @@ export function renderPage(root: HTMLElement): PageSlots {
     listView: q('#listview'),
     notice: q('[data-slot="notice"]'),
   };
+}
+
+/**
+ * The hero title is sized to the room its buttons leave (layout.css), which needs its width in
+ * em: measured once the fonts are in, so any site name fits.
+ */
+function measureTitle(h1: HTMLElement): void {
+  void document.fonts.ready.then(() => {
+    const range = document.createRange();
+    range.selectNodeContents(h1);
+    const em = range.getBoundingClientRect().width / parseFloat(getComputedStyle(h1).fontSize);
+    if (em > 0) h1.parentElement!.style.setProperty('--title-em', (em * 1.03).toFixed(2));
+  });
 }
 
 /** A chevron pointing down, to the second section. */

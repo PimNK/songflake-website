@@ -9,18 +9,9 @@ export const R_LABEL = 186;
 export const R_GROOVE_IN = R_MIN * 0.9;
 export const R_GROOVE_OUT = R_MAX * 1.03;
 export const SPIRAL = 0.85;
-export const R_NAME = R_DISC * 1.035; // style names run along the rim just outside the disc
 export const ZOOM_MIN = 1;
 export const ZOOM_MAX = 8;
 export const YEAR_DRIFT = 0.45; // under half a year: songs of different years never swap order
-
-export interface Sector {
-  style: string;
-  /** Start and end angle at R_MIN, radians, clockwise in screen space (y down). */
-  a0: number;
-  a1: number;
-  count: number;
-}
 
 export interface YearRange {
   first: number;
@@ -49,17 +40,11 @@ export function yearRadius(year: number, range: YearRange): number {
 export const yearUnit = (range: YearRange): number =>
   (R_MAX - R_MIN) / Math.max(1, range.last - range.first);
 
-/** One sector per style in taxonomy order, all the same width, the first centred on the top. */
-export function sectors(styles: readonly string[], songs: readonly Song[]): Sector[] {
-  const w = (Math.PI * 2) / Math.max(1, styles.length);
-  const start = -Math.PI / 2 - w / 2;
-  return styles.map((style, i) => ({
-    style,
-    a0: start + i * w,
-    a1: start + (i + 1) * w,
-    count: songs.filter((s) => s.style === style).length,
-  }));
-}
+/** The golden angle: successive turns by it spread any number of points evenly round a circle. */
+export const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+
+/** Screen angle of the k-th song in year order: the first at the top, each next one a golden angle on. */
+export const spreadAngle = (k: number): number => -Math.PI / 2 + k * GOLDEN_ANGLE;
 
 /** Point at radius r on the groove spiral that starts at angle u on R_MIN. */
 export function wind(r: number, u: number): [number, number] {
@@ -94,16 +79,13 @@ export interface Viewport {
   phi: number;
 }
 
-/** Room in px outside R_NAME for the style names' letters. */
-const NAME_ROOM = 16;
-/** Style-name letter spacing and the height a hanging name drops by, as fractions of its size. */
-export const NAME_SPACING = 0.22;
-export const NAME_RISE = 0.75;
+/** Room in px between the disc's edge and the stage's. */
+const EDGE_ROOM = 16;
 
-/** Screen pixels per world unit at zoom 1: the disc and the style names on its rim fill the stage. */
+/** Screen pixels per world unit at zoom 1: the disc fills the stage. */
 export const fitScale = (width: number, height: number): number =>
-  // never zero or negative, even on a stage too small for the names
-  Math.max(0.01, (Math.min(width, height) / 2 - NAME_ROOM) / R_NAME);
+  // never zero or negative, even on a tiny stage
+  Math.max(0.01, (Math.min(width, height) / 2 - EDGE_ROOM) / R_DISC);
 
 /** Snowflake size scale for the stage; flakes grow slower than the map when zooming. */
 export const stageFlakeScale = (width: number, height: number): number =>
@@ -239,33 +221,4 @@ export function labelLineSize(
   const chord = 2 * Math.sqrt(room * room - edge * edge);
   const px = size * Math.min(1, chord / Math.max(1, measuredWidth));
   return px < LABEL_MIN_PX ? null : px;
-}
-
-export interface Glyph {
-  x: number;
-  y: number;
-  rotation: number;
-}
-
-/**
- * Letters of a style name along a circle of `radius` px round (0, 0), centred at `angle`, so it
- * reads left to right: on the upper half it runs clockwise standing on the circle; on the lower
- * half counterclockwise, hanging from it (baseline `rise` px further out) so it stays upright.
- * `widths` are the letters' advance widths in px.
- */
-export function arcGlyphs(
-  widths: readonly number[],
-  angle: number,
-  radius: number,
-  rise: number,
-): Glyph[] {
-  const upper = Math.sin(angle) <= 0;
-  const r = upper ? radius : radius + rise;
-  const dir = upper ? 1 : -1;
-  let a = angle - (dir * widths.reduce((sum, w) => sum + w, 0)) / r / 2;
-  return widths.map((w) => {
-    const c = a + (dir * w) / 2 / r;
-    a += (dir * w) / r;
-    return { x: r * Math.cos(c), y: r * Math.sin(c), rotation: c + (dir * Math.PI) / 2 };
-  });
 }

@@ -1,21 +1,12 @@
 // Draws the vinyl record (CLAUDE.md §5.3; mockup `drawRecord`/`render`). No layout maths —
-// positions, sectors and transforms come from domain/record-layout.ts via the caller.
-import type { Taxonomy } from '../content/taxonomy';
-import { rgba } from '../domain/colour';
+// positions and transforms come from domain/record-layout.ts via the caller. The disc has no
+// style sectors: it is one surface, with a neutral glow at the rim.
 import {
-  arcGlyphs,
-  NAME_RISE,
-  NAME_SPACING,
   R_DISC,
   R_GROOVE_IN,
   R_GROOVE_OUT,
   R_LABEL,
-  R_MAX,
-  R_NAME,
-  toScreen,
-  wind,
   yearRadius,
-  type Sector,
   type Transform,
   type YearRange,
 } from '../domain/record-layout';
@@ -26,62 +17,18 @@ export const BODY = '"Golos Text", system-ui, sans-serif';
 export const DISPLAY = 'Unbounded, "Arial Black", sans-serif';
 const GROOVES = 110;
 
-function spiralPath(ctx: Ctx, t: Transform, u: number, r0: number, r1: number, steps = 24): void {
-  for (let n = 0; n <= steps; n++) {
-    const [x, y] = toScreen(t, ...wind(r0 + ((r1 - r0) * n) / steps, u));
-    if (n) ctx.lineTo(x, y);
-    else ctx.moveTo(x, y);
-  }
-}
-
-function arcPath(ctx: Ctx, t: Transform, r: number, a0: number, a1: number, move: boolean): void {
-  for (let n = 0; n <= 48; n++) {
-    const [x, y] = toScreen(t, ...wind(r, a0 + ((a1 - a0) * n) / 48));
-    if (n || !move) ctx.lineTo(x, y);
-    else ctx.moveTo(x, y);
-  }
-}
-
-function sectorTints(ctx: Ctx, t: Transform, secs: readonly Sector[], taxonomy: Taxonomy): void {
-  const S = t.scale;
-  for (const w of secs) {
-    const hue = taxonomy.styleColours[w.style] ?? '#ffffff';
-    ctx.beginPath();
-    spiralPath(ctx, t, w.a0, R_GROOVE_IN, R_GROOVE_OUT);
-    arcPath(ctx, t, R_GROOVE_OUT, w.a0, w.a1, false);
-    spiralPath(ctx, t, w.a1, R_GROOVE_OUT, R_GROOVE_IN);
-    arcPath(ctx, t, R_GROOVE_IN, w.a1, w.a0, false);
-    ctx.closePath();
-    const g = ctx.createRadialGradient(t.cx, t.cy, R_GROOVE_IN * S, t.cx, t.cy, R_GROOVE_OUT * S);
-    g.addColorStop(0, rgba(hue, 0.02));
-    g.addColorStop(1, rgba(hue, 0.1));
-    ctx.fillStyle = g;
-    ctx.fill();
-    rimBand(ctx, t, w, hue);
-  }
-}
-
-/** The rim band in the style colour: a soft glow that fades out on both sides, no hard edge. */
-function rimBand(ctx: Ctx, t: Transform, w: Sector, hue: string): void {
-  const [r0, r1] = [R_DISC * 0.93, R_DISC * 1.02];
+/** The rim band: a soft ice glow all round, fading out on both sides, no hard edge. */
+function rimBand(ctx: Ctx, t: Transform): void {
+  const [r0, r1] = [R_DISC * 0.93 * t.scale, R_DISC * 1.02 * t.scale];
   ctx.beginPath();
-  arcPath(ctx, t, r0, w.a0, w.a1, true);
-  arcPath(ctx, t, r1, w.a1, w.a0, false);
-  ctx.closePath();
-  const g = ctx.createRadialGradient(t.cx, t.cy, r0 * t.scale, t.cx, t.cy, r1 * t.scale);
-  g.addColorStop(0, rgba(hue, 0));
-  g.addColorStop(0.6, rgba(hue, 0.38));
-  g.addColorStop(1, rgba(hue, 0));
+  ctx.arc(t.cx, t.cy, r1, 0, Math.PI * 2);
+  ctx.arc(t.cx, t.cy, r0, 0, Math.PI * 2, true);
+  const g = ctx.createRadialGradient(t.cx, t.cy, r0, t.cx, t.cy, r1);
+  g.addColorStop(0, 'rgba(166,220,255,0)');
+  g.addColorStop(0.6, 'rgba(166,220,255,.16)');
+  g.addColorStop(1, 'rgba(166,220,255,0)');
   ctx.fillStyle = g;
   ctx.fill();
-}
-
-/** A radial stroke style that fades from `alpha` at R_MAX to nothing at the disc edge. */
-function fadeToEdge(ctx: Ctx, t: Transform, rgb: string, alpha: number): CanvasGradient {
-  const g = ctx.createRadialGradient(t.cx, t.cy, R_MAX * t.scale, t.cx, t.cy, R_DISC * t.scale);
-  g.addColorStop(0, `rgba(${rgb},${alpha})`);
-  g.addColorStop(1, `rgba(${rgb},0)`);
-  return g;
 }
 
 function circle(ctx: Ctx, t: Transform, r: number): void {
@@ -89,30 +36,18 @@ function circle(ctx: Ctx, t: Transform, r: number): void {
   ctx.arc(t.cx, t.cy, r * t.scale, 0, Math.PI * 2);
 }
 
-/** Concentric grooves and the sector boundaries that follow the groove spiral. */
-function drawGrooves(ctx: Ctx, t: Transform, secs: readonly Sector[]): void {
+/** Concentric grooves. */
+function drawGrooves(ctx: Ctx, t: Transform): void {
   for (let i = 0; i <= GROOVES; i++) {
     circle(ctx, t, R_GROOVE_IN + ((R_GROOVE_OUT - R_GROOVE_IN) * i) / GROOVES);
     ctx.strokeStyle = `rgba(225,232,255,${i % 4 === 0 ? 0.05 : 0.022})`;
     ctx.lineWidth = 0.6;
     ctx.stroke();
   }
-  for (const w of secs) {
-    ctx.beginPath();
-    spiralPath(ctx, t, w.a0, R_GROOVE_IN, R_DISC);
-    ctx.strokeStyle = fadeToEdge(ctx, t, '210,222,255', 0.22);
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
 }
 
-/** Body, sectors, grooves, spiral boundaries, fixed sheen and run-out. */
-export function drawDisc(
-  ctx: Ctx,
-  t: Transform,
-  secs: readonly Sector[],
-  taxonomy: Taxonomy,
-): void {
+/** Body, grooves, rim glow, fixed sheen and run-out. */
+export function drawDisc(ctx: Ctx, t: Transform): void {
   const S = t.scale;
   circle(ctx, t, R_DISC);
   // The body fades into the page at the edge: no outline that would cut through the titles.
@@ -122,8 +57,8 @@ export function drawDisc(
   body.addColorStop(1, 'rgba(8,9,14,0)');
   ctx.fillStyle = body;
   ctx.fill();
-  sectorTints(ctx, t, secs, taxonomy);
-  drawGrooves(ctx, t, secs);
+  drawGrooves(ctx, t);
+  rimBand(ctx, t);
   // Sheen: a fixed light source — two soft wedges that do not rotate with the disc.
   const sheen = ctx.createConicGradient(-Math.PI / 4, t.cx, t.cy);
   for (const [o, a] of [
@@ -187,32 +122,5 @@ export function drawYearRings(
     ctx.fillRect(lx - tw / 2 - 3, ly - 7, tw + 6, 13);
     ctx.fillStyle = 'rgba(190,205,240,.45)';
     ctx.fillText(label, lx, ly + 3.5);
-  }
-}
-
-/** Style names along the rim, following its curve, in the style colour; they turn with the disc. */
-export function drawSectorNames(
-  ctx: Ctx,
-  t: Transform,
-  secs: readonly Sector[],
-  taxonomy: Taxonomy,
-  zoom: number,
-): void {
-  const size = zoom > 2 ? 12 : 11;
-  ctx.font = `500 ${size}px ${BODY}`;
-  ctx.textAlign = 'center';
-  for (const w of secs) {
-    const [sx, sy] = toScreen(t, ...wind(R_NAME, (w.a0 + w.a1) / 2));
-    const letters = [...w.style.toUpperCase()];
-    const widths = letters.map((ch) => ctx.measureText(ch).width + size * NAME_SPACING);
-    const angle = Math.atan2(sy - t.cy, sx - t.cx);
-    ctx.fillStyle = rgba(taxonomy.styleColours[w.style] ?? '#ffffff', 0.95);
-    arcGlyphs(widths, angle, R_NAME * t.scale, size * NAME_RISE).forEach((g, i) => {
-      ctx.save();
-      ctx.translate(t.cx + g.x, t.cy + g.y);
-      ctx.rotate(g.rotation);
-      ctx.fillText(letters[i]!, 0, 0);
-      ctx.restore();
-    });
   }
 }

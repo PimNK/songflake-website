@@ -30,7 +30,7 @@ export interface Content {
 
 const slugOf = (path: string): string => path.split('/')[2] ?? '';
 
-const EMPTY_TAXONOMY: Taxonomy = { styles: [], styleColours: {}, accents: [] };
+const EMPTY_TAXONOMY: Taxonomy = { styles: [], accents: [] };
 
 export function loadContent(): Content {
   let taxonomy: Taxonomy;

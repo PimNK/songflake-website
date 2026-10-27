@@ -2,7 +2,7 @@
 // choice, else the browser's language. Switching stores the choice and reloads the page with it.
 export type Lang = 'en' | 'ru';
 
-const KEY = 'obychno.lang';
+const KEY = 'songflake.lang';
 const LANGS: readonly Lang[] = ['en', 'ru'];
 const known = (v: string | null | undefined): Lang | null => LANGS.find((l) => l === v) ?? null;
 

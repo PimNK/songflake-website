@@ -3,12 +3,6 @@ import type { Bands, Taxonomy } from '../src/content/taxonomy';
 
 export const taxonomy: Taxonomy = {
   styles: ['Alternative', 'Progressive', 'Electronic', 'Ambient'],
-  styleColours: {
-    Alternative: '#ff8a65',
-    Progressive: '#b39dff',
-    Electronic: '#4dd8ff',
-    Ambient: '#9be7b9',
-  },
   accents: [
     { id: 'Guitar', name: 'Guitar', colour: '#ff9100' },
     { id: 'Vox', name: 'Vocals', colour: '#00e5ff' },

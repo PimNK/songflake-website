@@ -1,16 +1,10 @@
-# Styles, their colours, and the instruments a track can put in the spotlight.
-# Order of styles = order in the filters and clockwise round the record.
+# Styles, and the instruments a track can put in the spotlight with their colours.
+# Order of styles = order in the filters.
 styles:
   - Alternative
   - Progressive
   - Electronic
   - Ambient
-
-style_colours:
-  Alternative: "#ff8a65"
-  Progressive: "#b39dff"
-  Electronic:  "#4dd8ff"
-  Ambient:     "#9be7b9"
 
 accents:           # id → display name (ru: the Russian one) + colour
   Guitar:   { name: Guitar,      ru: Гитара,       colour: "#ff9100" }

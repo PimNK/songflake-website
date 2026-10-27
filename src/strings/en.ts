@@ -2,7 +2,7 @@
 import type { Axis } from '../content/parse';
 
 /** The site's name: the page title and the record's centre label. */
-export const site = 'OBYCHNO_';
+export const site = 'SONGFLAKE';
 
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
 
@@ -13,6 +13,8 @@ export const en = {
   hero: {
     title: site,
     about: 'About',
+    // The About button's face; `about` is its accessible name and the window's title.
+    aboutGlyph: '?',
     // The language switch shows the current language.
     lang: 'EN',
     langLabel: 'Language: English. Switch to Russian',
@@ -71,7 +73,7 @@ export const en = {
     inProgress: 'In progress',
     reset: 'Reset filters',
     info: {
-      style: 'The genre a track leans to. Each style is a sector of the record.',
+      style: 'The genre a track leans to.',
       listen:
         'The instruments a track is built around. A track shows when it has at least one of the checked ones.',
       complexity: 'Rhythm, melody, technique, instruments and structure, each 1–3, added up: 5–15.',
@@ -82,7 +84,7 @@ export const en = {
 
   record: {
     canvasLabel:
-      'A vinyl record map of tracks: sectors are styles, distance from the label is the year. The List view shows the same tracks as tiles.',
+      'A vinyl record map of tracks: distance from the label is the year. The List view shows the same tracks as tiles.',
     tooltip: (style: string, band: boolean, year: string, total: number) =>
       `${style} · ${band ? 'band' : 'solo'} · ${year} · complexity ${total}/15`,
     labelSide: (first: number, last: number) => `SIDE A · ${first} — ${last}`,

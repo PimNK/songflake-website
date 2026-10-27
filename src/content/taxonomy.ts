@@ -1,4 +1,4 @@
-// Taxonomy (styles, instruments, colours) and bands: schemas and validation.
+// Taxonomy (styles, instruments and their colours) and bands: schemas and validation.
 // The YAML files are the only place these names and colours exist (CLAUDE.md §2.2, §2.3).
 import { z } from 'zod';
 
@@ -6,7 +6,6 @@ const colour = z.string().regex(/^#[0-9a-fA-F]{6}$/, { error: 'must be a colour 
 
 const taxonomySchema = z.object({
   styles: z.array(z.string().min(1)).min(1),
-  style_colours: z.record(z.string(), colour),
   accents: z.record(
     z.string(),
     z.object({ name: z.string().min(1), ru: z.string().min(1).optional(), colour }),
@@ -35,7 +34,6 @@ export interface Accent {
 export interface Taxonomy {
   /** In file order: order in the filters and clockwise round the record. */
   styles: string[];
-  styleColours: Record<string, string>;
   /** In file order. */
   accents: Accent[];
 }
@@ -60,14 +58,9 @@ function describe(error: z.ZodError): string {
 export function toTaxonomy(raw: unknown, file = 'content/taxonomy.yaml'): Taxonomy {
   const parsed = taxonomySchema.safeParse(raw);
   if (!parsed.success) throw new Error(`${file}:\n${describe(parsed.error)}`);
-  const { styles, style_colours, accents } = parsed.data;
-  const missing = styles.filter((s) => !style_colours[s]);
-  if (missing.length) {
-    throw new Error(`${file}: style_colours has no colour for ${missing.join(', ')}`);
-  }
+  const { styles, accents } = parsed.data;
   return {
     styles,
-    styleColours: style_colours,
     accents: Object.entries(accents).map(([id, a]) => ({ id, ...a })),
   };
 }
