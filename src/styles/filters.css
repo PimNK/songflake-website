@@ -317,3 +317,8 @@
   width: 240px;
   max-width: calc(100vw - 2 * var(--gutter));
 }
+/* The right-hand range opens its note leftwards, so it never sticks out of the panel. */
+.franges .fgroup:last-child .bubble {
+  left: auto;
+  right: 0;
+}
