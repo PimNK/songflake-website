@@ -36,8 +36,8 @@ const frame = (v = strings.views): string => `
       </header>
       <main class="map-sec" aria-label="${v.mapLabel}">
         <div class="rplayer">
-          <div class="rp" data-slot="player"></div>
           <button type="button" class="ftoggle" aria-expanded="false" aria-controls="filters"></button>
+          <div class="rp" data-slot="player"></div>
         </div>
         <div class="fanchor">
           <div class="viewbar">

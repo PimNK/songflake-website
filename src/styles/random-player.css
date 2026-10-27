@@ -1,6 +1,6 @@
 /* The random-track player: keys · snowflake · caption and title, then the seekable line with the
    time. From 1100 px it heads the left column; narrower it is frozen at the bottom of the screen
-   (layout.css) with the Filters toggle at the right of its top row. */
+   (layout.css): the Filters toggle, the keys, the caption and title, the snowflake at the right. */
 .rp {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr);
@@ -200,7 +200,7 @@
     display: grid;
     grid-template-columns: auto auto minmax(0, 1fr) auto;
     grid-template-areas:
-      'keys flake text tog'
+      'tog keys text flake'
       'line line line line';
     align-items: center;
     column-gap: 10px;
@@ -242,16 +242,14 @@
     grid-area: tog;
   }
 }
-/* Phones: the snowflake gives its room to the title (which still opens the card). */
+/* Phones: tighter, so the title keeps some room. */
 @media (max-width: 599.98px) {
   .rplayer {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    grid-template-areas:
-      'keys text tog'
-      'line line line';
+    column-gap: 8px;
   }
   .rp-flake {
-    display: none;
+    width: 42px;
+    height: 42px;
   }
 }
 /* The smallest phones: smaller skip buttons, so the player fits. */
