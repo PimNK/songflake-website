@@ -152,7 +152,7 @@ written around a bass line.
 |---|---|---|---|
 | `title` | yes | string | Always quoted. Titles like `98` must stay strings, never numbers |
 | `style` | yes | string | Must be a style in `taxonomy.yaml` |
-| `accents` | yes | list of strings | 1+ items, each an instrument in `taxonomy.yaml`. Shown as **What to listen for**; the first one is the *lead* |
+| `accents` | yes | list of strings | 1+ items, each an instrument in `taxonomy.yaml`. Shown as **What to listen for**; the first one sets the lead colour (no label on the chip) |
 | `band` | no | string | Name of the band that recorded it. Absent = solo. `""` = recorded with a band whose name is not filled in yet (**warning**, the card says so). A name missing from `bands.yaml` is a warning too |
 | `complexity.*` | yes | int 1–3 each | five axes: `rhythm`, `melody`, `technique`, `instruments`, `structure` |
 | `years.idea` | yes | int | |
@@ -502,8 +502,7 @@ Opened from the record, a tile, or a deep link. Top to bottom:
      with an ⓘ that explains on hover/focus: «What I'd
        like you to notice while listening — the parts this track is built
        around. They also colour the rays of the snowflake.» Then one chip per
-       instrument (colour dot with glow, display name), the first marked
-       *lead* when there are several. Then the **band marker**: a dashed ring
+       instrument (colour dot with glow, display name; no lead label). Then the **band marker**: a dashed ring
        icon (same as the snowflake's halo) and «Recorded with **Vita Brevis**»,
        with name, description and years from `bands.yaml` on hover/focus;
        `band: ""` → «Recorded with a band» and a hint that the name is not filled

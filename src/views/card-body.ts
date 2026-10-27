@@ -21,12 +21,11 @@ export const leadColour = (song: Song, taxonomy: Taxonomy): string =>
 
 function listenChips(song: Song, taxonomy: Taxonomy): string {
   return song.accents
-    .map((id, i) => {
+    .map((id) => {
       const a = taxonomy.accents.find((x) => x.id === id);
       if (!a) return '';
       const col = esc(a.colour);
-      const lead = i === 0 && song.accents.length > 1 ? `<small>${c.lead}</small>` : '';
-      return `<span class="spot-chip" style="color:${col};border-color:${rgba(a.colour, 0.5)};background:${rgba(a.colour, 0.08)}"><i style="background:${col}"></i><span class="name">${esc(a.name)}</span>${lead}</span>`;
+      return `<span class="spot-chip" style="color:${col};border-color:${rgba(a.colour, 0.5)};background:${rgba(a.colour, 0.08)}"><i style="background:${col}"></i><span class="name">${esc(a.name)}</span></span>`;
     })
     .join('');
 }

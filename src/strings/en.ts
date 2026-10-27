@@ -105,7 +105,6 @@ export const en = {
     listen: 'What to listen for',
     listenInfo:
       "What I'd like you to notice while listening — the parts this track is built around. They also colour the rays of the snowflake.",
-    lead: 'lead',
     recordedWith: 'Recorded with',
     recordedWithBand: 'Recorded with a band',
     bandUnnamed: 'Band not named yet',

@@ -23,11 +23,6 @@
 .spot-chip .name {
   color: var(--frost);
 }
-.spot-chip small {
-  font-size: 11px;
-  color: var(--mist);
-  font-weight: 400;
-}
 .spot-h {
   position: relative;
   display: flex;

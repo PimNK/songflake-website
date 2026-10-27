@@ -19,7 +19,7 @@ export function songTemplate(title: string, taxonomy: Taxonomy, year: number): s
     line(`style: ${taxonomy.styles[0]}`, `one of: ${styles}`),
     line(
       `accents: [${taxonomy.accents[0]?.id}]`,
-      `1+ of: ${accents} — "What to listen for"; the first is the lead`,
+      `1+ of: ${accents} — "What to listen for"; the first sets the lead colour`,
     ),
     line(
       '# band: "Band name"',
