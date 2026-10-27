@@ -3,8 +3,9 @@
 import { parse as parseYaml } from 'yaml';
 import bandsRaw from '/content/bands.yaml?raw';
 import taxonomyRaw from '/content/taxonomy.yaml?raw';
-import { displayOrder, parseSong, type AudioFile, type Song } from './parse';
 import { lang } from '../lang';
+import { localBands, localSong, localTaxonomy } from './localise';
+import { displayOrder, parseSong, type AudioFile, type Song } from './parse';
 import { toBands, toTaxonomy, type Bands, type Taxonomy } from './taxonomy';
 
 const indexFiles = import.meta.glob<string>('/songs/*/index.md', {
@@ -29,17 +30,13 @@ export interface Content {
 
 const slugOf = (path: string): string => path.split('/')[2] ?? '';
 
-/** Instrument names in the page's language; styles are never translated. */
-const localised = (t: Taxonomy): Taxonomy =>
-  lang === 'ru' ? { ...t, accents: t.accents.map((a) => ({ ...a, name: a.ru ?? a.name })) } : t;
-
 const EMPTY_TAXONOMY: Taxonomy = { styles: [], styleColours: {}, accents: [] };
 
 export function loadContent(): Content {
   let taxonomy: Taxonomy;
   let bands: Bands;
   try {
-    taxonomy = localised(toTaxonomy(parseYaml(taxonomyRaw)));
+    taxonomy = toTaxonomy(parseYaml(taxonomyRaw));
     bands = toBands(parseYaml(bandsRaw));
   } catch (e) {
     // The build fails on this in check-content; in dev it reaches the overlay instead of crashing.
@@ -62,7 +59,14 @@ export function loadContent(): Content {
     const result = parseSong(slug, raw, audioBySlug.get(slug) ?? [], taxonomy, bands);
     warnings.push(...result.warnings);
     if (!result.ok) errors.push(...result.errors);
-    else if (!result.hidden) songs.push(result.song);
+    else if (!result.hidden) songs.push(localSong(result.song, lang));
   }
-  return { songs: displayOrder(songs), taxonomy, bands, errors, warnings };
+  // Parsed with every language's text; shown in the page's (content/localise.ts).
+  return {
+    songs: displayOrder(songs),
+    taxonomy: localTaxonomy(taxonomy, lang),
+    bands: localBands(bands, lang),
+    errors,
+    warnings,
+  };
 }

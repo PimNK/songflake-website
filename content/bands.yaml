@@ -1,5 +1,6 @@
 # One entry per band. A song points here with `band: "<name>"` in its index.md.
-# The description is shown on hover over the band marker in the track card.
+# The description is shown on hover over the band marker in the track card; about_ru (optional)
+# is the one shown on the Russian page.
 
 Vita Brevis:
   years: "2010 – 2012"

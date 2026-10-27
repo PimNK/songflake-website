@@ -40,9 +40,17 @@ never appeared before goes in `content/bands.yaml`.
 The interface is in English and Russian. The page picks the language from
 `?lang=en` / `?lang=ru` in the URL, else the stored choice, else the browser's
 language. The EN / RU button in the page header switches it and reloads the
-page. UI strings are in `src/strings/` (`en.ts`, `ru.ts`). Song titles, stories,
-pins and band texts stay as the author wrote them. To give an instrument a
-Russian name, add `ru:` to its line in `content/taxonomy.yaml`.
+page. UI strings are in `src/strings/` (`en.ts`, `ru.ts`). Song titles stay as
+the author wrote them. Stories, pin notes and band descriptions can have a
+Russian version; without one, the Russian page shows the original:
+
+- Story: put a line `<!-- ru -->` in the body of `index.md`. The story is above
+  it, the Russian story after it. One such line per song.
+- Pin note: add `text_ru:` under `text:` in the pin.
+- Band: add `about_ru:` next to `about:` in `content/bands.yaml`.
+- Instrument name: add `ru:` to its line in `content/taxonomy.yaml`.
+
+All of these stay in the song's own folder or the two content files.
 
 ## What you see while developing
 

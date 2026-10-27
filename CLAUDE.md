@@ -28,9 +28,10 @@ load (`src/lang.ts`): `?lang=` in the URL, else the stored choice
 (`localStorage` `obychno.lang`), else the browser's language (`ru*` → Russian,
 otherwise English). A language switch in the hero stores the choice and reloads.
 Not translated: style names, song titles, the record's centre label (it reuses
-the English text), the dev overlay, glyphs. Song titles, stories, pins and band
-texts are the author's and stay in whatever language they are written in (e.g.
-«На луну»).
+the English text), the dev overlay, glyphs. Song titles are the author's and stay
+as written (e.g. «На луну»). Stories, pin notes and band descriptions are the
+author's too; each may have an optional Russian version in the same folder or
+file (§2.1, §2.3). Without one, the Russian page shows the original.
 
 The rest of this file is the contract for building and changing the site.
 Anything it does not cover: choose the simplest option, and say which one you
@@ -89,7 +90,7 @@ src/
 scripts/
   new-song.ts                scaffolds a song folder (§2.5)
   check-content.ts           validates every song; part of `build` and `test`
-tests/                       vitest unit tests (*.test.ts) for content/parse.ts, domain/ and strings/ (ru / en key parity, plural forms); fixtures.ts holds shared sample songs and sampleComplexity
+tests/                       vitest unit tests (*.test.ts) for content/parse.ts, content/localise.ts, domain/ and strings/ (ru / en key parity, plural forms); fixtures.ts holds shared sample songs and sampleComplexity
 public/                      favicon and nothing else
 ```
 
@@ -157,19 +158,25 @@ written around a bass line.
 | `years.idea` | yes | int | |
 | `years.concept` | no | int | ≥ `idea` |
 | `years.ready` | no | int | ≥ `concept` (or `idea`). Absent = **in progress** |
-| `pins` | no | list of `{at, text}` | Notes pinned to moments of the recording (§4.6). `at` is `"m:ss"` or `"h:mm:ss"`, always quoted; `text` is plain text, one or two sentences. Order does not matter. Requires audio |
+| `pins` | no | list of `{at, text, text_ru?}` | Notes pinned to moments of the recording (§4.6). `at` is `"m:ss"` or `"h:mm:ss"`, always quoted; `text` is plain text, one or two sentences. Order does not matter. Requires audio. `text_ru` (optional) is the note on the Russian page; present but empty is an error |
 | `audio_url` | no | URL | Use instead of a local file when the audio is hosted elsewhere |
 | `hidden` | no | boolean | `true` keeps the song out of the build — a draft |
 
 The **body** is the story, in Markdown. It may be empty; the card then shows a
 neutral placeholder from `strings/`.
 
+The body may hold one line `<!-- ru -->` (`RU_MARKER` in `parse.ts`; surrounding
+spaces allowed). Above it is the story, after it the Russian story. The Russian
+page shows the story above the marker when there is no Russian part. The marker
+is recognised on any line, also inside a code fence — a known limit.
+
 **Derived, never stored** (computed in `src/content/`):
 - `complexityTotal` = sum of the five axes (5–15)
 - `status` = `ready` / `in-progress` from `years.ready`
-- `excerpt` = first sentence of the body, for tooltips
+- `excerpt` = first sentence of the story, for tooltips (of the Russian story on the Russian page)
+- `storyRu` = the body after the `<!-- ru -->` line, if any
 - `audioSrc` = local file URL, else `audio_url`, else none
-- `pins` parsed to seconds and sorted
+- `pins` parsed to seconds and sorted (`text_ru` kept as `textRu`)
 - display order: `years.ready` descending, in-progress first, ties by title
 
 Do not add a stored field for anything that can be derived. In particular:
@@ -222,10 +229,12 @@ width) sector on the record.
 Vita Brevis:
   years: "2010 – 2012"
   about: "One or two sentences shown on hover over the band marker."
+  about_ru: "Optional: the same in Russian, shown on the Russian page."
 ```
 
 A song names its band in `index.md`; the description lives here once, so five
-songs by one band do not repeat the same paragraph.
+songs by one band do not repeat the same paragraph. `about_ru` is optional; the
+Russian page falls back to `about`.
 
 ### 2.4 Validation
 
@@ -244,16 +253,20 @@ songs/98/index.md: years.concept (2019) is earlier than years.idea (2021)
 songs/lady/: two audio files (lady.mp3, lady-v2.mp3) — keep one
 songs/dd/index.md: pins[1].at "2.15" is not a time — write it as "2:15"
 songs/shine/index.md: pins present but the song has no audio
+songs/dd/index.md: pins[0].text_ru is empty — fill it in or leave it out
+songs/dd/index.md: the story has 2 "<!-- ru -->" lines — keep one
 ```
 
 Pin rules: `at` parses as `m:ss` / `h:mm:ss` with seconds < 60; `text` is
 non-empty; no two pins share an `at`; a song with pins has audio. `text` over
-200 characters is a **warning**. A pin past the end of the recording can only be
+200 characters is a **warning**, and so is `text_ru`; an empty `text_ru` is an
+error. At most one `<!-- ru -->` line in the body (more is an error). A pin past the end of the recording can only be
 detected once audio loads: dev overlay warning, silently skipped in production.
 
 **Warnings** (build passes, listed in the output): unknown frontmatter keys
 (say which known field it resembles), `band: ""`, a band missing from
-`bands.yaml`. In `npm run dev`, errors and warnings show in an overlay rather
+`bands.yaml`, nothing after the `<!-- ru -->` line (the Russian page shows the
+story above it). In `npm run dev`, errors and warnings show in an overlay rather
 than crashing the page.
 
 ### 2.5 Adding a song — the author's whole workflow
@@ -289,9 +302,10 @@ fits, propose a new module and update this table in the same change.
 
 | Module | Owns | Must NOT contain |
 |---|---|---|
-| `content/parse.ts` | **pure**: frontmatter split, YAML parse, zod schema, cross-field rules, derived fields, errors and warnings | DOM, `import.meta.glob`, file system |
-| `content/load.ts` | the two `import.meta.glob` calls, taxonomy and bands import, handing raw input to `parse.ts`, dropping `hidden` songs; `localised` swaps each instrument's `name` for its `ru` (when set) on a Russian page; styles are never translated | validation rules |
-| `content/taxonomy.ts` | taxonomy and bands zod schemas (an accent has `name`, optional `ru`, `colour`), the `Taxonomy` / `Band` / `Accent` types (`Accent.ru?`), `toTaxonomy` / `toBands` validators | hard-coded names or colours, lookups |
+| `content/parse.ts` | **pure**: frontmatter split, YAML parse, zod schema, cross-field rules, derived fields, errors and warnings; `RU_MARKER` and the body split into `story` / `storyRu`; `SongPin` (pin plus optional `textRu`) | DOM, `import.meta.glob`, file system |
+| `content/load.ts` | the two `import.meta.glob` calls, taxonomy and bands import, handing raw input to `parse.ts`, dropping `hidden` songs; parses with the unlocalised taxonomy, then applies `content/localise.ts` with `lang` from `src/lang.ts` | validation rules, localisation code of its own |
+| `content/taxonomy.ts` | taxonomy and bands zod schemas (an accent has `name`, optional `ru`, `colour`), the `Taxonomy` / `Band` / `Accent` types (`Accent.ru?`, `Band.aboutRu?` from `about_ru`), `toTaxonomy` / `toBands` validators | hard-coded names or colours, lookups |
+| `content/localise.ts` | **pure**: content in a given language. `localTaxonomy(t, lang)` (instrument `name` = `ru` ?? `name`), `localBands(bands, lang)` (`about` = `aboutRu` ?? `about`), `localSong(song, lang)` (`story` = `storyRu` ?? `story`, `excerpt` recomputed, pin `text` = `textRu` ?? `text`). Drops the Russian fields, so views read only `name`, `about`, `story`, `text`. Styles and titles are never translated. Tested in `tests/localise.test.ts` | DOM, language detection (`src/lang.ts`), validation |
 | `content/slug.ts` | **pure**: the slug pattern and `slugify` (Cyrillic transliteration, diacritics and apostrophes stripped), shared by `parse.ts` and `scripts/new-song.ts` | DOM, file system, validation of anything but the slug |
 | `domain/filters.ts` | **pure**: `FilterState` (styles, instruments, complexity range, year range `from` / `to` — inclusive, over `placementYear` (§5.3) — and status; the band is not a filter), `FilterSpace {taxonomy, years}` (what the filters range over; passed to `defaultFilters`, `toQuery`, `fromQuery` and `isDefault`), `matches(song, state, years)`, counts per option, `countMatching(songs, state, years)`, default state from the space, range clamping (`setRange`; `setYears(f, end, value, years)` clamps to the songs' years, `from` ≤ `to`), the filter ⇄ URL-query conversion (`toQuery` / `fromQuery`, keys in §4.5), and `neighbour` (the card's prev/next over the filtered order, wrapping; falls back to the full order when the open song is filtered out) and `nextPlayable` (the next track after a given one in that order, wrapping, that passes a predicate; null when none), both taking `years` | DOM, `location`, hash handling (that is `app/router.ts`, which only wires it) |
 | `domain/timeline.ts` | **pure**: the three stations (idea, concept, ready) with their fill, and the gaps between them, proportional to the years with a minimum length for 0 or unknown | DOM |

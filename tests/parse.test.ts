@@ -184,3 +184,43 @@ describe('derived helpers', () => {
     expect(displayOrder([a, b, c, d]).map((s) => s.title)).toEqual(['D', 'C', 'A', 'B']);
   });
 });
+
+describe('parseSong — Russian story and pin notes', () => {
+  const pins = (extra: string) => `${valid}pins:\n  - at: "0:42"\n    text: "Bass"${extra}`;
+
+  it('splits the body at the <!-- ru --> line and keeps text_ru on the pin', () => {
+    const r = run(pins('\n    text_ru: "Бас"'), {
+      audio,
+      body: 'An English story.\n\n<!-- ru -->\n\nРусская история.',
+    });
+    expect(r.ok && r.song).toMatchObject({
+      story: 'An English story.',
+      storyRu: 'Русская история.',
+      excerpt: 'An English story.',
+      pins: [{ at: 42, text: 'Bass', textRu: 'Бас' }],
+    });
+  });
+
+  it('has no Russian story or pin text when none is written', () => {
+    const r = run(pins(''), { audio });
+    expect(r.ok && r.song.storyRu).toBeUndefined();
+    expect(r.ok && r.song.pins[0]).toEqual({ at: 42, text: 'Bass' });
+  });
+
+  it('warns when nothing follows the ru line', () => {
+    const r = run(valid, { body: 'A story.\n\n<!-- ru -->\n' });
+    expect(r.warnings).toEqual([
+      'songs/x/index.md: nothing after "<!-- ru -->" — the Russian page shows the story above it',
+    ]);
+    expect(r.ok && r.song.storyRu).toBeUndefined();
+  });
+
+  it('rejects two ru lines and an empty text_ru', () => {
+    expect(errorsOf(run(valid, { body: 'A.\n<!-- ru -->\nБ.\n<!-- ru -->\nВ.' }))).toEqual([
+      'songs/x/index.md: the story has 2 "<!-- ru -->" lines — keep one',
+    ]);
+    expect(errorsOf(run(pins('\n    text_ru: " "'), { audio }))).toEqual([
+      'songs/x/index.md: pins[0].text_ru is empty — fill it in or leave it out',
+    ]);
+  });
+});

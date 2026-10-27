@@ -10,6 +10,11 @@ export const AXES = ['rhythm', 'melody', 'technique', 'instruments', 'structure'
 export type Axis = (typeof AXES)[number];
 export type Complexity = Record<Axis, number>;
 
+/** A pin with its optional Russian text (`text_ru`). */
+export interface SongPin extends Pin {
+  textRu?: string;
+}
+
 export interface Song {
   slug: string;
   title: string;
@@ -24,9 +29,11 @@ export interface Song {
   status: 'ready' | 'in-progress';
   /** The story, Markdown. */
   story: string;
+  /** The Russian story: the body after the `<!-- ru -->` line, when there is one. */
+  storyRu?: string;
   excerpt: string;
   audioSrc: string | null;
-  pins: Pin[];
+  pins: SongPin[];
 }
 
 export interface AudioFile {
@@ -40,6 +47,9 @@ export type ParseResult =
 
 export const AUDIO_EXTENSIONS = ['mp3', 'm4a', 'ogg'] as const;
 export const PIN_TEXT_WARN_LENGTH = 200;
+/** The line in the body after which the Russian story goes. */
+export const RU_MARKER = '<!-- ru -->';
+const RU_LINE = /^[ \t]*<!--\s*ru\s*-->[ \t]*$/m;
 
 const KNOWN_KEYS = [
   'title', 'style', 'accents', 'band', 'complexity', 'years', 'pins', 'audio_url', 'hidden',
@@ -62,6 +72,7 @@ const frontmatterSchema = z.object({
       z.object({
         at: z.string({ error: 'must be a quoted time, e.g. at: "2:15"' }),
         text: z.string({ error: 'must be text' }),
+        text_ru: z.string({ error: 'must be text' }).optional(),
       }),
     )
     .optional(),
@@ -101,8 +112,16 @@ export function parseSong(
   warnings.push(...checkBand(file, fm.band, bands));
   if (errors.length) return fail();
 
+  const parts = body.split(RU_LINE);
+  if (parts.length > 2) errors.push(`${file}: the story has ${parts.length - 1} "${RU_MARKER}" lines — keep one`);
+  if (errors.length) return fail();
+
   const complexityTotal = AXES.reduce((sum, a) => sum + fm.complexity[a], 0);
-  const story = body.trim();
+  const story = parts[0]!.trim();
+  const storyRu = parts[1]?.trim();
+  if (storyRu === '') {
+    warnings.push(`${file}: nothing after "${RU_MARKER}" — the Russian page shows the story above it`);
+  }
   const song: Song = {
     slug,
     title: fm.title,
@@ -114,6 +133,7 @@ export function parseSong(
     years: fm.years,
     status: fm.years.ready === undefined ? 'in-progress' : 'ready',
     story,
+    ...(storyRu ? { storyRu } : {}),
     excerpt: firstSentence(story),
     audioSrc,
     pins,
@@ -213,13 +233,14 @@ function checkPins(
   hasAudio: boolean,
   errors: string[],
   warnings: string[],
-): Pin[] {
+): SongPin[] {
   if (raw.length && !hasAudio) errors.push(`${file}: pins present but the song has no audio`);
-  const pins: Pin[] = [];
+  const pins: SongPin[] = [];
   const seen = new Map<number, number>();
   raw.forEach((p, i) => {
     const at = parseTime(p.at);
     const text = p.text.trim();
+    const textRu = p.text_ru?.trim();
     if (at === null) {
       const fix = suggestTime(p.at);
       const hint = fix ? ` — write it as "${fix}"` : ' — write it as "m:ss" or "h:mm:ss"';
@@ -230,12 +251,15 @@ function checkPins(
       seen.set(at, i);
     }
     if (!text) errors.push(`${file}: pins[${i}].text is empty`);
-    else if (text.length > PIN_TEXT_WARN_LENGTH) {
-      warnings.push(
-        `${file}: pins[${i}].text is ${text.length} characters — keep it to one or two sentences`,
-      );
+    if (textRu === '') errors.push(`${file}: pins[${i}].text_ru is empty — fill it in or leave it out`);
+    for (const [key, t] of [['text', text], ['text_ru', textRu]] as const) {
+      if (t && t.length > PIN_TEXT_WARN_LENGTH) {
+        warnings.push(
+          `${file}: pins[${i}].${key} is ${t.length} characters — keep it to one or two sentences`,
+        );
+      }
     }
-    if (at !== null && text) pins.push({ at, text });
+    if (at !== null && text) pins.push(textRu ? { at, text, textRu } : { at, text });
   });
   return sortPins(pins);
 }

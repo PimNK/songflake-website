@@ -3,7 +3,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
-import { AXES } from '../src/content/parse.ts';
+import { AXES, RU_MARKER } from '../src/content/parse.ts';
 import { slugify } from '../src/content/slug.ts';
 import { toTaxonomy, type Taxonomy } from '../src/content/taxonomy.ts';
 
@@ -34,9 +34,11 @@ export function songTemplate(title: string, taxonomy: Taxonomy, year: number): s
     line('# pins:', 'moments of the recording; needs an audio file in this folder'),
     line('#   - at: "0:42"', '"m:ss" or "h:mm:ss", always quoted'),
     line('#     text: "What happens at this moment"', 'plain text, one or two sentences'),
+    line('#     text_ru: "Что происходит в этот момент"', 'optional: the note on the Russian page'),
     line('# audio_url: "https://…"', 'instead of a local file, when the audio is hosted elsewhere'),
     line('# hidden: true', 'keep the song out of the build — a draft'),
-    '# The story goes below the closing ---, in Markdown.',
+    '# The story goes below the closing ---, in Markdown. Optional: a Russian version after a',
+    `# line ${RU_MARKER} at the end of the story.`,
     '---',
     '',
   ].join('\n');

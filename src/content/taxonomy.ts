@@ -15,7 +15,13 @@ const taxonomySchema = z.object({
 
 const bandsSchema = z.record(
   z.string(),
-  z.object({ years: z.string().optional(), about: z.string().optional() }).nullable(),
+  z
+    .object({
+      years: z.string().optional(),
+      about: z.string().optional(),
+      about_ru: z.string().optional(),
+    })
+    .nullable(),
 );
 
 export interface Accent {
@@ -38,6 +44,8 @@ export interface Band {
   name: string;
   years?: string;
   about?: string;
+  /** The Russian description; `about` when absent. */
+  aboutRu?: string;
 }
 
 export type Bands = Record<string, Band>;
@@ -69,6 +77,9 @@ export function toBands(raw: unknown, file = 'content/bands.yaml'): Bands {
   const parsed = bandsSchema.safeParse(raw ?? {});
   if (!parsed.success) throw new Error(`${file}:\n${describe(parsed.error)}`);
   return Object.fromEntries(
-    Object.entries(parsed.data).map(([name, b]) => [name, { name, ...(b ?? {}) }]),
+    Object.entries(parsed.data).map(([name, b]) => {
+      const { about_ru, ...rest } = b ?? {};
+      return [name, { name, ...rest, ...(about_ru ? { aboutRu: about_ru } : {}) }];
+    }),
   );
 }
