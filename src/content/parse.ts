@@ -4,7 +4,7 @@ import { parseDocument } from 'yaml';
 import { z } from 'zod';
 import { parseTime, sortPins, suggestTime, type Pin } from '../domain/pins';
 import { SLUG_PATTERN } from './slug';
-import type { Bands, Taxonomy } from './taxonomy';
+import type { Taxonomy } from './taxonomy';
 
 export const AXES = ['rhythm', 'melody', 'technique', 'instruments', 'structure'] as const;
 export type Axis = (typeof AXES)[number];
@@ -21,8 +21,6 @@ export interface Song {
   style: string;
   /** Instrument ids; the first is the lead. */
   accents: string[];
-  /** `null` = solo; `""` = recorded with a band whose name is not filled in yet. */
-  band: string | null;
   complexity: Complexity;
   complexityTotal: number;
   years: { idea: number; concept?: number; ready?: number };
@@ -46,13 +44,13 @@ export type ParseResult =
   | { ok: false; errors: string[]; warnings: string[] };
 
 export const AUDIO_EXTENSIONS = ['mp3', 'm4a', 'ogg'] as const;
-export const PIN_TEXT_WARN_LENGTH = 200;
+export const PIN_TEXT_WARN_LENGTH = 400;
 /** The line in the body after which the Russian story goes. */
 export const RU_MARKER = '<!-- ru -->';
 const RU_LINE = /^[ \t]*<!--\s*ru\s*-->[ \t]*$/m;
 
 const KNOWN_KEYS = [
-  'title', 'style', 'accents', 'band', 'complexity', 'years', 'pins', 'audio_url', 'hidden',
+  'title', 'style', 'accents', 'complexity', 'years', 'pins', 'audio_url', 'hidden',
 ];
 
 const levelMsg = { error: 'must be 1, 2 or 3' };
@@ -64,7 +62,6 @@ const frontmatterSchema = z.object({
   title: z.string({ error: 'must be a quoted string, e.g. title: "98"' }).min(1),
   style: z.string({ error: 'is required — one style from content/taxonomy.yaml' }),
   accents: z.array(z.string(), { error: 'must be a list of instruments from content/taxonomy.yaml, e.g. [A, B]' }).min(1),
-  band: z.string({ error: 'must be a quoted band name, or "" if not known yet' }).optional(),
   complexity: z.object(Object.fromEntries(AXES.map((a) => [a, level])) as Record<Axis, typeof level>),
   years: z.object({ idea: year, concept: year.optional(), ready: year.optional() }),
   pins: z
@@ -81,26 +78,31 @@ const frontmatterSchema = z.object({
 });
 type Frontmatter = z.infer<typeof frontmatterSchema>;
 
+/** The folder itself: its name is a valid slug and it holds at most one recording. */
+function checkFolder(slug: string, audioFiles: readonly AudioFile[]): string[] {
+  const out: string[] = [];
+  if (!SLUG_PATTERN.test(slug)) {
+    out.push(`songs/${slug}/: folder name must be lowercase a-z, 0-9 and dashes`);
+  }
+  if (audioFiles.length > 1) {
+    const names = audioFiles.map((f) => f.name).join(', ');
+    out.push(`songs/${slug}/: ${audioFiles.length === 2 ? 'two' : audioFiles.length} audio files (${names}) — keep one`);
+  }
+  return out;
+}
+
 export function parseSong(
   slug: string,
   raw: string,
   audioFiles: readonly AudioFile[],
   taxonomy: Taxonomy,
-  bands: Bands,
 ): ParseResult {
   const file = `songs/${slug}/index.md`;
   const errors: string[] = [];
   const warnings: string[] = [];
   const fail = (): ParseResult => ({ ok: false, errors, warnings });
 
-  if (!SLUG_PATTERN.test(slug)) {
-    errors.push(`songs/${slug}/: folder name must be lowercase a-z, 0-9 and dashes`);
-  }
-  if (audioFiles.length > 1) {
-    const names = audioFiles.map((f) => f.name).join(', ');
-    errors.push(`songs/${slug}/: ${audioFiles.length === 2 ? 'two' : audioFiles.length} audio files (${names}) — keep one`);
-  }
-
+  errors.push(...checkFolder(slug, audioFiles));
   const read = readFrontmatter(file, raw, errors, warnings);
   if (!read) return fail();
   const { fm, body } = read;
@@ -109,7 +111,6 @@ export function parseSong(
   errors.push(...checkTaxonomy(file, fm, taxonomy));
   errors.push(...checkYears(file, fm.years));
   const pins = checkPins(file, fm.pins ?? [], audioSrc !== null, errors, warnings);
-  warnings.push(...checkBand(file, fm.band, bands));
   if (errors.length) return fail();
 
   const parts = body.split(RU_LINE);
@@ -127,7 +128,6 @@ export function parseSong(
     title: fm.title,
     style: fm.style,
     accents: fm.accents,
-    band: fm.band ?? null,
     complexity: fm.complexity,
     complexityTotal,
     years: fm.years,
@@ -255,21 +255,13 @@ function checkPins(
     for (const [key, t] of [['text', text], ['text_ru', textRu]] as const) {
       if (t && t.length > PIN_TEXT_WARN_LENGTH) {
         warnings.push(
-          `${file}: pins[${i}].${key} is ${t.length} characters — keep it to one or two sentences`,
+          `${file}: pins[${i}].${key} is ${t.length} characters — keep it to ${PIN_TEXT_WARN_LENGTH}, three lines of the card`,
         );
       }
     }
     if (at !== null && text) pins.push(textRu ? { at, text, textRu } : { at, text });
   });
   return sortPins(pins);
-}
-
-function checkBand(file: string, band: string | undefined, bands: Bands): string[] {
-  if (band === undefined) return [];
-  if (band.trim() === '') {
-    return [`${file}: band is "" — the card will say "Recorded with a band" until it is filled in`];
-  }
-  return bands[band] ? [] : [`${file}: band "${band}" is not in content/bands.yaml`];
 }
 
 /** First sentence of the story as plain text, for tooltips. */

@@ -1,3 +1,5 @@
+/* The console's parts, shared by every view: the room's light, the faceplate, round keys, the
+   display (VFD), value windows, drum-machine pads, the ⓘ notes, knobs, faders and tickers. */
 * {
   box-sizing: border-box;
 }
@@ -5,80 +7,382 @@
   display: none !important;
 }
 html {
-  background: var(--void);
+  background: var(--night);
 }
-/* One background for the whole page, the record and the list: a deep glow and a star sky. */
+/* The room: a warm lamp at the left, a cold window at the top right, fixed behind the page; a
+   grain over everything. */
 body {
-  background: radial-gradient(120% 90% at 50% 40%, var(--deep) 0%, var(--void) 72%) fixed;
-  min-height: 100vh;
+  margin: 0;
+  min-height: 100svh;
+  color: var(--cream);
+  font: 400 11px/1.4 var(--mono);
+  font-variant-numeric: tabular-nums;
+  background: var(--night);
+  -webkit-tap-highlight-color: transparent;
 }
-.sky {
+body::before {
+  content: '';
   position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100%;
   z-index: -1;
   pointer-events: none;
+  background:
+    radial-gradient(
+      max(900px, 120vw) max(760px, 90svh) at 14% 42%,
+      rgb(var(--g) / calc(0.1 * var(--lum))),
+      transparent 70%
+    ),
+    radial-gradient(
+      max(760px, 90vw) max(520px, 60svh) at 100% 0,
+      rgba(120, 170, 255, 0.07),
+      transparent 70%
+    );
 }
-/* Two fonts: the display face for the site name only (the hero and the record's label), the body
-   face for everything else; figures are tabular so times and counts do not wobble. */
-body {
-  color: var(--frost);
-  font-family: var(--body);
-  font-size: 15px;
-  line-height: 1.55;
-  font-variant-numeric: tabular-nums;
-  margin: 0;
-}
-h1 {
-  font-family: var(--display);
-  font-weight: 300;
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  background: var(--noise);
+  opacity: 0.075;
 }
 h1,
 h2,
-h3 {
-  text-wrap: balance;
-  margin: 0;
-}
-h2,
-h3 {
-  font-weight: 600;
-}
-/* One style for every small heading label: «About», «View», the filter groups, the card's
-   blocks, the timeline's stations, the scroll caption and the hint step. */
-.label,
-.flabel,
-.cell > h3,
-.spot-h h3,
-.st span,
-.scroll-cue small,
-.hint-n {
-  font-family: var(--body);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--mist);
-}
+h3,
 p {
   margin: 0;
 }
+h1 {
+  font: 500 30px/1 var(--sans);
+  letter-spacing: 0.12em;
+  color: var(--hot);
+  white-space: nowrap;
+  text-shadow:
+    0 0 calc(16px * var(--lum)) rgb(var(--g) / calc(0.62 * var(--lum))),
+    0 0 2px rgba(255, 200, 140, 0.8);
+}
 button,
-select,
 input {
   font: inherit;
   color: inherit;
 }
+button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
 :focus-visible {
-  outline: 2px solid var(--ice);
+  outline: 2px solid var(--amber);
   outline-offset: 2px;
 }
-.wrap {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding-inline: clamp(16px, 3vw, 36px);
+/* One style for every small label: «View», the filter groups, the timeline's stations, the
+   scroll caption, the hint step. */
+.label,
+.flabel,
+.hint-n {
+  font: 500 8.5px/1.2 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--label);
+  text-shadow: 0 0 8px rgb(var(--g) / calc(0.38 * var(--lum)));
 }
-/* A snowflake's own slow turn outside the record (list tiles, the card). Timing is inline. */
+
+/* The faceplate: dark, brushed, four screws, lit from its own lamps. */
+.panel {
+  position: relative;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 14px 14px, #050403 0 2.5px, #2a231d 3px 4.5px, transparent 5px),
+    radial-gradient(
+      circle at calc(100% - 14px) 14px,
+      #050403 0 2.5px,
+      #2a231d 3px 4.5px,
+      transparent 5px
+    ),
+    radial-gradient(
+      circle at 14px calc(100% - 14px),
+      #050403 0 2.5px,
+      #2a231d 3px 4.5px,
+      transparent 5px
+    ),
+    radial-gradient(
+      circle at calc(100% - 14px) calc(100% - 14px),
+      #050403 0 2.5px,
+      #2a231d 3px 4.5px,
+      transparent 5px
+    ),
+    radial-gradient(
+      420px 300px at 50% 150px,
+      rgb(var(--g) / calc(0.09 * var(--lum))),
+      transparent 70%
+    ),
+    repeating-linear-gradient(0deg, rgba(255, 230, 190, 0.016) 0 1px, rgba(0, 0, 0, 0.12) 1px 2px),
+    linear-gradient(#14100d, #080605);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 170, 0.13),
+    inset 0 -1px 0 #000,
+    0 0 70px rgb(var(--g) / calc(0.07 * var(--lum))),
+    0 8px 30px #000;
+}
+/* A groove between sections of the faceplate. */
+.sec {
+  border-top: 1px solid #000;
+  box-shadow: inset 0 1px 0 rgba(255, 200, 140, 0.08);
+  padding-top: 13px;
+}
+
+/* Round keys: the transport, the hero's ? and language, ✕, the Filters toggle. */
+.btn {
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--amber);
+  background: radial-gradient(circle at 50% 28%, #2c2520, #0e0b09);
+  box-shadow:
+    0 3px 0 #050403,
+    0 6px 9px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 220, 170, 0.16);
+  transition:
+    transform 0.06s,
+    box-shadow 0.06s;
+}
+.btn svg {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+  filter: drop-shadow(0 0 5px rgb(var(--g) / 0.75));
+}
+.btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    0 1px 0 #050403,
+    0 2px 3px #000,
+    inset 0 1px 0 rgba(255, 220, 170, 0.16);
+}
+.btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.btn.s {
+  width: 34px;
+  height: 34px;
+  font: 500 10px var(--mono);
+  text-shadow: var(--glow);
+}
+.btn.k {
+  width: 46px;
+  height: 46px;
+  font-size: 18px;
+}
+/* Play / pause: lit while its track plays (data-on). Both glyphs are inside; one shows. */
+.btn.play {
+  width: 62px;
+  height: 62px;
+  font-size: 26px;
+  color: var(--hot);
+  box-shadow:
+    0 4px 0 #050403,
+    0 7px 10px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 220, 170, 0.18),
+    inset 0 0 0 2px rgb(var(--g) / 0.28);
+}
+.btn.play[data-on] {
+  background: radial-gradient(circle at 50% 40%, rgb(var(--p)), #120e0b);
+  box-shadow:
+    0 4px 0 #050403,
+    0 7px 10px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 2px rgb(var(--g) / 0.75),
+    inset 0 0 16px rgb(var(--g) / 0.45),
+    0 0 calc(28px * var(--lum)) rgb(var(--g) / calc(0.42 * var(--lum)));
+}
+.btn.play svg:nth-of-type(2),
+.btn.play[data-on] svg:first-of-type {
+  display: none;
+}
+.btn.play[data-on] svg:nth-of-type(2) {
+  display: block;
+}
+.btn.play:active:not(:disabled) {
+  transform: translateY(3px);
+}
+.btn.s.x svg {
+  width: 16px;
+  height: 16px;
+}
+/* A text key, like Reset: the hints' Skip / Next, the dev overlay's Close. */
+.tbtn,
+.freset {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font: 500 8.5px var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--label);
+  background: linear-gradient(#1f1a16, #0d0a08);
+  box-shadow:
+    0 2px 0 #050403,
+    0 3px 5px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 220, 170, 0.1);
+}
+.tbtn:hover,
+.freset:hover {
+  color: var(--cream);
+}
+.tbtn:active,
+.freset:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 0 0 #050403,
+    inset 0 1px 2px #000;
+}
+/* The power lamp: lit while something plays. */
+.pwr {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #6a2a10, #2a0f05);
+  box-shadow:
+    inset 0 1px 1px #000,
+    0 0 0 2px #0b0907;
+}
+.page.playing .pwr {
+  background: radial-gradient(circle at 40% 35%, #fff3d8, #ff8a2a 55%, #c2410c);
+  box-shadow:
+    0 0 12px #ff8a2a,
+    0 0 0 2px #0b0907;
+}
+
+/* The display: phosphor behind dark glass, with scan lines. (.rp-vfd: the random player's display
+   on wide screens, random-player.css.) */
+.vfd,
+.rp-vfd {
+  position: relative;
+  border-radius: 8px;
+  padding: 11px 14px 10px;
+  color: var(--amber);
+  font-family: var(--vfd);
+  text-shadow: var(--glow);
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.28) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 140% at 50% 0, rgb(var(--p) / calc(0.35 + 0.5 * var(--lum))), #060301 72%);
+  box-shadow:
+    inset 0 2px 9px #000,
+    inset 0 0 0 1px #000,
+    0 1px 0 rgba(255, 220, 170, 0.08),
+    0 0 calc(38px * var(--lum)) rgb(var(--g) / calc(0.14 * var(--lum)));
+}
+.vfd::after,
+.rp-vfd::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.07), transparent 32%);
+}
+/* The display's top line: a caption at the left, the time at the right. */
+.vfd-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font: 500 17px/1 var(--vfd);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+.vfd-top > :first-child {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.vfd-top > :last-child:not(:first-child) {
+  flex: none;
+  white-space: nowrap;
+}
+/* A value window, like the range readings. */
+.chip {
+  font: 500 19px/1 var(--vfd);
+  letter-spacing: 0.06em;
+  color: var(--amber);
+  text-shadow: var(--glow);
+  white-space: nowrap;
+  background: var(--glass);
+  padding: 2px 7px 1px;
+  border-radius: 3px;
+  box-shadow:
+    inset 0 1px 3px #000,
+    0 1px 0 rgba(255, 220, 170, 0.08);
+}
+
+/* A drum-machine pad: the filter options and the card's instruments. A lamp in its top-left corner
+   takes --led (the backlight unless set inline from the taxonomy); a pad that is on (.lit, or a
+   checked input inside) glows in it. */
+.pad {
+  --led: var(--amber);
+  position: relative;
+  height: var(--pad-h, 50px);
+  min-width: 0;
+  padding: 8px 8px 7px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 7px;
+  background: linear-gradient(#1f1a16, #0d0a08);
+  color: var(--off);
+  font: 400 8.5px/1 var(--mono);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow:
+    0 3px 0 #050403,
+    0 5px 7px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 220, 170, 0.1);
+  transition:
+    transform 0.06s,
+    box-shadow 0.06s,
+    color 0.15s;
+}
+.pad > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pad > i {
+  width: 16px;
+  height: 5px;
+  border-radius: 2px;
+  background: #0b0907;
+  box-shadow: inset 0 1px 1px #000;
+}
+.pad.lit,
+.pad:has(input:checked) {
+  color: color-mix(in srgb, var(--cream) 62%, var(--label));
+  text-shadow: 0 0 6px rgb(var(--g) / 0.22);
+  box-shadow:
+    0 3px 0 #050403,
+    0 5px 7px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 220, 170, 0.1),
+    inset 0 14px 16px -14px var(--led),
+    0 9px calc(17px * var(--lum)) -9px var(--led);
+}
+.pad.lit > i,
+.pad:has(input:checked) > i {
+  background: var(--led);
+  box-shadow:
+    0 0 10px var(--led),
+    0 0 3px var(--led);
+}
+
+/* A snowflake's own slow turn outside the record (list tiles, the card, the player). Timing is
+   inline. */
 .turn {
   animation: turn linear infinite;
 }
@@ -92,102 +396,319 @@ input {
     animation: none;
   }
 }
-/* The ⓘ that explains a block on hover or focus (views/html.ts `info`), and its bubble — also
-   used by the band marker. */
+
+/* A line too long for its width runs as a ticker (views/ticker.ts adds the loop's copy). It
+   runs under reduced motion too: otherwise the text could not be read. */
+.run {
+  text-overflow: clip !important;
+  mask-image: linear-gradient(90deg, transparent, #000 8px, #000 calc(100% - 8px), transparent);
+}
+.tick {
+  display: inline-flex;
+}
+.run .tick {
+  animation: run var(--run, 8s) linear infinite;
+}
+.run .tick > span {
+  padding-right: 2.5em;
+}
+@keyframes run {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* The ⓘ that explains a block on hover or focus (views/html.ts `info`), and its bubble. */
 .qi {
   position: relative;
+  flex: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
   display: inline-grid;
   place-items: center;
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  border: 1px solid var(--mist);
-  font-size: 10px;
-  color: var(--mist);
+  font: 600 9px/1 var(--mono);
+  letter-spacing: 0;
+  color: var(--label);
+  text-transform: none;
   cursor: help;
+  box-shadow: inset 0 0 0 1px rgb(var(--g) / 0.35);
+}
+.qi:hover,
+.qi:focus-visible {
+  color: var(--hot);
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--g) / 0.8),
+    0 0 8px rgb(var(--g) / 0.4);
 }
 .bubble {
   position: absolute;
-  left: 50%;
-  bottom: calc(100% + 8px);
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: 250px;
-  background: var(--void);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-family: var(--body);
-  font-size: 12.5px;
-  line-height: 1.4;
-  color: var(--frost);
-  text-align: left;
+  left: -10px;
+  top: calc(100% + 8px);
+  z-index: 6;
+  width: 300px;
+  max-width: calc(100vw - 32px);
+  padding: 10px 12px;
+  border-radius: 6px;
   opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s;
   pointer-events: none;
-  transition: opacity 0.15s;
-  z-index: 4;
-  letter-spacing: 0;
-  text-transform: none;
+  font: 400 10px/1.7 var(--mono);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cream);
+  text-align: left;
+  text-shadow: none;
+  white-space: normal;
+  background: #0c0805;
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--g) / 0.3),
+    0 0 26px rgb(var(--g) / 0.14),
+    0 10px 24px #000;
+}
+.qi.end .bubble {
+  left: auto;
+  right: -10px;
 }
 .bubble b {
-  display: block;
+  color: var(--hot);
   font-weight: 600;
-  margin-bottom: 2px;
 }
+.bubble .term,
 .bubble small {
   display: block;
-  color: var(--mist);
-  font-size: 10.5px;
-  margin-top: 4px;
+  margin-bottom: 5px;
+}
+.bubble small {
+  margin: 0;
+  font-size: inherit;
 }
 .qi:hover .bubble,
 .qi:focus-visible .bubble {
   opacity: 1;
+  visibility: visible;
 }
 
-/* A drum-machine pad: the filter options, the card's instrument and band plates and the hero's
-   buttons. A light in its top-left corner takes --led (ice unless set inline from the
-   taxonomy); a pad that is on (.lit, or a checked input inside) glows in it. */
-.pad {
-  --led: var(--ice);
-  position: relative;
-  height: var(--pad-h);
+/* The backlight knobs: an arc of lamps round a ribbed cap; drag, the wheel or the arrow keys turn
+   them (views/backlight.ts sets --k, 0–1). */
+.dials {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 16px;
+}
+.dim {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  min-width: 0;
-  padding: 0 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: linear-gradient(180deg, var(--panel2), var(--panel));
-  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.35);
-  font: inherit;
-  font-size: 13px;
-  color: var(--mist);
+  color: var(--label);
 }
-.pad > span:not(.bubble) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.dim svg,
+.vol svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 calc(5px * var(--lum)) rgb(var(--g) / calc(0.7 * var(--lum))));
 }
-.pad > i {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 6px;
-  height: 6px;
+.dial {
+  --k: 0.5;
+  position: relative;
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  cursor: ns-resize;
+  touch-action: none;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--led) 30%, var(--panel));
 }
-.pad.lit,
-.pad:has(input:checked) {
-  border-color: color-mix(in srgb, var(--led) 60%, transparent);
-  background: color-mix(in srgb, var(--led) 14%, var(--panel2));
-  color: var(--frost);
+.dial::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from -135deg,
+    var(--amber) calc(var(--k) * 270deg + 2deg),
+    #2a2622 0 272deg,
+    transparent 0
+  );
+  mask:
+    radial-gradient(circle, transparent 23.5px, #000 24px 27.5px, transparent 28px),
+    repeating-conic-gradient(from -135deg, #000 0 2.6deg, transparent 2.6deg 15deg);
+  mask-composite: intersect;
+  filter: drop-shadow(0 0 calc(4px * var(--lum)) rgb(var(--g) / var(--k)));
 }
-.pad.lit > i,
-.pad:has(input:checked) > i {
-  background: var(--led);
-  box-shadow: 0 0 8px var(--led);
+.dial.tone::before {
+  background: conic-gradient(
+    from -135deg,
+    #7cc8ff,
+    #f4f1ea 135deg,
+    #ffa63a 270deg,
+    transparent 272deg
+  );
+  filter: drop-shadow(0 0 calc(4px * var(--lum)) rgb(var(--g) / 0.6));
+}
+.dial i {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  transform: rotate(calc(var(--k) * 270deg - 135deg));
+  background:
+    repeating-conic-gradient(rgba(255, 230, 190, 0.05) 0 4deg, rgba(0, 0, 0, 0.25) 4deg 8deg),
+    radial-gradient(circle at 50% 30%, #2e2721, #0c0a08);
+  box-shadow:
+    0 0 0 1px #000,
+    inset 0 0 0 1px rgba(255, 220, 170, 0.08);
+}
+.dial i::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 3px;
+  width: 2px;
+  height: 11px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--hot);
+  box-shadow: 0 0 calc(8px * var(--lum)) rgb(var(--g) / 0.95);
+}
+.dial i {
+  position: relative;
+}
+.dial::after {
+  content: '';
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow:
+    0 4px 0 #030202,
+    0 8px 12px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 220, 170, 0.16);
+}
+
+/* A fader: a slot with a tick scale, the lit part from --lo to --hi and a ridged cap. The range
+   lines in the filters (two caps) and the volume (one) share it. */
+.dual {
+  --thumb: 14px;
+  position: relative;
+  height: 36px;
+  background: repeating-linear-gradient(90deg, rgb(var(--g) / 0.4) 0 1px, transparent 1px 10%) 7px
+    0 / calc(100% - 14px) 4px no-repeat;
+}
+.dual::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 17px;
+  height: 7px;
+  border-radius: 4px;
+  background: #050403;
+  box-shadow:
+    inset 0 2px 3px #000,
+    0 1px 0 rgba(255, 220, 170, 0.1);
+}
+.dual::after {
+  content: '';
+  position: absolute;
+  top: 19px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--amber);
+  box-shadow: 0 0 calc(10px * var(--lum)) rgb(var(--g) / calc(0.9 * var(--lum)));
+  /* --lo / --hi: the lit part's ends, as fractions 0–1 of the travel */
+  left: calc(var(--thumb) / 2 + var(--lo, 0) * (100% - var(--thumb)));
+  right: calc(var(--thumb) / 2 + (1 - var(--hi, 1)) * (100% - var(--thumb)));
+}
+.dual input {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 5px;
+  width: 100%;
+  height: 31px;
+  margin: 0;
+  background: none;
+  appearance: none;
+  -webkit-appearance: none;
+  pointer-events: none;
+}
+.dual input.top {
+  z-index: 1;
+}
+.dual input::-webkit-slider-runnable-track {
+  background: none;
+  border: 0;
+}
+.dual input::-moz-range-track {
+  background: none;
+  border: 0;
+}
+.dual input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: var(--thumb);
+  height: 28px;
+  border: 0;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #3a322a 0 6px, var(--hot) 6px 8px, #3a322a 8px);
+  box-shadow:
+    0 2px 0 #050403,
+    0 4px 5px #000,
+    inset 0 1px 0 rgba(255, 220, 170, 0.2),
+    0 0 10px rgb(var(--g) / 0.35);
+  pointer-events: auto;
+  cursor: grab;
+}
+.dual input::-moz-range-thumb {
+  box-sizing: border-box;
+  width: var(--thumb);
+  height: 28px;
+  border: 0;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #3a322a 0 6px, var(--hot) 6px 8px, #3a322a 8px);
+  box-shadow:
+    0 2px 0 #050403,
+    0 4px 5px #000,
+    0 0 10px rgb(var(--g) / 0.35);
+  pointer-events: auto;
+  cursor: grab;
+}
+.dual input:focus-visible {
+  outline: none;
+}
+.dual input:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+.dual input:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+/* The volume: the speaker and one fader; wide screens only (phones have their own keys). */
+.vol {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 204px;
+  color: var(--label);
+}
+.vol .dual {
+  flex: 1;
+}
+@media (max-width: 1099.98px) {
+  .rp .vol {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
 }

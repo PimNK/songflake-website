@@ -195,19 +195,21 @@ export function neighbour(
 }
 
 /**
- * The track to play after `slug` ends: the next one in the card's order (as `neighbour`) that
- * passes `playable`, wrapping round; null when no other track qualifies.
+ * The nearest track after (`direction` 1) or before (-1) `slug` in the card's order (as
+ * `neighbour`) that passes `playable`, wrapping round; null when no other track qualifies. It
+ * follows a track that ends, and the card's previous / next keys.
  */
-export function nextPlayable(
+export function playableNeighbour(
   songs: readonly Song[],
   f: FilterState,
   years: YearRange,
   slug: string,
+  direction: -1 | 1,
   playable: (song: Song) => boolean,
 ): string | null {
   let at = slug;
   for (let i = 0; i < songs.length; i++) {
-    const next = neighbour(songs, f, years, at, 1);
+    const next = neighbour(songs, f, years, at, direction);
     if (!next || next === slug) return null;
     if (playable(songs.find((s) => s.slug === next)!)) return next;
     at = next;

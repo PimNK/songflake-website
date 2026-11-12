@@ -1,12 +1,12 @@
-// Pin markers above the waveform: a small diamond with a hairline, popover on hover/focus,
+// Pin markers above the oscilloscope line: a small diamond with a hairline, popover on hover/focus,
 // click seeks and plays. On touch the first tap shows the popover, the second seeks.
 // Markers closer than ~12 px merge into one whose popover lists both (grouping: domain/pins.ts).
 import { formatTime, groupMarkers, type Pin } from '../domain/pins';
 import { strings } from '../strings';
 import { esc } from './html';
 
-/** Half the widest popover (220 px) plus a margin: closer to an end than this, it opens inwards. */
-const POP_HALF = 120;
+/** Half the widest popover (360 px) plus a margin: closer to an end than this, it opens inwards. */
+const POP_HALF = 190;
 
 // A shown popover closes on a tap anywhere else.
 document.addEventListener('pointerdown', (e) => {
@@ -15,11 +15,12 @@ document.addEventListener('pointerdown', (e) => {
 });
 
 /**
- * Narrow cards: markers only mark (no popover, no pointer; player.css) and are out of the tab order
- * and the accessibility tree — the pin note under the waveform says it. The player re-renders the
- * markers when the waveform changes width, so crossing this width updates them.
+ * Narrow cards (full-screen sheets; must match the breakpoint in styles/card.css): markers only
+ * mark (no popover, no pointer; player.css) and are out of the tab order and the accessibility
+ * tree — the pin note under the line says it. The player re-renders the markers when the line
+ * changes width, so crossing this width updates them.
  */
-const NARROW = window.matchMedia('(max-width: 899.98px)');
+export const NARROW = window.matchMedia('(max-width: 899.98px)');
 
 /** A merged marker seeks to its first pin; its label and popover list every pin it holds. */
 export function renderMarkers(
@@ -38,6 +39,7 @@ export function renderMarkers(
     const x = group.fraction * width;
     const side = x < POP_HALF ? ' start' : width - x < POP_HALF ? ' end' : '';
     b.className = `pin${side}`;
+    b.dataset.at = String(group.pins[0]!.at);
     b.style.left = `${group.fraction * 100}%`;
     if (NARROW.matches) {
       b.tabIndex = -1;

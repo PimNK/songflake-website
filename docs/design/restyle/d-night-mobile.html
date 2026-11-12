@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SONGFLAKE — макет D «Ночная дека», мобильный</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;700&family=Handjet:wght@400;500;600&family=Martian+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Mockup D «Ночная дека» below 1100 px. The site's narrow layout is kept as it is (CLAUDE.md §4.1):
+   two sections a screen high — the intro, then the view (the Record / List switch from 600 px, the list only
+   below) — the random player frozen at the bottom with the Filters toggle at its left, the filters as a sheet
+   above it, the card full-screen. Only the look changes: the console's faceplate, lamps, pads and display. */
+:root{
+  --night:#020202; --lum:1; --g:255 150 50; --p:52 27 5; --amber:#ffb04a; --hot:#ffd9a0; --cream:#eedcc0; --label:#a98a62; --off:#5e5142; --glass:#0e0904;
+  --glow:0 0 calc(9px*var(--lum)) rgb(var(--g)/calc(.65*var(--lum)));
+  --sans:'Geologica',system-ui,sans-serif; --mono:'Martian Mono',ui-monospace,monospace; --vfd:'Handjet','Martian Mono',monospace;
+  --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .9 0 0 0 0 .75 0 0 0 .55 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --gutter:16px;
+  --player-room:calc(132px + env(safe-area-inset-bottom,0px));
+  --bar-room:64px;
+  --pad-cols:3; --pad-h:clamp(44px,7svh,50px);
+}
+@media(min-width:600px){:root{--pad-cols:4;--gutter:24px}}
+*{box-sizing:border-box}
+html{background:var(--night)}
+/* The page scrolls in its own box that ends above the bottom player, so the player spans the whole width and the
+   scrollbar never runs under it; while the intro fills the screen (no player) the box reaches the bottom. */
+.scroller{position:fixed;left:0;right:0;top:0;bottom:var(--player-room);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+  scroll-snap-type:y proximity;scrollbar-color:#3a322a transparent;transition:bottom .25s ease}
+body[data-view=record] .scroller{scroll-snap-type:y mandatory}
+.page.at-intro .scroller{bottom:0}
+body{margin:0;height:100svh;overflow:hidden;color:var(--cream);font:400 11px/1.4 var(--mono);background:var(--night);-webkit-tap-highlight-color:transparent}
+/* the room: a warm lamp at the left, a cold window at the top right; fixed behind the scrolling page */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+  radial-gradient(120vw 90svh at 10% 40%,rgb(var(--g)/calc(.1*var(--lum))),transparent 70%),
+  radial-gradient(90vw 60svh at 100% 0,rgba(120,170,255,.07),transparent 70%)}
+body::after{content:"";position:fixed;inset:0;z-index:30;pointer-events:none;background:var(--noise);opacity:.075}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.lab{font:500 8.5px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--label);text-shadow:0 0 8px rgb(var(--g)/calc(.38*var(--lum)))}
+
+/* ---- the console's parts (as in d-night.html) ---- */
+.panel{position:relative;border-radius:14px;
+  background:
+    radial-gradient(circle at 14px 14px,#050403 0 2.5px,#2a231d 3px 4.5px,transparent 5px),
+    radial-gradient(circle at calc(100% - 14px) 14px,#050403 0 2.5px,#2a231d 3px 4.5px,transparent 5px),
+    radial-gradient(circle at 14px calc(100% - 14px),#050403 0 2.5px,#2a231d 3px 4.5px,transparent 5px),
+    radial-gradient(circle at calc(100% - 14px) calc(100% - 14px),#050403 0 2.5px,#2a231d 3px 4.5px,transparent 5px),
+    radial-gradient(420px 300px at 50% 150px,rgb(var(--g)/calc(.09*var(--lum))),transparent 70%),
+    repeating-linear-gradient(0deg,rgba(255,230,190,.016) 0 1px,rgba(0,0,0,.12) 1px 2px),
+    linear-gradient(#14100d,#080605);
+  box-shadow:inset 0 1px 0 rgba(255,220,170,.13),inset 0 -1px 0 #000,0 0 70px rgb(var(--g)/calc(.07*var(--lum))),0 8px 30px #000}
+.sec{border-top:1px solid #000;box-shadow:inset 0 1px 0 rgba(255,200,140,.08);padding-top:13px}
+.btn{border-radius:50%;display:grid;place-items:center;color:var(--amber);
+  background:radial-gradient(circle at 50% 28%,#2c2520,#0e0b09);
+  box-shadow:0 3px 0 #050403,0 6px 9px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,220,170,.16);transition:transform .06s,box-shadow .06s}
+.btn [data-ico],.btn > svg{filter:drop-shadow(0 0 5px rgb(var(--g)/.75))}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #050403,0 2px 3px #000,inset 0 1px 0 rgba(255,220,170,.16)}
+.btn.s{width:34px;height:34px;font:500 10px var(--mono);text-shadow:var(--glow)}
+.btn.k{width:46px;height:46px;font-size:18px}
+.btn.play{width:62px;height:62px;font-size:26px;color:var(--hot);
+  box-shadow:0 4px 0 #050403,0 7px 10px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,220,170,.18),inset 0 0 0 2px rgb(var(--g)/.28)}
+body[data-playing] .btn.play{background:radial-gradient(circle at 50% 40%,rgb(var(--p)),#120e0b);
+  box-shadow:0 4px 0 #050403,0 7px 10px rgba(0,0,0,.7),inset 0 0 0 2px rgb(var(--g)/.75),inset 0 0 16px rgb(var(--g)/.45),0 0 calc(28px*var(--lum)) rgb(var(--g)/calc(.42*var(--lum)))}
+.btn.play:active{transform:translateY(3px)}
+.vfd{position:relative;border-radius:8px;padding:11px 14px 10px;color:var(--amber);font-family:var(--vfd);text-shadow:var(--glow);overflow:hidden;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px),radial-gradient(120% 140% at 50% 0,rgb(var(--p)/calc(.35 + .5*var(--lum))),#060301 72%);
+  box-shadow:inset 0 2px 9px #000,inset 0 0 0 1px #000,0 1px 0 rgba(255,220,170,.08),0 0 calc(38px*var(--lum)) rgb(var(--g)/calc(.14*var(--lum)))}
+.vfd::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:8px;background:linear-gradient(155deg,rgba(255,255,255,.07),transparent 32%)}
+.vfd-top{display:flex;justify-content:space-between;gap:10px;font-size:17px;line-height:1;letter-spacing:.08em;text-transform:uppercase;opacity:.82}
+.vfd-main{display:flex;align-items:center;gap:10px}
+.chip{font:500 19px/1 var(--vfd);letter-spacing:.06em;color:var(--amber);text-shadow:var(--glow);background:var(--glass);padding:2px 7px 1px;border-radius:3px;box-shadow:inset 0 1px 3px #000,0 1px 0 rgba(255,220,170,.08)}
+.slot{position:relative;display:grid;grid-template-columns:1fr 1fr;height:38px;padding:3px;border-radius:8px;background:#050403;box-shadow:inset 0 2px 5px #000,0 1px 0 rgba(255,220,170,.1)}
+.slot button{position:relative;z-index:1;font:500 8.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--off);transition:color .2s}
+.slot button[aria-selected=true]{color:var(--hot);text-shadow:var(--glow)}
+.knob{position:absolute;left:3px;top:3px;bottom:3px;width:calc(50% - 3px);border-radius:6px;background:linear-gradient(#2c2520,#15110e);
+  box-shadow:0 2px 3px #000,inset 0 1px 0 rgba(255,220,170,.18),inset 0 -8px 12px -8px rgb(var(--g)/.55);transition:transform .2s cubic-bezier(.3,1.4,.5,1)}
+body[data-view=list] .knob{transform:translateX(100%)}
+.grp-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;min-height:22px}
+.pads{display:grid;grid-template-columns:repeat(var(--pad-cols),minmax(0,1fr));gap:9px 8px}
+.pad{height:var(--pad-h);padding:8px 8px 7px;display:flex;flex-direction:column;justify-content:space-between;border-radius:7px;
+  background:linear-gradient(#1f1a16,#0d0a08);color:var(--off);font:400 8.5px/1 var(--mono);letter-spacing:.05em;text-transform:uppercase;
+  box-shadow:0 3px 0 #050403,0 5px 7px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,220,170,.1);transition:transform .06s,box-shadow .06s,color .15s}
+.pad:active{transform:translateY(2px);box-shadow:0 1px 0 #050403,0 2px 3px #000,inset 0 1px 0 rgba(255,220,170,.1)}
+.pad .led{width:16px;height:5px;border-radius:2px;background:#0b0907;box-shadow:inset 0 1px 1px #000}
+.pad:has(:checked){color:color-mix(in srgb,var(--cream) 62%,var(--label));text-shadow:0 0 6px rgb(var(--g)/.22);
+  box-shadow:0 3px 0 #050403,0 5px 7px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,220,170,.1),inset 0 14px 16px -14px var(--led),0 9px calc(17px*var(--lum)) -9px var(--led)}
+.pad:has(:checked) .led{background:var(--led);box-shadow:0 0 10px var(--led),0 0 3px var(--led)}
+.pad:has(:focus-visible){outline:2px solid var(--amber);outline-offset:2px}
+.ranges{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+/* a heading that wraps («Общая сложность» on a phone) keeps both range lines level */
+.ranges .grp-h{align-items:flex-end;gap:8px;min-height:32px}
+.ranges .chip{white-space:nowrap;flex:none;font-size:17px}
+@media(min-width:600px){.ranges{gap:28px}}
+.dual{height:36px;--t:14px;background:repeating-linear-gradient(90deg,rgb(var(--g)/.4) 0 1px,transparent 1px 10%) 7px 0/calc(100% - 14px) 4px no-repeat}
+.dual::before{content:"";position:absolute;left:0;right:0;top:17px;height:7px;border-radius:4px;background:#050403;box-shadow:inset 0 2px 3px #000,0 1px 0 rgba(255,220,170,.1)}
+.dual::after{content:"";position:absolute;top:19px;height:3px;border-radius:2px;background:var(--amber);box-shadow:0 0 calc(10px*var(--lum)) rgb(var(--g)/calc(.9*var(--lum)));
+  left:calc(var(--t)/2 + var(--lo)*(100% - var(--t)));right:calc(var(--t)/2 + (1 - var(--hi))*(100% - var(--t)))}
+.dual input{top:5px;height:31px}
+.dual input::-webkit-slider-thumb{width:14px;height:28px;border-radius:3px;background:linear-gradient(90deg,#3a322a 0 6px,var(--hot) 6px 8px,#3a322a 8px);box-shadow:0 2px 0 #050403,0 4px 5px #000,inset 0 1px 0 rgba(255,220,170,.2),0 0 10px rgb(var(--g)/.35)}
+.dual input::-moz-range-thumb{width:14px;height:28px;border:0;border-radius:3px;background:linear-gradient(90deg,#3a322a 0 6px,var(--hot) 6px 8px,#3a322a 8px);box-shadow:0 2px 0 #050403,0 4px 5px #000,0 0 10px rgb(var(--g)/.35)}
+.dim{display:flex;align-items:center;gap:8px;color:var(--label)}
+.dim svg,.vol svg{flex:none;width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;filter:drop-shadow(0 0 calc(5px*var(--lum)) rgb(var(--g)/calc(.7*var(--lum))))}
+.dial{--k:.5;position:relative;width:56px;height:56px;display:grid;place-items:center;cursor:ns-resize;touch-action:none;border-radius:50%}
+.dial::before{content:"";position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from -135deg,var(--amber) calc(var(--k)*270deg + 2deg),#2a2622 0 272deg,transparent 0);
+  -webkit-mask:radial-gradient(circle,transparent 23.5px,#000 24px 27.5px,transparent 28px),repeating-conic-gradient(from -135deg,#000 0 2.6deg,transparent 2.6deg 15deg);
+  -webkit-mask-composite:source-in;mask:radial-gradient(circle,transparent 23.5px,#000 24px 27.5px,transparent 28px),repeating-conic-gradient(from -135deg,#000 0 2.6deg,transparent 2.6deg 15deg);mask-composite:intersect;
+  filter:drop-shadow(0 0 calc(4px*var(--lum)) rgb(var(--g)/var(--k)))}
+.dial.tone::before{background:conic-gradient(from -135deg,#7cc8ff,#f4f1ea 135deg,#ffa63a 270deg,transparent 272deg);filter:drop-shadow(0 0 calc(4px*var(--lum)) rgb(var(--g)/.6))}
+.dial i{width:38px;height:38px;border-radius:50%;transform:rotate(calc(var(--k)*270deg - 135deg));
+  background:repeating-conic-gradient(rgba(255,230,190,.05) 0 4deg,rgba(0,0,0,.25) 4deg 8deg),radial-gradient(circle at 50% 30%,#2e2721,#0c0a08);
+  box-shadow:0 0 0 1px #000,inset 0 0 0 1px rgba(255,220,170,.08)}
+.dial i::after{content:"";position:absolute;left:50%;top:3px;width:2px;height:11px;margin-left:-1px;border-radius:1px;background:var(--hot);box-shadow:0 0 calc(8px*var(--lum)) rgb(var(--g)/.95)}
+.dial::after{content:"";position:absolute;width:38px;height:38px;border-radius:50%;pointer-events:none;box-shadow:0 4px 0 #030202,0 8px 12px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,220,170,.16)}
+.reset{display:flex;align-items:center;gap:8px;height:var(--pad-h);padding:0 14px;border-radius:7px;font:500 8.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--label);
+  background:linear-gradient(#1f1a16,#0d0a08);box-shadow:0 2px 0 #050403,0 3px 5px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,220,170,.1)}
+.reset:active{transform:translateY(2px);box-shadow:0 0 0 #050403,inset 0 1px 2px #000}
+.reset::before{content:"";width:7px;height:7px;border-radius:50%;background:#ff5a2a;box-shadow:0 0 8px #ff5a2a}
+.pwr{width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#6a2a10,#2a0f05);box-shadow:inset 0 1px 1px #000,0 0 0 2px #0b0907}
+body[data-playing] .pwr{background:radial-gradient(circle at 40% 35%,#fff3d8,#ff8a2a 55%,#c2410c);box-shadow:0 0 12px #ff8a2a,0 0 0 2px #0b0907}
+
+/* ---- section 1: the intro, a screen high ---- */
+.intro-sec{position:relative;min-height:100svh;scroll-snap-align:start;display:grid;grid-template-columns:minmax(0,1fr);align-content:center;gap:26px;
+  padding:calc(env(safe-area-inset-top,0px) + 28px) var(--gutter) 110px}
+.hero{display:flex;align-items:center;gap:12px;min-width:0;overflow:hidden}
+.map-sec{grid-template-columns:minmax(0,1fr)}
+h1{margin:0;font:500 30px/1 var(--sans);letter-spacing:.12em;color:var(--hot);white-space:nowrap;
+  text-shadow:0 0 calc(16px*var(--lum)) rgb(var(--g)/calc(.62*var(--lum))),0 0 2px rgba(255,200,140,.8)}
+.hero-keys{margin-left:auto;display:flex;align-items:center;gap:10px}
+.lead{max-width:62ch;font:300 10.5px/1.8 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--cream)}
+/* a tablet has room: the intro reads bigger */
+@media(min-width:600px){.lead{font-size:15px;line-height:1.75}}
+.lead p{margin:0 0 .9em}.lead p:last-child{margin:0}
+.lead ul{list-style:none;margin:-.5em 0 .9em;padding:0}
+.lead li{display:flex;align-items:center;gap:10px}
+.lead li::before{content:"";flex:none;width:12px;height:4px;border-radius:2px;background:var(--amber);box-shadow:0 0 6px rgb(var(--g)/.9)}
+.scroll-cue{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);margin-left:-36px;width:72px;display:grid;justify-items:center;gap:2px;
+  color:var(--amber);animation:cue 2.4s ease-in-out infinite;transition:opacity .3s}
+.scroll-cue svg{width:34px;height:34px;filter:drop-shadow(0 0 calc(6px*var(--lum)) rgb(var(--g)/.8))}
+.scroll-cue.gone{opacity:0;pointer-events:none}
+@keyframes cue{50%{translate:0 5px}}
+
+/* ---- section 2: the view switch (from 600 px) and the view ---- */
+.map-sec{min-height:calc(100svh - var(--player-room));scroll-snap-align:start;display:grid;align-content:start;gap:10px;padding:14px var(--gutter) 16px}
+.viewbar{display:flex;align-items:center;gap:12px;height:44px}
+.viewbar .slot{width:220px}
+.views{position:relative;min-width:0}
+.stage{position:relative;height:max(360px,calc(100svh - var(--bar-room) - var(--player-room)))}
+@media(max-width:599px){.viewbar{display:none}}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;padding:4px 0 32px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 6px 12px;border-radius:10px;text-align:center;border:1px solid transparent;transition:background .2s,border-color .2s,box-shadow .2s}
+.tile:active{background:rgb(var(--g)/.05);border-color:rgb(var(--g)/.18)}
+.tnum{display:none}
+.fbox{align-self:stretch;height:112px;display:grid;place-items:center}
+.tile .tt{font:500 8.5px/1.3 var(--mono);letter-spacing:.6px;text-transform:uppercase;color:color-mix(in srgb,var(--cream) 58%,transparent);margin-top:3px}
+.tile .tm{font:400 8px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--label)}
+.dots{display:flex;gap:4px;align-items:center;min-height:9px}
+.dots .led{width:12px;height:4px;border-radius:2px;background:var(--led);box-shadow:0 0 6px var(--led)}
+.tile.playing{background:radial-gradient(circle at 50% 38%,rgb(var(--g)/.2),rgb(var(--g)/.03) 70%);border-color:rgb(var(--g)/.4);box-shadow:0 0 34px rgb(var(--g)/.2)}
+.tile.playing .tt{color:var(--hot);text-shadow:var(--glow)}
+.tip{width:214px;padding:10px 12px;border-radius:6px;color:var(--amber);font-family:var(--vfd);text-transform:uppercase;letter-spacing:.05em;text-shadow:var(--glow);
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px),radial-gradient(120% 140% at 50% 0,rgb(var(--p)/calc(.35 + .5*var(--lum))),#060301 72%);
+  box-shadow:inset 0 0 0 1px rgb(var(--g)/.22),0 0 28px rgb(var(--g)/.18),0 8px 22px #000}
+.tip .tt{display:block;font:600 26px/1 var(--vfd);color:var(--hot)}
+.tip .tm{display:block;font-size:15px;line-height:1.1;margin:2px 0 7px;opacity:.8}
+.tax div{display:flex;align-items:center;gap:3px;font-size:16px;line-height:1.15}.tax span{flex:1}
+.tax i{width:14px;height:7px;background:rgb(var(--g)/.13)}.tax i.on{background:var(--amber);box-shadow:0 0 7px rgb(var(--g)/.8)}
+.tacc{display:flex;flex-wrap:wrap;gap:2px 10px;margin-top:7px;padding-top:6px;border-top:1px solid rgb(var(--g)/.25);font-size:15px}
+.tacc span{display:flex;align-items:center;gap:5px}.tacc .led{width:6px;height:6px;border-radius:50%;background:var(--led);box-shadow:0 0 6px var(--led)}
+
+/* ---- the random player, frozen at the bottom: the display on top, full width (caption · time, the title, the
+   snowflake at its right), then Filters · keys · the trace ---- */
+.rplayer{position:fixed;left:0;right:0;bottom:0;z-index:12;height:var(--player-room);border-radius:14px 14px 0 0;
+  display:grid;grid-template-columns:auto auto minmax(0,1fr);grid-template-areas:'scr scr scr' 'tog keys line';align-items:center;align-content:center;gap:8px 10px;
+  padding:10px var(--gutter) calc(env(safe-area-inset-bottom,0px) + 10px);transition:transform .25s ease,visibility .25s}
+.rplayer.panel{background:
+    radial-gradient(circle at 12px 12px,#050403 0 2px,#2a231d 2.5px 3.8px,transparent 4.2px),
+    radial-gradient(circle at calc(100% - 12px) 12px,#050403 0 2px,#2a231d 2.5px 3.8px,transparent 4.2px),
+    radial-gradient(420px 200px at 50% 0,rgb(var(--g)/calc(.09*var(--lum))),transparent 70%),
+    repeating-linear-gradient(0deg,rgba(255,230,190,.016) 0 1px,rgba(0,0,0,.12) 1px 2px),
+    linear-gradient(#14100d,#080605);
+  box-shadow:inset 0 1px 0 rgba(255,220,170,.13),0 -10px 30px rgba(0,0,0,.8),0 0 60px rgb(var(--g)/calc(.06*var(--lum)))}
+.ftoggle{grid-area:tog;position:relative;width:42px;height:42px}
+.ftoggle svg{width:19px;height:19px}
+.ftoggle[aria-expanded=true]{color:var(--hot);background:radial-gradient(circle at 50% 40%,rgb(var(--p)),#120e0b);
+  box-shadow:0 3px 0 #050403,0 6px 9px rgba(0,0,0,.7),inset 0 0 0 2px rgb(var(--g)/.75),inset 0 0 14px rgb(var(--g)/.4)}
+.fdot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px var(--amber),0 0 0 2px #0b0907}
+.rp-keys{grid-area:keys;display:flex;align-items:center;gap:6px}
+.rp-keys .btn.k{width:38px;height:38px;font-size:15px}
+.rp-keys .btn.play{width:46px;height:46px;font-size:20px}
+.rp-scr{grid-area:scr;display:grid;grid-template-columns:minmax(0,1fr) 46px;align-items:center;column-gap:8px;height:58px;padding:6px 6px 6px 12px}
+@media(max-width:599px){.rplayer{column-gap:8px}}
+.rp-scr .vfd-top{min-width:0}
+.rp-cap,.rp-title{display:block;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rp-time{flex:none}
+.rp-title{font:500 26px/1 var(--vfd);color:var(--hot);text-transform:uppercase;letter-spacing:.03em;margin-top:1px}
+.rp-title:empty::before{content:"· · ·";opacity:.35}
+/* a caption or title too long for its line runs as a ticker (the script adds the loop's copy) */
+.rp-scr .run{text-overflow:clip;mask-image:linear-gradient(90deg,transparent,#000 6px,#000 calc(100% - 6px),transparent)}
+.rp-run{display:inline-flex;animation:run var(--run,8s) linear infinite}.rp-run > span{padding-right:2.5em}
+@keyframes run{to{transform:translateX(-50%)}}
+.rp-flake{grid-column:2;grid-row:1/3;width:46px;height:46px;display:grid;place-items:center;overflow:hidden}
+.rp-line{grid-area:line;display:flex;align-items:center;height:34px;min-width:0;padding:0 8px}
+.rp-line .pline{position:relative;flex:1;height:100%;cursor:pointer}
+.rp-line .pline canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+@media(max-width:359px){.rp-keys{gap:5px}.rp-keys .btn.k{width:34px;height:34px}.rplayer{column-gap:8px}}
+
+/* ---- the filters: a sheet above the player, opened by the funnel; meant to fit without scrolling ---- */
+.fpanel{position:fixed;left:0;right:0;bottom:calc(var(--player-room) - 14px);z-index:11;max-height:calc(100svh - var(--player-room) + 14px);overflow:auto;overscroll-behavior:contain;
+  display:grid;gap:14px;padding:22px var(--gutter) 30px;border-radius:14px 14px 0 0;transition:transform .25s ease,opacity .2s}
+.fpanel[hidden]{display:grid!important;transform:translateY(24px);opacity:0;visibility:hidden;pointer-events:none}
+.fpanel .sec:first-child{border-top:0;box-shadow:none;padding-top:0}
+.foot{display:flex;align-items:center;gap:10px}
+.foot .reset{white-space:nowrap;padding:0 12px}
+.foot .dim:first-of-type{margin-left:auto}
+@media(max-width:399px){.foot{gap:6px}.foot .dim{gap:4px}.foot .reset{letter-spacing:.08em}}
+
+/* while the intro fills the screen, the player and the sheet stay out of the way */
+.page.at-intro .rplayer,.page.at-intro .fpanel{transform:translateY(100%);visibility:hidden}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}.scroll-cue{animation:none}}
+</style>
+</head>
+<body>
+<div class="page at-intro">
+  <div class="scroller">
+  <header class="intro-sec">
+    <div class="hero">
+      <h1>SONGFLAKE</h1>
+      <div class="hero-keys"><i class="pwr"></i><button class="btn s" aria-label="Язык: русский. Переключить на английский">RU</button></div>
+    </div>
+    <div class="lead">
+      <p>Это мой музыкальный дневник:</p>
+      <ul><li>мои сольные записи,</li><li>совместные записи.</li></ul>
+      <p>Каждая песня — снежинка.<br>Она вычислена из параметров песни:</p>
+      <ul><li>ритм,</li><li>мелодия,</li><li>техника,</li><li>инструменты,</li><li>структура.</li></ul>
+      <p>Нажмите на снежинку, чтобы открыть трек.<br>В заметках — на что стоит обратить внимание.</p>
+    </div>
+    <button class="scroll-cue" aria-label="Прокрутить вниз к трекам"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M6 10l8 8 8-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lab">вниз</span></button>
+  </header>
+
+  <section class="map-sec" aria-label="Карта треков">
+    <div class="viewbar"><span class="lab" id="vlabel">Вид</span>
+      <div class="slot" role="tablist" aria-labelledby="vlabel"><button role="tab" data-sf="tab-record">Пластинка</button><button role="tab" data-sf="tab-list">Список</button><i class="knob"></i></div></div>
+    <main class="views">
+      <div class="stage" data-sf="stage"></div>
+      <div class="list" data-sf="list"></div>
+    </main>
+  </section>
+  </div>
+
+  <section class="rplayer panel" aria-label="Плеер случайных треков">
+    <button class="btn ftoggle" aria-expanded="false" aria-controls="fpanel" aria-label="Фильтры"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4.5h14l-5.4 6.3v4.6l-3.2 1.6v-6.2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span class="fdot" hidden></span></button>
+    <div class="rp-keys">
+      <button class="btn k" data-sf="prev" aria-label="Предыдущий трек"><i data-ico="prev"></i></button>
+      <button class="btn play" data-sf="play" aria-label="Включить случайный трек"><i data-ico="play"></i><i data-ico="pause"></i></button>
+      <button class="btn k" data-sf="next" aria-label="Следующий случайный трек"><i data-ico="next"></i></button>
+    </div>
+    <div class="vfd rp-scr">
+      <div class="vfd-top"><span class="rp-cap" data-sf="pcap" data-idle="⤮ Включает случайный трек" data-on="Сейчас играет" data-off="Пауза"></span><span class="rp-time" data-sf="ptime"></span></div>
+      <b class="rp-title" data-sf="ptitle" data-idle=""></b>
+      <span class="rp-flake"><canvas data-sf="pflake" data-r="11"></canvas></span>
+    </div>
+    <div class="vfd rp-line"><div class="pline" data-sf="pline"><canvas id="scope"></canvas></div></div>
+  </section>
+
+  <aside class="fpanel panel" id="fpanel" aria-label="Фильтры" hidden>
+    <section class="sec"><div class="grp-h"><span class="lab">Стиль</span></div><div class="pads" data-sf="styles"></div></section>
+    <section class="sec"><div class="grp-h"><span class="lab">Что слушать</span></div><div class="pads" data-sf="accents"></div></section>
+    <section class="sec ranges">
+      <div><div class="grp-h"><span class="lab">Общая сложность</span><output class="chip" data-sf="cxval"></output></div><div class="dual" data-sf="cx"></div></div>
+      <div><div class="grp-h"><span class="lab">Год</span><output class="chip" data-sf="yrval"></output></div><div class="dual" data-sf="yr"></div></div>
+    </section>
+    <div class="sec foot">
+      <button class="reset" data-sf="reset">Сбросить фильтры</button>
+      <div class="dim"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.6"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M13 3l-1.4 1.4M4.4 11.6L3 13"/></svg>
+        <div class="dial" id="dial" role="slider" tabindex="0" aria-label="Яркость подсветки" aria-valuemin="0" aria-valuemax="100"><i></i></div></div>
+      <div class="dim"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5a5.5 5.5 0 0 1 0 11z" fill="currentColor" stroke="none"/></svg>
+        <div class="dial tone" id="tone" role="slider" tabindex="0" aria-label="Цвет подсветки: от холодного к тёплому" aria-valuemin="0" aria-valuemax="100"><i></i></div></div>
+    </div>
+  </aside>
+</div>
+
+<script src="engine.js"></script>
+<script src="night.js"></script>
+<script src="card-data.js"></script>
+<script src="card.js"></script>
+<script>
+// the page frame below 1100 px: the list first, the title fitted to its row, the scroll cue, the player kept
+// out of the intro, the filter sheet with its funnel
+(() => {
+  const page = document.querySelector('.page'), intro = document.querySelector('.intro-sec'), scroller = document.querySelector('.scroller');
+  document.querySelector('[data-sf=tab-list]').click();
+
+  // the title takes the room the language button leaves (it never wraps)
+  const h1 = document.querySelector('h1'), hero = document.querySelector('.hero');
+  // measured off the window, never off the row the title itself may have stretched; again once Geologica
+  // has loaded (until then the fallback face is narrower) and on every resize
+  const fitTitle = () => {
+    h1.style.fontSize = '100px';
+    const gutter = parseFloat(getComputedStyle(intro).paddingLeft);
+    const room = scroller.clientWidth - 2 * gutter - document.querySelector('.hero-keys').offsetWidth - 12;
+    h1.style.fontSize = Math.floor(Math.min(64, (100 * room) / h1.scrollWidth) * 10) / 10 + 'px';
+  };
+  fitTitle();
+  document.fonts.load('500 30px "Geologica"', 'SONGFLAKE').then(fitTitle);
+  document.fonts.addEventListener('loadingdone', fitTitle);
+  addEventListener('resize', fitTitle);
+
+  const cue = document.querySelector('.scroll-cue');
+  cue.addEventListener('click', () => document.querySelector('.map-sec').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  const onScroll = () => {
+    cue.classList.toggle('gone', scroller.scrollTop > 24);
+    page.classList.toggle('at-intro', intro.getBoundingClientRect().bottom > innerHeight / 2);
+    if (page.classList.contains('at-intro')) setSheet(false);
+  };
+
+  const tog = document.querySelector('.ftoggle'), sheet = document.getElementById('fpanel'), dot = tog.querySelector('.fdot');
+  function setSheet(open) { sheet.hidden = !open; tog.setAttribute('aria-expanded', open); }
+  tog.addEventListener('click', () => setSheet(sheet.hidden));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !sheet.hidden && document.querySelector('.modal')?.hidden !== false) {
+      const inside = sheet.contains(document.activeElement); setSheet(false); if (inside) tog.focus();
+    }
+  });
+  document.addEventListener('pointerdown', (e) => {
+    if (!sheet.hidden && !sheet.contains(e.target) && !tog.contains(e.target)) setSheet(false);
+  });
+  // the dot: some track is filtered out
+  const showDot = () => requestAnimationFrame(() => (dot.hidden = SF.SONGS.every(SF.matches)));
+  sheet.addEventListener('input', showDot); sheet.addEventListener('change', showDot); sheet.addEventListener('click', showDot);
+
+  // the player's caption and title: a ticker when the text does not fit its line
+  const fitRun = (el) => {
+    const txt = el.dataset.txt ?? el.textContent;
+    el.classList.remove('run'); el.textContent = txt;
+    if (el.scrollWidth <= el.clientWidth + 1) return;
+    el.classList.add('run');
+    el.innerHTML = `<span class="rp-run" style="--run:${Math.max(5, txt.length * 0.35)}s"><span></span><span aria-hidden="true"></span></span>`;
+    el.querySelectorAll('.rp-run > span').forEach((s) => (s.textContent = txt));
+  };
+  for (const el of document.querySelectorAll('.rp-cap, .rp-title')) {
+    // the engine sets plain text; our own rewrites are dropped with takeRecords, so they never loop
+    const mo = new MutationObserver(() => {
+      el.dataset.txt = el.textContent; fitRun(el); mo.takeRecords();
+    });
+    const watch = () => mo.observe(el, { childList: true, characterData: true, subtree: true });
+    watch();
+    let w = 0;
+    new ResizeObserver(() => {
+      if (el.clientWidth === w) return;
+      w = el.clientWidth; fitRun(el); mo.takeRecords();
+    }).observe(el);
+  }
+
+  scroller.addEventListener('scroll', onScroll, { passive: true }); addEventListener('resize', onScroll); onScroll();
+})();
+</script>
+</body>
+</html>

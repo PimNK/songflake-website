@@ -1,18 +1,9 @@
-// The one shared <audio> element for the whole page, and what is known about each recording
-// (waveform peaks, duration), cached per song in memory. Playback continues when a card closes;
+// The one shared <audio> element for the whole page, and each recording's duration, cached per
+// song in memory. Playback continues when a card closes;
 // opening another card does not stop the current track until its own play is pressed; when a
 // track ends, the next one follows (autoAdvance), picked the way the run was started: in the
 // card's order or by the random-track player.
 import type { Song } from '../content/parse';
-import { peaks } from '../domain/waveform';
-
-const PEAK_BINS = 1200;
-
-export interface Recording {
-  duration: number;
-  /** Normalised peaks, or null when decoding failed (a plain progress bar is shown). */
-  peaks: Float32Array | null;
-}
 
 type Listener = () => void;
 
@@ -26,7 +17,7 @@ export class Playback {
   mode: PlayMode = 'order';
   /** Positions chosen for songs that are not loaded yet (a cue or a seek before play). */
   private pending = new Map<string, number>();
-  private recordings = new Map<string, Promise<Recording>>();
+  private durations = new Map<string, Promise<number>>();
   private listeners = new Set<Listener>();
 
   constructor() {
@@ -39,6 +30,7 @@ export class Playback {
       'loadedmetadata',
       'seeked',
       'emptied',
+      'volumechange',
     ]) {
       this.audio.addEventListener(type, () => this.emit());
     }
@@ -117,38 +109,36 @@ export class Playback {
     });
   }
 
-  /** Waveform and duration, decoded on first request and cached. */
-  recording(song: Song): Promise<Recording> {
-    let r = this.recordings.get(song.slug);
-    if (!r) {
-      r = decode(song.audioSrc!).catch(() => probeDuration(song.audioSrc!));
-      this.recordings.set(song.slug, r);
+  /** The recording's duration in seconds (0 when unknown), read from its metadata and cached. */
+  duration(song: Song): Promise<number> {
+    let d = this.durations.get(song.slug);
+    if (!d) {
+      d = probeDuration(song.audioSrc!);
+      this.durations.set(song.slug, d);
       // A failed probe (e.g. a network blip) is not cached: the next open tries again.
-      void r.then((rec) => {
-        if (!rec.duration) this.recordings.delete(song.slug);
+      void d.then((seconds) => {
+        if (!seconds) this.durations.delete(song.slug);
       });
     }
-    return r;
+    return d;
+  }
+
+  /** Playback volume, 0–1. */
+  get volume(): number {
+    return this.audio.volume;
+  }
+
+  set volume(v: number) {
+    this.audio.volume = Math.min(1, Math.max(0, v));
   }
 }
 
-async function decode(src: string): Promise<Recording> {
-  const data = await (await fetch(src)).arrayBuffer();
-  const ctx = new OfflineAudioContext(1, 1, 44100);
-  const buffer = await ctx.decodeAudioData(data);
-  const channels = Array.from({ length: buffer.numberOfChannels }, (_, i) =>
-    buffer.getChannelData(i),
-  );
-  return { duration: buffer.duration, peaks: peaks(channels, PEAK_BINS) };
-}
-
-/** When decoding fails (e.g. a cross-origin audio_url): duration only, from the metadata. */
-function probeDuration(src: string): Promise<Recording> {
+/** The duration from the recording's metadata. */
+function probeDuration(src: string): Promise<number> {
   return new Promise((resolve) => {
     const probe = new Audio();
     probe.preload = 'metadata';
-    const done = (): void =>
-      resolve({ duration: Number.isFinite(probe.duration) ? probe.duration : 0, peaks: null });
+    const done = (): void => resolve(Number.isFinite(probe.duration) ? probe.duration : 0);
     probe.addEventListener('loadedmetadata', done, { once: true });
     probe.addEventListener('error', done, { once: true });
     probe.src = src;

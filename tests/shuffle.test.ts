@@ -1,30 +1,29 @@
 import { describe, expect, it } from 'vitest';
-import { avoidCount, pickRandom, ShuffleHistory } from '../src/domain/shuffle';
+import { pickRandom, roundDone, ShuffleHistory } from '../src/domain/shuffle';
 
 const seq = (...values: number[]) => {
   let i = 0;
   return () => values[i++ % values.length]!;
 };
 
-describe('random pick', () => {
-  it('avoids about half of the pool, never all of it', () => {
-    expect(avoidCount(0)).toBe(0);
-    expect(avoidCount(1)).toBe(0);
-    expect(avoidCount(2)).toBe(1);
-    expect(avoidCount(10)).toBe(5);
-  });
-  it('skips the latest tracks', () => {
+describe('random pick: a shuffle bag', () => {
+  it('picks only tracks not heard this round, never the current one', () => {
     const pool = ['a', 'b', 'c', 'd'];
     for (let r = 0; r < 1; r += 0.1) {
-      expect(['a', 'b']).toContain(pickRandom(pool, ['x', 'c', 'd'], () => r));
+      expect(['b', 'c']).toContain(pickRandom(pool, new Set(['a', 'd']), 'a', () => r));
     }
   });
+  it('once all are heard, any track but the current one', () => {
+    expect(pickRandom(['a', 'b'], new Set(['a', 'b']), 'a', () => 0)).toBe('b');
+    expect(roundDone(['a', 'b'], new Set(['a', 'b']))).toBe(true);
+    expect(roundDone(['a', 'b'], new Set(['a']))).toBe(false);
+  });
   it('a pool of one always gives that track; an empty pool gives null', () => {
-    expect(pickRandom(['a'], ['a'], () => 0.5)).toBe('a');
-    expect(pickRandom([], [], () => 0.5)).toBeNull();
+    expect(pickRandom(['a'], new Set(['a']), 'a', () => 0.5)).toBe('a');
+    expect(pickRandom([], new Set(), null, () => 0.5)).toBeNull();
   });
   it('rand() of 1 stays inside the pool', () => {
-    expect(pickRandom(['a', 'b'], [], () => 1)).toBe('b');
+    expect(pickRandom(['a', 'b'], new Set(), null, () => 1)).toBe('b');
   });
 });
 
@@ -60,5 +59,13 @@ describe('shuffle history', () => {
     expect(h.next(['a', 'c'], () => 0)).toBe('c');
     expect(h.back()).toBe('a');
     expect(h.next(['a', 'b', 'c'], () => 0)).toBe('c');
+  });
+  it('plays every track of the pool once before any comes round again', () => {
+    const h = new ShuffleHistory();
+    const pool = ['a', 'b', 'c', 'd', 'e'];
+    const rand = seq(0.9, 0.1, 0.5, 0.3, 0.7);
+    const round = pool.map(() => h.next(pool, rand));
+    expect(new Set(round).size).toBe(pool.length);
+    expect(h.next(pool, rand)).not.toBe(round[round.length - 1]);
   });
 });

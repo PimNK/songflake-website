@@ -19,7 +19,7 @@ function render(): void {
       ? `<h2 class="${kind}">${title}</h2><ul>${items.map(() => '<li><pre></pre></li>').join('')}</ul>`
       : '';
   box.innerHTML = `
-    <button type="button" class="btn">${strings.overlay.close}</button>
+    <button type="button" class="tbtn">${strings.overlay.close}</button>
     ${section(strings.overlay.errors(errors.length), errors, 'err')}
     ${section(strings.overlay.warnings(warnings.length), warnings, 'warn')}
     <p>${strings.overlay.hint}</p>`;

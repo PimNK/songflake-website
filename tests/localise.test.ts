@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { localBands, localSong, localTaxonomy } from '../src/content/localise';
-import { toBands } from '../src/content/taxonomy';
+import { localSong, localTaxonomy } from '../src/content/localise';
 import { song, taxonomy } from './fixtures';
 
 const ruSong = song({
@@ -32,23 +31,7 @@ describe('localSong', () => {
   });
 });
 
-describe('localBands and localTaxonomy', () => {
-  const bands = toBands({
-    A: { about: 'English.', about_ru: 'Русский.' },
-    B: { about: 'Only.' },
-    C: null,
-  });
-
-  it('reads about_ru from bands.yaml and picks it on the Russian page', () => {
-    expect(bands.A).toMatchObject({ about: 'English.', aboutRu: 'Русский.' });
-    expect(localBands(bands, 'ru')).toEqual({
-      A: { name: 'A', about: 'Русский.' },
-      B: { name: 'B', about: 'Only.' },
-      C: { name: 'C' },
-    });
-    expect(localBands(bands, 'en').A).toEqual({ name: 'A', about: 'English.' });
-  });
-
+describe('localTaxonomy', () => {
   it('names instruments by their ru name on the Russian page; styles stay', () => {
     const t = {
       ...taxonomy,

@@ -1,17 +1,26 @@
-/* Design tokens. Values from docs/design/regularnik-mockup.html.
-   Style and instrument colours come from content/taxonomy.yaml at runtime, never from here. */
+/* Design tokens: «Ночная дека» (docs/design/restyle/d-night.html). The lamp colours (--amber …
+   --off, --g, --p) and --lum are set at runtime by views/backlight.ts from the brightness and
+   tone knobs; the values here hold until then. Instrument colours come from
+   content/taxonomy.yaml at runtime, never from here. */
 :root {
-  --void: #05070f; /* page ground */
-  --deep: #0a1020; /* stage centre */
-  --panel: #0d1428; /* raised surfaces */
-  --panel2: #111a33; /* nested surfaces */
-  --line: #1c2542; /* hairlines */
-  --frost: #e8eeff; /* main text */
-  --mist: #8f9aba; /* secondary text */
-  --ice: #a6dcff; /* UI accent */
+  --night: #020202; /* the room */
+  --lum: 1; /* backlight strength, 0.12–1.88 */
+  --g: 255 150 50; /* the glow, as an rgb triple: rgb(var(--g) / a) */
+  --p: 52 27 5; /* the display's phosphor ground, an rgb triple */
+  --amber: #ffb04a; /* phosphor: display text, lit controls */
+  --hot: #ffd9a0; /* brightest phosphor: titles */
+  --cream: #eedcc0; /* main text */
+  --label: #a98a62; /* small labels */
+  --off: #5e5142; /* unlit text and parts */
+  --glass: #0e0904; /* value windows */
   --alert: #ff8a80; /* content errors (dev overlay) */
-  --grid: #2a3558; /* chart grid lines (radar) */
-  --display: 'Unbounded', 'Arial Black', system-ui, sans-serif;
-  --body: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --glow: 0 0 calc(9px * var(--lum)) rgb(var(--g) / calc(0.65 * var(--lum)));
+  /* Geologica for the site's name only (the hero and the record's label), Martian Mono for text,
+     Handjet for the display's characters. */
+  --sans: 'Geologica', system-ui, sans-serif;
+  --mono: 'Martian Mono', ui-monospace, monospace;
+  --vfd: 'Handjet', 'Martian Mono', monospace;
+  /* film grain over the whole page */
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .9 0 0 0 0 .75 0 0 0 .55 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   color-scheme: dark;
 }

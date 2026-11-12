@@ -1,37 +1,36 @@
-/* The random-track player: keys · snowflake · caption and title, then the seekable line with the
-   time. From 1100 px it heads the left column; narrower it is frozen at the bottom of the screen
-   (layout.css): the Filters toggle, the keys, the caption and title, the snowflake at the right. */
-.rp {
-  display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr);
-  align-items: center;
-  column-gap: 16px;
-  row-gap: 10px;
+/* The random-track player, a console with a display (views/random-player.ts): the caption and
+   time, the title with the phosphor snowflake, the oscilloscope line; then the keys and the volume.
+   From 1100 px it sits on the faceplate: one display, the keys under it. Narrower it is frozen
+   at the bottom of the screen, full width: the display on top (caption · time, the title, the
+   snowflake at its right), then the Filters toggle · the keys · the line in a display of its
+   own. */
+.rp-title {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: left;
+  font: 500 40px/1 var(--vfd);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--hot);
+  text-shadow: var(--glow);
 }
-.rp-keys {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.rp-title:disabled {
+  cursor: default;
 }
-.rp-keys .nav {
-  width: 46px;
-  height: 46px;
+.rp-title:not(:disabled):hover {
+  filter: brightness(1.15);
 }
-.rp-play {
-  background: var(--ice);
-  width: 56px;
-  height: 56px;
-  font-size: 18px;
+.rp-cap,
+.rp-time {
+  font: inherit;
 }
-/* The playing track's snowflake; its slot keeps its size while nothing is loaded. */
+/* The playing track's snowflake, in phosphor; its slot keeps its size while nothing is loaded. */
 .rp-flake {
-  width: 76px;
-  height: 76px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: none;
-  cursor: pointer;
+  flex: none;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -43,217 +42,234 @@
 .rp-flake.empty {
   visibility: hidden;
 }
-.rp-flake:hover {
-  background: color-mix(in srgb, var(--panel2) 70%, transparent);
-}
-.rp-text {
-  display: grid;
-  align-content: center;
-  gap: 2px;
-  min-width: 0;
-  min-height: 46px; /* caption + title, so nothing moves when a track starts */
-}
-.rp-cap {
-  display: block;
-  font-size: 12px;
-  color: var(--mist);
-  overflow: hidden;
-  white-space: nowrap;
-}
-.rp-title {
-  display: block;
-  max-width: 100%;
-  background: none;
-  border: 0;
-  padding: 0;
-  text-align: left;
-  font-weight: 600;
-  font-size: 17px;
-  cursor: pointer;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-/* A caption or title too long for its line runs as a ticker (views/random-player.ts adds the
-   loop's copy). */
-.rp-text .run {
-  text-overflow: clip;
-  mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 14px), transparent);
-}
-.rp-run {
-  display: inline-flex;
-}
-.rp-text .run .rp-run {
-  animation: run var(--run, 8s) linear infinite;
-}
-.rp-text .run .rp-run > span {
-  padding-right: 3em;
-}
-@keyframes run {
-  to {
-    transform: translateX(-50%);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .rp-text .run .rp-run {
-    animation: none;
-  }
-}
-.rp-title:hover {
-  color: var(--ice);
-}
-.rp-line {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-/* The seek line: a 4 px track in a 20 px tall hit area, the played part and a round thumb. */
-.rp-bar {
+/* The progress line: an oscilloscope trace (render/scope.ts) that seeks. */
+.pline {
   position: relative;
-  flex: 1;
-  height: 20px;
+  display: block;
   cursor: pointer;
   touch-action: none;
-  border-radius: 4px;
 }
-.rp-bar::before,
-.rp-bar i {
-  content: '';
+.pline canvas {
   position: absolute;
-  left: 0;
-  top: 50%;
-  height: 4px;
-  margin-top: -2px;
-  border-radius: 2px;
-}
-.rp-bar::before {
-  right: 0;
-  background: rgba(232, 238, 255, 0.14);
-}
-.rp-bar i {
-  width: var(--at, 0%);
-  background: var(--ice);
-}
-.rp-bar b {
-  position: absolute;
-  top: 50%;
-  left: var(--at, 0%);
-  width: 12px;
-  height: 12px;
-  margin: -6px 0 0 -6px;
-  border-radius: 50%;
-  background: var(--frost);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--ice) 70%, transparent);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 .rp-bar[aria-disabled='true'] {
   cursor: default;
 }
-.rp-bar[aria-disabled='true'] b {
-  display: none;
+.rp-keys {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
-.rp-time {
-  font-size: 13px;
-  color: var(--mist);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+.rp-keys .vol {
+  margin-left: auto;
 }
-/* The Filters toggle lives in the player: a round funnel, with a dot while filters are set. From
-   1100 px the panel is always open and it hides. */
+/* The Filters toggle lives in the player: a round funnel key, lit while the sheet is open, with a
+   lamp while filters are set. From 1100 px the panel is always open and it hides. */
 .ftoggle {
   position: relative;
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: none;
-  color: var(--frost);
-  cursor: pointer;
+  width: 42px;
+  height: 42px;
 }
-.ftoggle:hover {
-  border-color: var(--mist);
+.ftoggle svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
 }
 .ftoggle[aria-expanded='true'] {
-  border-color: var(--frost);
-  background: var(--frost);
-  color: var(--void);
+  color: var(--hot);
+  background: radial-gradient(circle at 50% 40%, rgb(var(--p)), #120e0b);
+  box-shadow:
+    0 3px 0 #050403,
+    0 6px 9px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 2px rgb(var(--g) / 0.75),
+    inset 0 0 14px rgb(var(--g) / 0.4);
 }
 .fdot {
   position: absolute;
-  top: 7px;
-  right: 7px;
-  width: 8px;
-  height: 8px;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: var(--ice);
-  box-shadow: 0 0 6px var(--ice);
+  background: var(--amber);
+  box-shadow:
+    0 0 8px var(--amber),
+    0 0 0 2px #0b0907;
 }
+
 @media (min-width: 1100px) {
+  .rplayer {
+    grid-area: play;
+    margin: 14px 28px 0;
+    /* on the faceplate: no plate of its own */
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
   .ftoggle {
     display: none;
   }
-}
-@media (max-width: 1099.98px) {
   .rp {
+    display: grid;
+    gap: 14px;
+  }
+  /* One display (.rp-vfd takes the .vfd look, base.css): the caption · time, the title with the
+     snowflake, the line; its two parts are bare. */
+  .rp-vfd > .vfd {
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    overflow: visible;
+  }
+  .rp-vfd > .vfd::after {
+    display: none;
+  }
+  .rp-scr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 62px;
+    grid-template-rows: auto 62px;
+    column-gap: 10px;
+  }
+  .rp-scr .vfd-top {
+    grid-column: 1 / -1;
+  }
+  .rp-title {
+    align-self: center;
+  }
+  .rp-flake {
+    width: 62px;
+    height: 62px;
+  }
+  .rp-bar {
+    height: 38px;
+    margin: 0 -2px;
+  }
+}
+
+@media (max-width: 1099.98px) {
+  .rplayer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 12;
+    height: var(--player-room);
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      'scr scr scr'
+      'tog keys line';
+    align-items: center;
+    align-content: center;
+    gap: 8px 10px;
+    padding: 10px var(--gutter) calc(env(safe-area-inset-bottom, 0px) + 10px);
+    border-radius: 14px 14px 0 0;
+    background:
+      radial-gradient(circle at 12px 12px, #050403 0 2px, #2a231d 2.5px 3.8px, transparent 4.2px),
+      radial-gradient(
+        circle at calc(100% - 12px) 12px,
+        #050403 0 2px,
+        #2a231d 2.5px 3.8px,
+        transparent 4.2px
+      ),
+      radial-gradient(
+        420px 200px at 50% 0,
+        rgb(var(--g) / calc(0.09 * var(--lum))),
+        transparent 70%
+      ),
+      repeating-linear-gradient(
+        0deg,
+        rgba(255, 230, 190, 0.016) 0 1px,
+        rgba(0, 0, 0, 0.12) 1px 2px
+      ),
+      linear-gradient(#14100d, #080605);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 220, 170, 0.13),
+      0 -10px 30px rgba(0, 0, 0, 0.8),
+      0 0 60px rgb(var(--g) / calc(0.06 * var(--lum)));
+    transition:
+      transform 0.25s ease,
+      visibility 0.25s;
+  }
+  .rp,
+  .rp-vfd {
     display: contents;
   }
-  .rplayer {
-    display: grid;
-    grid-template-columns: auto auto minmax(0, 1fr) auto;
-    grid-template-areas:
-      'tog keys text flake'
-      'line line line line';
-    align-items: center;
-    column-gap: 10px;
-    row-gap: 4px;
+  .rp-vfd::after {
+    display: none;
+  }
+  .ftoggle {
+    grid-area: tog;
   }
   .rp-keys {
     grid-area: keys;
     gap: 6px;
   }
-  .rp-keys .nav {
+  .rp-keys .btn.k {
     width: 38px;
     height: 38px;
+    font-size: 15px;
   }
-  .rp-play {
+  .rp-keys .btn.play {
     width: 46px;
     height: 46px;
+    font-size: 20px;
   }
-  .rp-flake {
-    grid-area: flake;
-    width: 46px;
-    height: 46px;
+  .rp-scr {
+    grid-area: scr;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 46px;
+    align-items: center;
+    column-gap: 8px;
+    height: 58px;
+    padding: 6px 6px 6px 12px;
   }
-  .rp-text {
-    grid-area: text;
-    min-height: 42px;
+  .rp-scr .vfd-top {
+    min-width: 0;
   }
   .rp-title {
-    font-size: 15px;
+    font-size: 26px;
+    margin-top: 1px;
+  }
+  .rp-title:empty::before {
+    content: '· · ·';
+    opacity: 0.35;
+  }
+  .rp-flake {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    width: 46px;
+    height: 46px;
   }
   .rp-line {
     grid-area: line;
+    display: flex;
+    align-items: center;
+    height: 34px;
+    min-width: 0;
+    padding: 0 8px;
   }
-  .ftoggle {
-    grid-area: tog;
+  .rp-bar {
+    flex: 1;
+    height: 100%;
   }
 }
-/* Phones: tighter, so the title keeps some room. */
 @media (max-width: 599.98px) {
   .rplayer {
     column-gap: 8px;
   }
-  .rp-flake {
-    width: 42px;
-    height: 42px;
-  }
 }
-/* The smallest phones: smaller skip buttons, so the player fits. */
+/* The smallest phones: smaller skip keys, so the player fits. */
 @media (max-width: 359.98px) {
-  .rp-keys .nav {
+  .rp-keys {
+    gap: 5px;
+  }
+  .rp-keys .btn.k {
     width: 34px;
     height: 34px;
   }

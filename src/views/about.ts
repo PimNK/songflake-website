@@ -3,6 +3,7 @@
 // and returned to the button; page scroll is locked; `closed` runs after (main.ts starts the
 // hints then). Narrower, the intro is on the page itself.
 import { strings } from '../strings';
+import { CLOSE_ICON, introHtml } from './html';
 import { trapFocus } from './modal';
 
 export function mountAbout(button: HTMLButtonElement, closed: () => void): void {
@@ -13,12 +14,10 @@ export function mountAbout(button: HTMLButtonElement, closed: () => void): void 
   modal.setAttribute('aria-modal', 'true');
   modal.setAttribute('aria-labelledby', 'about-title');
   modal.innerHTML = `
-    <article class="sheet about-sheet">
-      <header class="mhead">
-        <h2 id="about-title">${strings.hero.about}</h2>
-        <button class="btn" type="button" data-close aria-label="${strings.card.close}">✕</button>
-      </header>
-      <p class="lead">${strings.hero.intro}</p>
+    <article class="sheet panel about-sheet">
+      <button class="btn s x" type="button" data-close aria-label="${strings.card.close}">${CLOSE_ICON}</button>
+      <h2 class="label" id="about-title">${strings.hero.about}</h2>
+      <div class="lead">${introHtml(strings.hero.intro)}</div>
     </article>`;
   document.body.append(modal);
   const sheet = modal.querySelector<HTMLElement>('.sheet')!;

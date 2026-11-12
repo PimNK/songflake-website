@@ -1,22 +1,9 @@
-/* Track card. The radar's grid and labels are styled here; its polygon takes the lead colour. */
-.radar-grid {
-  fill: none;
-  stroke: var(--grid);
-  stroke-width: 1;
-}
-.radar-scale {
-  fill: var(--mist);
-  font-size: 9px;
-}
-.radar-axis {
-  fill: var(--frost);
-  font-family: var(--body);
-  font-size: 12px;
-}
-.radar-dot {
-  fill: var(--frost);
-}
-
+/* Track card: the console's player, wider — a display with the caption · time, the title, the
+   oscilloscope line with pins, the pin note and the turning snowflake at its right; under it the
+   keys and the volume; ✕ at the top right. Then four cells. From 900 px the card fits the window
+   at one fixed size whatever the song, so stepping tracks moves nothing; only a long story
+   scrolls, inside its cell. Narrower: a full-height sheet that scrolls, one column, the keys
+   first. The About window uses the same frame. */
 body.locked {
   overflow: hidden;
 }
@@ -24,117 +11,133 @@ body.locked {
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: rgba(3, 5, 12, 0.78);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   display: grid;
   place-items: center;
-  padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px
-    calc(env(safe-area-inset-bottom, 0px) + 16px);
+  padding: 24px;
+  background: radial-gradient(70% 70% at 50% 45%, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.86));
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
 }
 .sheet {
-  width: min(1040px, 100%);
-  max-height: 100%;
-  overflow: auto;
-  overscroll-behavior: contain;
+  position: relative;
+  width: min(1100px, 100%);
+  height: min(100%, 880px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 16px;
+  padding: 22px 28px 20px;
+  overflow: hidden;
   /* horizontal swipes step tracks (views/track-card.ts), never the browser's back gesture */
   touch-action: pan-y pinch-zoom;
   overscroll-behavior-x: none;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: clamp(18px, 3vw, 30px);
-  display: grid;
-  gap: 22px;
 }
-.mhead {
+.btn.x {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+}
+.mtop {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding-right: 46px;
+}
+/* The display: the caption · time, the title and the line in one column, the snowflake at their
+   right; the note under them all. */
+.mscreen {
+  overflow: visible;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  column-gap: 20px;
+}
+.player-body {
+  display: contents;
+}
+.mscreen > *,
+.player-body > * {
+  grid-column: 1;
+}
+.mscreen .vfd-top {
+  grid-row: 1;
+}
+.mtitle {
+  grid-row: 2;
+  min-width: 0;
+  height: 56px;
+  font: 500 40px/56px var(--vfd);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--hot);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wline {
+  grid-row: 3;
+}
+/* The note runs under the snowflake too, across the whole display: three lines hold 400
+   characters. */
+.mscreen .pnote {
+  grid-row: 4;
+  grid-column: 1 / -1;
+}
+/* The snowflake beside the caption, title and line; it reaches a little into the display's
+   padding above and the note's gap below, so it does not make those rows taller. */
+.mflake {
+  grid-column: 2;
+  grid-row: 1 / 4;
+  align-self: start;
+  width: 150px;
+  height: 150px;
+  margin: -16px 0 -15px;
+}
+.mflake canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+/* The turning snowflake's square canvas would stick out at the corners; they are transparent. */
+.flake-clip {
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.mtransport {
+  display: flex;
   align-items: center;
   gap: 16px;
 }
-.mhead h2 {
-  font-size: clamp(26px, 4vw, 40px);
-  min-width: 0;
-  overflow-wrap: anywhere;
+.play-slot {
+  display: contents;
 }
-.mnav {
-  display: flex;
-  gap: 6px;
-  flex: none;
+.mtransport .vol {
+  margin-left: 22px;
 }
-.mnav .btn {
-  min-width: 36px;
-  text-align: center;
-}
-/* The top row: the player, and the turning snowflake at its right. */
-.mtop {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 24px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid var(--line);
-}
-.no-audio {
-  font-size: 13px;
-  color: var(--mist);
-}
-.mflake canvas {
-  height: 132px !important;
-  width: auto !important;
-}
-/* Four equal cells on the card's background: idea → recording | what to listen for, story |
-   total complexity. Each cell's content sits right under its heading. */
+/* Four cells: the upper row as high as it needs, the story and the radar get the rest. */
 .mgrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-auto-rows: minmax(0, 1fr);
-  gap: 26px 44px;
-}
-.cell {
-  display: grid;
-  gap: 12px;
-  align-content: start;
-  min-width: 0;
-  min-height: 0;
-}
-.spot-body {
-  display: grid;
-  gap: 10px;
-}
-/* Only the story scrolls, inside its cell. */
-.story-cell {
   grid-template-rows: auto minmax(0, 1fr);
-  align-content: stretch;
-}
-.story-cell .story {
+  gap: 22px 34px;
   min-height: 0;
+  overflow: hidden;
+}
+
+/* The About window: the card's frame at a reading width. */
+.sheet.about-sheet {
+  width: min(560px, 100%);
+  height: auto;
+  max-height: 100%;
   overflow: auto;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
+  grid-template-rows: none;
+  gap: 18px;
+  padding: 26px 30px 30px;
 }
-.total-cell {
-  grid-template-rows: auto minmax(0, 1fr);
-  align-content: stretch;
+.about-sheet .lead {
+  font-size: 11px;
 }
-/* The radar fills what the cell leaves under its heading. */
-.radar-box {
-  position: relative;
-  min-height: 0;
-}
-.radar-box svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-/* «Total complexity N / 15», styled like «What to listen for». */
-.total b {
-  color: var(--frost);
-  font-weight: 500;
-}
+
 @media (max-width: 899.98px) {
   .modal {
     padding: 0;
@@ -143,72 +146,83 @@ body.locked {
   .sheet {
     width: 100%;
     height: 100%;
-    max-height: none;
     border-radius: 0;
-    border: 0;
-    padding-top: calc(env(safe-area-inset-top, 0px) + 16px);
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-color: #3a322a transparent;
+    grid-template-rows: none;
+    align-content: start;
+    gap: 18px;
+    padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px
+      calc(env(safe-area-inset-bottom, 0px) + 28px);
   }
-  /* The keys with the snowflake at their right, then the waveform, then the pin note under it
-     (player.css). */
+  .btn.x {
+    top: calc(env(safe-area-inset-top, 0px) + 28px);
+    right: 16px;
+  }
   .mtop {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas:
-      'keys flake'
-      'line line'
-      'note note';
-    column-gap: 12px;
-    row-gap: 8px;
+    padding-right: 0;
+  }
+  /* the keys first, ✕ at their right */
+  .mtransport {
+    order: -1;
+    gap: 14px;
+    padding-right: 48px;
+  }
+  .mtransport .vol {
+    display: none;
+  }
+  /* the caption over the title, the snowflake at their right; then the line with the time at
+     its end, and the note */
+  .mscreen {
+    grid-template-columns: minmax(0, 1fr) 96px;
+    column-gap: 10px;
+    padding: 11px 12px 10px;
+  }
+  .mscreen .vfd-top {
+    align-self: end;
+    min-height: 17px;
+    margin-bottom: 6px;
+  }
+  .mtitle {
+    align-self: start;
+    height: auto;
+    font-size: 26px;
+    line-height: 1.1;
+  }
+  .mscreen .wline,
+  .mscreen .pnote {
+    grid-column: 1 / -1;
   }
   .mflake {
-    grid-area: flake;
-    justify-self: center;
-  }
-  .mflake canvas {
-    height: 96px !important;
-  }
-  .mgrid {
-    grid-template-columns: 1fr;
-    grid-auto-rows: auto;
-    gap: 28px;
-  }
-  .radar-box {
-    height: 240px;
-  }
-}
-/* Wide: the card fits the window at one fixed size whatever the song, so stepping tracks moves
-   nothing: one-line title, a player of fixed height, four equal cells; only a long story scrolls,
-   inside its cell. */
-@media (min-width: 900px) {
-  .sheet {
-    height: min(100%, 880px);
-    grid-template-rows: auto auto minmax(0, 1fr);
-    gap: 16px;
-    padding: 22px 28px;
-  }
-  .mhead h2 {
-    font-size: clamp(26px, 3vw, 36px);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    grid-row: 1 / 3;
+    width: 96px;
+    height: 96px;
+    margin: 0;
   }
   .mgrid {
-    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    row-gap: 0;
+    overflow: visible;
+  }
+  .about-sheet {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 28px);
   }
 }
-/* The turning snowflake's square canvas would stick out at the corners; they are transparent. */
-.flake-clip {
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-  max-width: 100%;
-}
-
-/* The About window (views/about.ts) uses the card's modal frame at a reading width. */
-.sheet.about-sheet {
-  width: min(560px, 100%);
-  height: auto;
-  grid-template-rows: none;
-  gap: 18px;
-  padding: 26px 30px 30px;
+@media (max-width: 359.98px) {
+  .mtransport {
+    gap: 10px;
+  }
+  .mtransport .btn.k {
+    width: 40px;
+    height: 40px;
+  }
+  .mtransport .btn.play {
+    width: 54px;
+    height: 54px;
+  }
+  .btn.x {
+    top: calc(env(safe-area-inset-top, 0px) + 24px);
+  }
 }

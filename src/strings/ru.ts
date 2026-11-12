@@ -12,7 +12,6 @@ const forms = (n: number, one: string, few: string, many: string): string => {
 };
 
 export const ru: Strings = {
-  years: (n: number) => `${n} ${forms(n, 'год', 'года', 'лет')}`,
   aboutBlock: 'Об этом блоке',
 
   hero: {
@@ -23,12 +22,18 @@ export const ru: Strings = {
     langLabel: 'Язык: русский. Переключить на английский',
     // Shown with its line breaks; «_» opens a list line.
     intro: [
-      'Это мой музыкальный дневник:',
-      '_мои сольные записи,',
-      '_совместные записи.',
+      'Это мой музыкальный дневник,',
+      'в основном — мои сольные записи.',
+      '',
+      'Мне всегда хотелось понять, что стоит за звуками и партиями песни, которая мне нравится — или, наоборот, которую я не понимаю.',
+      'Было бы круто, чтобы музыканты подсказывали, что слушать и почему.',
+      '',
+      'Здесь я предлагаю способ разговора музыканта со слушателем:',
+      'заметки и история каждой песни прямо рядом с ней.',
       '',
       'Каждая песня — снежинка.',
-      'Она вычислена из параметров песни:',
+      'Её цвет зависит от основных инструментов.',
+      'Её форма вычислена из параметров песни:',
       '_ритм,',
       '_мелодия,',
       '_техника,',
@@ -36,7 +41,7 @@ export const ru: Strings = {
       '_структура.',
       '',
       'Нажмите на снежинку, чтобы открыть трек.',
-      'В заметках — на что стоит обратить внимание.',
+      'Приятного прослушивания.',
     ].join('\n'),
   },
 
@@ -52,8 +57,6 @@ export const ru: Strings = {
     label: 'Вид',
     record: 'Пластинка',
     list: 'Список',
-    recordGlyph: en.views.recordGlyph,
-    listGlyph: en.views.listGlyph,
     mapLabel: 'Карта треков',
     toRecord: 'Прокрутить вниз к трекам',
     scroll: 'вниз',
@@ -91,8 +94,6 @@ export const ru: Strings = {
   record: {
     canvasLabel:
       'Пластинка-карта треков: расстояние от центра — год. Вид «Список» показывает те же треки плитками.',
-    tooltip: (style: string, band: boolean, year: string, total: number) =>
-      `${style} · ${band ? 'группа' : 'соло'} · ${year} · сложность ${total}/15`,
     // Written on the record: stays as it is.
     labelSide: en.record.labelSide,
     labelTracks: en.record.labelTracks,
@@ -103,7 +104,6 @@ export const ru: Strings = {
   list: {
     year: en.list.year,
     inProgress: 'в работе',
-    band: 'записано с группой',
     empty: 'Под эти фильтры не подходит ни один трек. Нажмите «Сбросить фильтры» на панели.',
   },
 
@@ -111,14 +111,9 @@ export const ru: Strings = {
     prev: 'Предыдущий трек',
     next: 'Следующий трек',
     close: 'Закрыть',
-    listen: 'Что слушать',
+    listen: 'Основной инструмент',
     listenInfo:
       'На что стоит обратить внимание при прослушивании — партии, на которых построен трек. Они же окрашивают лучи снежинки.',
-    recordedWith: 'Записано с группой',
-    recordedWithBand: 'Записано с группой',
-    bandUnnamed: 'Название группы пока не указано',
-    bandUnnamedHint: 'Название группы ещё не заполнено.',
-    bandNoAbout: 'Описания пока нет.',
     story: 'История',
     storyEmpty: 'История этого трека ещё не написана.',
     timeline: 'От идеи до записи',
@@ -130,9 +125,8 @@ export const ru: Strings = {
     idea: 'Идея',
     concept: 'Концепция',
     ready: 'Готово',
-    sameYear: 'в тот же год',
     notYet: 'ещё нет',
-    total: (n: number) => `Общая сложность <b>${n}</b> / 15`,
+    total: 'Общая сложность',
     totalInfo: {
       rhythm: 'насколько сложен ритм: размер, синкопы, смены грува.',
       melody: 'как далеко уходят мелодии: диапазон, скачки, сколько линий звучит сразу.',
@@ -150,12 +144,11 @@ export const ru: Strings = {
     label: 'Плеер',
     play: 'Слушать',
     pause: 'Пауза',
-    playGlyph: en.player.playGlyph,
-    pauseGlyph: en.player.pauseGlyph,
     noAudio: 'Запись скоро появится',
     ready: 'Нажмите ▶, чтобы послушать',
     pinAt: (time: string, text: string) => `Заметка на ${time}: ${text}`,
     seek: 'Перемотка',
+    volume: 'Громкость',
     pastEnd: en.player.pastEnd,
   },
 
@@ -168,6 +161,14 @@ export const ru: Strings = {
     prev: 'Предыдущий трек',
     next: 'Следующий случайный трек',
     openCard: (title: string) => `Открыть «${title}»`,
+  },
+
+  backlight: {
+    brightness: 'Яркость подсветки',
+    tone: 'Цвет подсветки: от холодного к тёплому',
+    cold: 'холодный',
+    neutral: 'нейтральный',
+    warm: 'тёплый',
   },
 
   hints: {

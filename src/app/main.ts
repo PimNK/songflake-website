@@ -13,12 +13,12 @@ import '../styles/hints.css';
 import '../styles/overlay.css';
 import { loadContent } from '../content/load';
 import type { Song } from '../content/parse';
-import { countMatching, defaultFilters, matches, neighbour, nextPlayable } from '../domain/filters';
+import { countMatching, defaultFilters, matches, playableNeighbour } from '../domain/filters';
 import { yearRange } from '../domain/record-layout';
 import { showContentOverlay } from '../views/content-overlay';
 import { mountFilterPanel } from '../views/filter-panel';
 import { mountList } from '../views/list';
-import { onViewTab, renderPage, showView } from '../views/page';
+import { onViewTab, placeDials, renderPage, showView } from '../views/page';
 import { mountRecord } from '../views/record';
 import { mountTrackCard } from '../views/track-card';
 import { mountRandomPlayer } from '../views/random-player';
@@ -26,7 +26,8 @@ import { startHints } from '../views/hints';
 import { mountAbout } from '../views/about';
 import { Playback } from '../views/playback';
 import { mountPlayer } from '../views/player';
-import { leadColour } from '../views/card-body';
+import { mountDials, startBacklight } from '../views/backlight';
+import { restoreVolume } from '../views/volume';
 import { startRouter } from './router';
 import { Store, type ViewName } from './state';
 
@@ -50,6 +51,7 @@ const store = new Store({
 });
 const open = (slug: string): void => store.set({ openSlug: slug, cue: null, notice: null });
 
+startBacklight();
 const slots = renderPage(document.querySelector<HTMLElement>('#app')!);
 const record = mountRecord(slots.stage, content, open);
 const list = mountList(slots.listView, content, open);
@@ -61,7 +63,9 @@ const panel = mountFilterPanel(
   () => store.get().filters,
   (filters) => store.set({ filters }),
 );
+placeDials(slots, mountDials());
 const playback = new Playback();
+restoreVolume(playback);
 const bySlug = (slug: string | null): Song | undefined => songs.find((x) => x.slug === slug);
 const playable = songs.filter((x) => !!x.audioSrc);
 const random = mountRandomPlayer(slots.player, playback, taxonomy, {
@@ -73,25 +77,29 @@ const random = mountRandomPlayer(slots.player, playback, taxonomy, {
   song: bySlug,
   open,
 });
+/** The previous / next track with a recording in the card's order (filtered, wrapping). */
+const playableStep = (slug: string, direction: -1 | 1): Song | null =>
+  bySlug(
+    playableNeighbour(songs, store.get().filters, years, slug, direction, (x) => !!x.audioSrc),
+  ) ?? null;
 playback.autoAdvance(
-  (ended, mode) =>
-    mode === 'shuffle'
-      ? random.next()
-      : (bySlug(nextPlayable(songs, store.get().filters, years, ended.slug, (x) => !!x.audioSrc)) ??
-        null),
+  (ended, mode) => (mode === 'shuffle' ? random.next() : playableStep(ended.slug, 1)),
   (from, to) => {
     if (store.get().openSlug === from.slug) store.set({ openSlug: to.slug, cue: null });
   },
 );
-const card = mountTrackCard(content, {
+const card = mountTrackCard(content, playback, {
   close: () => store.set({ openSlug: null, cue: null }),
+  // As on the player's keys: the previous / next track starts playing, and the card follows it.
   step: (direction) => {
-    const s = store.get();
-    const slug = s.openSlug && neighbour(songs, s.filters, years, s.openSlug, direction);
-    if (slug) store.set({ openSlug: slug, cue: null });
+    const at = store.get().openSlug;
+    const to = at ? playableStep(at, direction) : null;
+    if (!to) return;
+    playback.play(to, 'order');
+    store.set({ openSlug: to.slug, cue: null });
   },
   player: (slot, song, cue) =>
-    mountPlayer(slot, song, cue, leadColour(song, taxonomy), playback, {
+    mountPlayer(slot, song, cue, playback, {
       warn: (message) => {
         if (import.meta.env.DEV) showContentOverlay([], [message]);
       },
@@ -113,9 +121,11 @@ store.subscribe((s, prev) => {
   panel.update(s.filters, countMatching(songs, s.filters, years));
   showView(slots, s.view, s.notice);
 });
-// The current track's snowflake pulses on the record and in the list, also while paused.
+// The current track's snowflake pulses on the record and in the list, also while paused; the
+// console's power lamp is lit while something plays.
 let pulsing: string | null = null;
 playback.subscribe(() => {
+  slots.page.classList.toggle('playing', playback.isPlaying());
   const slug = playback.song?.slug ?? null;
   if (slug === pulsing) return;
   pulsing = slug;

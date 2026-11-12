@@ -1,106 +1,249 @@
-/* Track card sections: what to listen for (instrument pads as in the filters, styles/base.css),
-   band plate, story, idea → recording. */
-.spot-h {
+/* Track card cells (views/card-body.ts): each in a groove of the faceplate, a heading in the
+   display's face, then its content — three indicator lamps from idea to recording, lit
+   instrument pads, the story, the radar as a round CRT. --lead (the first instrument's colour)
+   is set on the grid. */
+.cell {
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px 0 2px;
+  border-top: 1px solid #000;
+  box-shadow: inset 0 1px 0 rgba(255, 200, 140, 0.08);
+}
+.ch {
   position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
+  height: 20px;
+}
+.ch h3 {
+  font: 500 17px/1 var(--vfd);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--label);
+  text-shadow: 0 0 8px rgb(var(--g) / calc(0.38 * var(--lum)));
+}
+/* From idea to recording: three lamps — hollow, half, full — with the years in windows; the lines
+   between them as long as the years (dashed for the same year, dim when one is unknown). */
+.stations {
+  display: flex;
+  align-items: flex-start;
+  height: 66px;
+  padding: 2px 4px 0;
+}
+.st {
+  flex: none;
+  width: 74px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+.lamp {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #0b0907;
+  box-shadow:
+    inset 0 1px 2px #000,
+    0 0 0 2px #050403,
+    0 1px 0 2px rgba(255, 220, 170, 0.06);
+}
+.lamp.hollow {
+  background: radial-gradient(circle, #0b0907 0 4.5px, var(--lead) 5px 7px, #0b0907 7.5px);
+  box-shadow:
+    0 0 0 2px #050403,
+    0 0 calc(10px * var(--lum)) color-mix(in srgb, var(--lead) 45%, transparent);
+}
+.lamp.half {
+  background: linear-gradient(90deg, var(--lead) 50%, #0b0907 50%);
+  box-shadow:
+    0 0 0 2px #050403,
+    inset 0 0 0 2px var(--lead),
+    0 0 calc(12px * var(--lum)) color-mix(in srgb, var(--lead) 55%, transparent);
+}
+.lamp.full {
+  background: radial-gradient(circle at 40% 35%, #fff, var(--lead) 55%);
+  box-shadow:
+    0 0 0 2px #050403,
+    0 0 calc(16px * var(--lum)) var(--lead),
+    0 0 4px var(--lead);
+}
+.lamp.off {
+  opacity: 0.5;
+}
+.st .chip {
+  font-size: 17px;
+}
+.st.missing .chip {
+  color: var(--off);
+  text-shadow: none;
+}
+.link {
+  flex: 1 1 0;
+  min-width: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 9px;
+}
+.link i {
+  align-self: stretch;
+  height: 2px;
+  border-radius: 1px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--lead) 70%, transparent),
+    color-mix(in srgb, var(--lead) 30%, transparent)
+  );
+  box-shadow: 0 0 calc(6px * var(--lum)) color-mix(in srgb, var(--lead) 50%, transparent);
+}
+.link.zero i {
+  background: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--lead) 60%, transparent) 0 3px,
+    transparent 3px 7px
+  );
+  box-shadow: none;
+}
+.link.none i {
+  background: repeating-linear-gradient(90deg, #3a322a 0 3px, transparent 3px 7px);
+  box-shadow: none;
+}
+/* The main instrument: lit pads, as on the console, but they do not toggle. */
+.lpads {
+  display: flex;
+  gap: 8px;
+  height: 46px;
+}
+.lpads .pad {
+  flex: 0 0 96px;
+  height: 46px;
+  cursor: default;
+}
+/* The story: small capitals in the label colour; it scrolls inside its cell. */
+.story-cell {
+  min-height: 0;
+}
+.story {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding-right: 10px;
+  font: 500 10px/1.85 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--label);
+  text-shadow: 0 0 8px rgb(var(--g) / calc(0.38 * var(--lum)));
+  scrollbar-color: #3a322a transparent;
+}
+.story p {
+  margin: 0 0 0.8em;
+}
+.story a {
+  color: var(--amber);
+}
+/* The radar: a round CRT (render/radar.ts), its axis labels as small as the headings around. */
+.radar-box {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+.radar-box svg {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 315px;
+  height: 230px;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: visible;
+}
+.tube-in {
+  stop-color: rgb(var(--p));
+  stop-opacity: 0.55;
+}
+.radar-rim {
+  fill: none;
+  stroke: rgba(255, 220, 170, 0.08);
+}
+.radar-grid {
+  fill: none;
+  stroke: rgb(var(--g) / 0.16);
+  stroke-width: 1;
+}
+polygon.radar-grid {
+  stroke: rgb(var(--g) / 0.28);
+}
+polygon.radar-grid.dash {
+  stroke: rgb(var(--g) / 0.14);
+  stroke-dasharray: 2 4;
+}
+.radar-dot {
+  fill: #fff;
+}
+.radar-axis {
+  font: 500 10px var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  fill: var(--label);
+}
+.radar-value {
+  fill: var(--hot);
+  font-weight: 600;
 }
 /* The ⓘ bubbles hang from their cell's heading row, so they stay over the card. */
 .cell .qi {
   position: static;
 }
-.cell .spot-h .bubble {
-  left: 0;
-  transform: none;
-  max-width: min(290px, 100%);
-}
-.bandchip:hover .bubble,
-.bandchip:focus-visible .bubble {
-  opacity: 1;
-}
-/* The band plate: a lit pad (base.css) with the dashed ring for its light, as wide as its text. */
-.bandchip {
-  justify-self: start;
-  max-width: 100%;
-  padding: 0 14px;
-  cursor: help;
-}
-.bandchip b {
-  font-weight: 600;
-}
-.bandchip .bubble {
-  left: 0;
-  transform: none;
-}
-.story {
-  font-size: 15px;
-  line-height: 1.6;
-  display: grid;
-  gap: 0.8em;
-}
-.story a {
-  color: var(--ice);
-}
-.muted {
-  color: var(--mist);
-}
-.stations {
-  display: flex;
-  align-items: flex-start;
-}
-.st {
-  display: grid;
-  justify-items: center;
-  gap: 3px;
-  min-width: 58px;
-  text-align: center;
-}
-.st i {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px solid;
-  display: block;
-  margin-bottom: 2px;
-}
-.st.missing i {
-  border-style: dashed;
-  opacity: 0.6;
-}
-.st b {
-  font-weight: 500;
-  font-size: 14px;
-}
-.link {
-  position: relative;
-  height: 14px;
-  flex-basis: 0;
-  min-width: 28px;
-  display: grid;
-  place-items: center;
-}
-.link::before {
-  content: '';
-  position: absolute;
-  left: -22px;
-  right: -22px;
-  top: 6px;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--grad, var(--line));
-}
-.link span {
-  position: relative;
-  top: 16px;
-  font-size: 10.5px;
-  color: var(--mist);
-  white-space: nowrap;
-}
-.bubble .term {
-  display: block;
-  margin-bottom: 4px;
-}
-.bubble .term b {
-  display: inline;
+
+@media (max-width: 899.98px) {
+  .cell {
+    min-height: auto;
+    padding-bottom: 16px;
+  }
+  .bubble,
+  .qi.end .bubble {
+    left: 0;
+    right: 0;
+    width: auto;
+  }
+  .stations {
+    height: auto;
+    padding-bottom: 4px;
+  }
+  .st {
+    width: 66px;
+  }
+  .link {
+    min-width: 28px;
+  }
+  .lpads {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    height: auto;
+    gap: 9px 8px;
+  }
+  .lpads .pad {
+    height: var(--pad-h);
+  }
+  .story {
+    flex: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+  .radar-box {
+    flex: none;
+    width: min(100% - 24px, 440px);
+    margin-inline: auto;
+    aspect-ratio: 370 / 270;
+  }
+  .radar-box svg {
+    width: 100%;
+    height: 100%;
+  }
 }

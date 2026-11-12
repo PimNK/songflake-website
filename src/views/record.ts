@@ -23,10 +23,11 @@ import {
 } from '../domain/record-layout';
 import { solveLayout, type Placement } from '../domain/record-solve';
 import { flakeOf, flakeTurn, sizeFactor, turnOffset, type Flake } from '../domain/snowflake';
-import { drawFlakes, flakeTitleFont, type FlakeNode } from '../render/record-flakes';
+import { drawFlakes, titleFont, titleText, type FlakeNode } from '../render/record-flakes';
 import { drawDisc, drawYearRings } from '../render/record';
 import { drawCentreLabel } from '../render/record-label';
 import { devicePixelRatioCapped, SpriteCache } from '../render/snowflake';
+import { light, onLight } from './backlight';
 import { recordTemplate, showTooltip } from './record-controls';
 import { attachRecordInput } from './record-input';
 import { RecordMotion } from './record-motion';
@@ -130,9 +131,9 @@ class RecordStage implements RecordView {
   /** Collision radius covers the snowflake and its title, in world units. */
   private solve(): void {
     const fit = fitScale(this.vp.width, this.vp.height);
-    this.ctx.font = flakeTitleFont(false, 1);
+    titleFont(this.ctx);
     this.placed = solveLayout(this.content.songs, this.range, (s) => {
-      const half = this.ctx.measureText(s.title).width / 2;
+      const half = this.ctx.measureText(titleText(s.title)).width / 2;
       return collisionRadius(this.flakeR(s, 1), half, fit);
     });
   }
@@ -160,11 +161,12 @@ class RecordStage implements RecordView {
     ctx.clearRect(0, 0, vp.width, vp.height);
     ctx.shadowBlur = 0;
     const t = transform(vp);
-    drawDisc(ctx, t);
-    drawYearRings(ctx, t, vp.width, vp.height, ringYears(range, ringStep(vp.zoom)), range);
-    drawCentreLabel(ctx, t, vp.phi, range, songs.length);
+    const lit = light();
+    drawDisc(ctx, t, lit, vp.width, vp.height, this.motion.time);
+    drawYearRings(ctx, t, vp.width, vp.height, ringYears(range, ringStep(vp.zoom)), range, lit);
+    drawCentreLabel(ctx, t, vp.phi, range, songs.length, lit);
     this.nodes = this.layoutNodes(t);
-    drawFlakes(ctx, this.nodes, vp.zoom);
+    drawFlakes(ctx, this.nodes, lit);
   }
 
   private layoutNodes(t: Transform): Node[] {
@@ -243,7 +245,7 @@ class RecordStage implements RecordView {
           this.invalidate();
         }
         this.canvas.style.cursor = n ? 'pointer' : '';
-        if (n && !touch) showTooltip(this.tip, n.song, x, y, this.vp);
+        if (n && !touch) showTooltip(this.tip, n.song, this.content.taxonomy, x, y, this.vp);
         else this.tip.hidden = true;
       },
       leave: () => {
@@ -269,6 +271,7 @@ class RecordStage implements RecordView {
       this.invalidate();
     }).observe(this.stage);
     document.addEventListener('visibilitychange', () => this.invalidate());
+    onLight(() => this.invalidate());
     // Titles are measured for the collision solve; re-solve once the web fonts are in.
     void document.fonts?.ready.then(() => {
       this.solve();

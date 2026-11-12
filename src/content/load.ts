@@ -1,12 +1,11 @@
 // The only place the song list is assembled: Vite discovers song folders at build time.
 // Validation rules live in parse.ts; this file only gathers raw input and hands it over.
 import { parse as parseYaml } from 'yaml';
-import bandsRaw from '/content/bands.yaml?raw';
 import taxonomyRaw from '/content/taxonomy.yaml?raw';
 import { lang } from '../lang';
-import { localBands, localSong, localTaxonomy } from './localise';
+import { localSong, localTaxonomy } from './localise';
 import { displayOrder, parseSong, type AudioFile, type Song } from './parse';
-import { toBands, toTaxonomy, type Bands, type Taxonomy } from './taxonomy';
+import { toTaxonomy, type Taxonomy } from './taxonomy';
 
 const indexFiles = import.meta.glob<string>('/songs/*/index.md', {
   query: '?raw',
@@ -23,7 +22,6 @@ export interface Content {
   /** Visible songs in display order. */
   songs: Song[];
   taxonomy: Taxonomy;
-  bands: Bands;
   errors: string[];
   warnings: string[];
 }
@@ -34,14 +32,12 @@ const EMPTY_TAXONOMY: Taxonomy = { styles: [], accents: [] };
 
 export function loadContent(): Content {
   let taxonomy: Taxonomy;
-  let bands: Bands;
   try {
     taxonomy = toTaxonomy(parseYaml(taxonomyRaw));
-    bands = toBands(parseYaml(bandsRaw));
   } catch (e) {
     // The build fails on this in check-content; in dev it reaches the overlay instead of crashing.
     const message = (e as Error).message;
-    return { songs: [], taxonomy: EMPTY_TAXONOMY, bands: {}, errors: [message], warnings: [] };
+    return { songs: [], taxonomy: EMPTY_TAXONOMY, errors: [message], warnings: [] };
   }
 
   const audioBySlug = new Map<string, AudioFile[]>();
@@ -56,7 +52,7 @@ export function loadContent(): Content {
   const warnings: string[] = [];
   for (const [path, raw] of Object.entries(indexFiles)) {
     const slug = slugOf(path);
-    const result = parseSong(slug, raw, audioBySlug.get(slug) ?? [], taxonomy, bands);
+    const result = parseSong(slug, raw, audioBySlug.get(slug) ?? [], taxonomy);
     warnings.push(...result.warnings);
     if (!result.ok) errors.push(...result.errors);
     else if (!result.hidden) songs.push(localSong(result.song, lang));
@@ -65,7 +61,6 @@ export function loadContent(): Content {
   return {
     songs: displayOrder(songs),
     taxonomy: localTaxonomy(taxonomy, lang),
-    bands: localBands(bands, lang),
     errors,
     warnings,
   };

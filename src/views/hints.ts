@@ -51,8 +51,8 @@ const LAYER = `
     <small class="hint-n"></small>
     <p aria-live="polite"></p>
     <div class="hint-keys">
-      <button type="button" class="btn" data-skip>${h.skip}</button>
-      <button type="button" class="btn hint-next" data-next></button>
+      <button type="button" class="tbtn" data-skip>${h.skip}</button>
+      <button type="button" class="tbtn hint-next" data-next></button>
     </div>
   </div>`;
 

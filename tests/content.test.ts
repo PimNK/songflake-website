@@ -3,12 +3,11 @@ import { readFileSync } from 'node:fs';
 import { parse as parseYaml } from 'yaml';
 import { describe, expect, it } from 'vitest';
 import { parseSong } from '../src/content/parse';
-import { toBands, toTaxonomy } from '../src/content/taxonomy';
+import { toTaxonomy } from '../src/content/taxonomy';
 import { checkContent } from '../scripts/check-content';
 import { songTemplate } from '../scripts/new-song';
 
 const taxonomy = toTaxonomy(parseYaml(readFileSync('content/taxonomy.yaml', 'utf8')));
-const bands = toBands(parseYaml(readFileSync('content/bands.yaml', 'utf8')));
 
 describe('content', () => {
   it('every song in songs/ is valid', () => {
@@ -18,13 +17,7 @@ describe('content', () => {
   });
 
   it('the new-song template parses as a valid in-progress song', () => {
-    const r = parseSong(
-      'winter-girl',
-      songTemplate('Winter girl', taxonomy, 2026),
-      [],
-      taxonomy,
-      bands,
-    );
+    const r = parseSong('winter-girl', songTemplate('Winter girl', taxonomy, 2026), [], taxonomy);
     expect(r.ok ? [] : r.errors).toEqual([]);
     expect(r.warnings).toEqual([]);
     expect(r.ok && r.song).toMatchObject({
@@ -40,7 +33,6 @@ describe('content', () => {
       'title:',
       'style:',
       'accents:',
-      'band:',
       'complexity:',
       'rhythm:',
       'melody:',
@@ -61,7 +53,7 @@ describe('content', () => {
   });
 
   it('a titled song with quotes survives the template', () => {
-    const r = parseSong('x', songTemplate('Say "hi"', taxonomy, 2026), [], taxonomy, bands);
+    const r = parseSong('x', songTemplate('Say "hi"', taxonomy, 2026), [], taxonomy);
     expect(r.ok && r.song.title).toBe('Say "hi"');
   });
 });

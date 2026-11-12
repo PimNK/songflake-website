@@ -6,8 +6,6 @@ export const R_MIN = 300;
 export const R_MAX = 1000;
 export const R_DISC = 1070;
 export const R_LABEL = 186;
-export const R_GROOVE_IN = R_MIN * 0.9;
-export const R_GROOVE_OUT = R_MAX * 1.03;
 export const SPIRAL = 0.85;
 export const ZOOM_MIN = 1;
 export const ZOOM_MAX = 8;
@@ -102,7 +100,7 @@ export const collisionRadius = (flakePx: number, halfLabelPx: number, fit: numbe
 export const hitRadius = (flakePx: number): number => Math.max(12, flakePx * 1.1);
 
 export const flakeRadius = (sizeFactor: number, flakeScale: number, zoom: number): number =>
-  16 * sizeFactor * flakeScale * Math.pow(zoom, 0.45);
+  20 * sizeFactor * flakeScale * Math.pow(zoom, 0.45);
 
 export interface Transform {
   scale: number;

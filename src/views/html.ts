@@ -14,13 +14,52 @@ const ENTITIES: Record<string, string> = {
 
 export const esc = (text: string): string => text.replace(/[&<>"']/g, (c) => ENTITIES[c]!);
 
-/** The dashed ring used for "recorded with a band" — the same mark as the snowflake's halo. */
-export const bandRing = (size: number, label = ''): string =>
-  `<svg width="${size}" height="${size}" viewBox="0 0 16 16" ${label ? `role="img" aria-label="${esc(label)}"` : 'aria-hidden="true"'}><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2.3 2.3"/></svg>`;
+const PATHS = {
+  play: 'M8 5v14l11-7z',
+  pause: 'M6 5h4v14H6zM14 5h4v14h-4z',
+  prev: 'M18 6l-8.5 6L18 18zM6 6h2v12H6z',
+  next: 'M6 6l8.5 6L6 18zM16 6h2v12h-2z',
+};
 
-/** «Skip to previous» (a bar and a triangle); `.nav.next` mirrors it for «next». */
-export const SKIP_ICON =
-  '<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M15 3.5v11L6.5 9z" fill="currentColor"/></svg>';
+/** The transport keys' glyphs: play, pause, previous, next. */
+export const icon = (name: keyof typeof PATHS): string =>
+  `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${PATHS[name]}"/></svg>`;
+
+/** The close key's ✕. */
+export const CLOSE_ICON =
+  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+
+/**
+ * The intro (strings.hero.intro) as markup: a blank line starts a paragraph, a line opening with
+ * «_» is a list line, other lines break.
+ */
+export function introHtml(text: string): string {
+  return text
+    .split(/\n\s*\n/)
+    .map((block) => {
+      let html = '';
+      let list: string[] = [];
+      const flush = (): void => {
+        if (list.length) html += `<ul>${list.map((l) => `<li>${esc(l)}</li>`).join('')}</ul>`;
+        list = [];
+      };
+      const lines: string[] = [];
+      for (const line of block.split('\n')) {
+        if (line.startsWith('_')) {
+          if (lines.length) html += `<p>${lines.map(esc).join('<br>')}</p>`;
+          lines.length = 0;
+          list.push(line.slice(1));
+        } else {
+          flush();
+          lines.push(line);
+        }
+      }
+      flush();
+      if (lines.length) html += `<p>${lines.map(esc).join('<br>')}</p>`;
+      return html;
+    })
+    .join('');
+}
 
 /** Inline style for a `.turn` element: the snowflake's own slow turn, as on the record. */
 export function turnStyle(song: Pick<Song, 'slug' | 'complexity'>): string {
@@ -28,6 +67,9 @@ export function turnStyle(song: Pick<Song, 'slug' | 'complexity'>): string {
   return `animation-duration:${period.toFixed(2)}s;animation-delay:${delay.toFixed(2)}s`;
 }
 
-/** An ⓘ that explains a block on hover or focus; `bubble` is trusted markup from strings.ts. */
-export const info = (bubble: string): string =>
-  `<span class="qi" tabindex="0" aria-label="${strings.aboutBlock}">i<span class="bubble" role="tooltip">${bubble}</span></span>`;
+/**
+ * An ⓘ that explains a block on hover or focus; `bubble` is trusted markup from strings.ts. `end`
+ * opens the bubble leftwards, for an ⓘ near the right edge.
+ */
+export const info = (bubble: string, end = false): string =>
+  `<span class="qi${end ? ' end' : ''}" tabindex="0" aria-label="${strings.aboutBlock}">i<span class="bubble" role="tooltip">${bubble}</span></span>`;

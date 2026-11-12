@@ -1,96 +1,12 @@
-/* The card's player, laid out like the random player (random-player.css): the keys at the left —
-   previous, play / pause in the lead colour (set inline from the taxonomy), next — the caption and
-   pin note beside them, then the waveform line with its thumb and the time. The transport
-   buttons (.nav, .play) are shared with the random player. */
-.player-blk {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-areas:
-    'keys text'
-    'line line';
-  align-items: center;
-  column-gap: 18px;
-  row-gap: 6px;
-  min-width: 0;
-}
-.transport {
-  grid-area: keys;
+/* The card's player in the display (views/player.ts): the caption and time on top, the
+   oscilloscope line (render/scope.ts) with the pin markers — a lamp diamond with a hairline down
+   through the trace — and their popovers, then the note of the active pin under a dashed line.
+   Wide cards keep three lines for the note; narrow ones are as high as the song's longest note,
+   show the time at the end of the line, and the markers only mark. */
+.wline {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-.transport .nav {
-  width: 46px;
-  height: 46px;
-}
-.transport .play {
-  width: 56px;
-  height: 56px;
-  font-size: 18px;
-}
-.player-body {
-  display: contents;
-}
-.pcap {
-  grid-area: text;
-  display: grid;
-  align-content: center;
-  gap: 2px;
-  min-width: 0;
-  min-height: 62px; /* the caption and two lines of pin note, so nothing moves */
-}
-.pstate {
-  font-size: 12px;
-  color: var(--mist);
-}
-.pline {
-  grid-area: line;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-top: 16px; /* room for the pin markers above the bar */
-}
-.ptime {
-  font-size: 13px;
-  color: var(--mist);
-  white-space: nowrap;
-}
-.ptime b {
-  color: var(--frost);
-  font-weight: 500;
-}
-.nav {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 1px solid var(--line);
-  background: var(--panel);
-  color: var(--frost);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-}
-.nav:hover {
-  border-color: var(--mist);
-}
-.nav.next svg {
-  transform: scaleX(-1);
-}
-.play:disabled {
-  background: var(--panel2);
-  color: var(--mist);
-  cursor: default;
-}
-.play {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 0;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  color: var(--void);
-  font-size: 16px;
+  gap: 10px;
 }
 .wave-wrap {
   position: relative;
@@ -99,10 +15,10 @@
 }
 .wave {
   position: relative;
-  height: 44px;
+  height: 46px;
+  margin: 0 -2px;
   cursor: pointer;
   touch-action: none;
-  border-radius: 4px;
 }
 .wave canvas {
   position: absolute;
@@ -110,20 +26,10 @@
   width: 100%;
   height: 100%;
 }
-/* The thumb, as on the random player's line. */
-.wave b {
-  position: absolute;
-  top: 50%;
-  left: var(--at, 0%);
-  width: 12px;
-  height: 12px;
-  margin: -6px 0 0 -6px;
-  border-radius: 50%;
-  background: var(--frost);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--ice) 70%, transparent);
-  pointer-events: none;
+.wave:focus-visible {
+  outline-offset: 4px;
 }
-/* No recording: a quiet flat line in the waveform's place. */
+/* No recording: a quiet flat line in the trace's place. */
 .wave.off {
   cursor: default;
 }
@@ -133,67 +39,82 @@
   left: 0;
   right: 0;
   top: 50%;
-  height: 2px;
-  margin-top: -1px;
-  background: rgba(232, 238, 255, 0.12);
+  height: 1px;
+  background: rgb(var(--g) / 0.25);
+}
+.wtime {
+  display: none;
 }
 .pins-layer {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
+  left: 0;
+  right: 0;
+  top: -8px;
+  height: 0;
 }
 .pin {
   position: absolute;
-  top: -16px;
-  width: 16px;
-  height: 16px;
-  margin-left: -8px;
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-  pointer-events: auto;
+  top: 0;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  display: grid;
+  place-items: center;
 }
 .pin::before {
   content: '';
-  position: absolute;
-  left: 4px;
-  top: 2px;
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   transform: rotate(45deg);
-  background: var(--frost);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+  background: var(--hot);
+  box-shadow: 0 0 calc(8px * var(--lum)) rgb(var(--g) / 0.95);
 }
 .pin::after {
   content: '';
   position: absolute;
-  left: 7.5px;
-  top: 12px;
+  top: 13px;
+  left: 8.5px;
   width: 1px;
-  height: 48px;
-  background: rgba(232, 238, 255, 0.35);
+  height: 42px;
+  background: linear-gradient(rgb(var(--g) / 0.5), rgb(var(--g) / 0.06));
+  pointer-events: none;
+}
+.pin.past::before {
+  background: #fff8ec;
 }
 .pin .pop {
   position: absolute;
-  bottom: 22px;
+  top: 22px;
   left: 50%;
   transform: translateX(-50%);
-  width: max-content;
-  max-width: 220px;
-  background: var(--void);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 6px 9px;
-  font-size: 12px;
-  line-height: 1.35;
-  text-align: left;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s;
   z-index: 3;
+  width: max-content;
+  max-width: 360px;
   display: grid;
-  gap: 4px;
+  gap: 6px;
+  padding: 9px 11px;
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+  font: 500 17px/1.12 var(--vfd);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--amber);
+  text-shadow: var(--glow);
+  background: #0c0805;
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--g) / 0.3),
+    0 0 24px rgb(var(--g) / 0.15),
+    0 8px 20px #000;
+}
+.pin .pop b {
+  display: block;
+  margin-bottom: 4px;
+  font: 500 8.5px/1.2 var(--mono);
+  letter-spacing: 0.14em;
+  color: var(--label);
 }
 .pin.start .pop {
   left: 0;
@@ -204,54 +125,64 @@
   right: 0;
   transform: none;
 }
-.pin .pop b {
-  font-weight: 500;
-  color: var(--ice);
-  margin-right: 6px;
-}
 .pin:hover .pop,
 .pin:focus-visible .pop,
 .pin.show .pop {
   opacity: 1;
 }
+/* The note and the hidden copies of every pin note share one cell. */
 .pnote {
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--frost);
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  display: grid;
+  align-content: start;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed rgb(var(--g) / 0.22);
+  height: calc(3 * 1.12em + 8px);
   overflow: hidden;
+  font: 500 16px/1.12 var(--vfd);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--amber);
+  text-shadow: var(--glow);
 }
-.pnote b {
-  font-weight: 500;
-  color: var(--ice);
-  margin-right: 8px;
+.pnote > span {
+  grid-area: 1 / 1;
 }
-.pnote.none {
-  display: none;
+.pnote .ghost {
+  visibility: hidden;
 }
-/* Narrow cards (card.css lays out the rows): no playing / paused caption, the pin note under the
-   waveform (two lines kept free for it), and the pin markers only mark — no popovers; a tap on
-   them seeks like the rest of the waveform. */
+.pnote .now:empty::before {
+  content: '· · ·';
+  opacity: 0.35;
+}
+/* Narrow cards: the time follows the line, the note is as high as the longest, and the pin
+   markers only mark — no popovers; a tap on them seeks like the rest of the line. */
 @media (max-width: 899.98px) {
-  .player-blk,
-  .pcap {
-    display: contents;
-  }
-  .pstate {
+  .mscreen .ptime {
     display: none;
   }
-  .pnote,
   .no-audio {
-    grid-area: note;
+    display: none;
+  }
+  .wline {
+    margin-top: 12px;
+  }
+  .wtime {
+    display: block;
+    flex: none;
+    font: 500 17px/1 var(--vfd);
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    opacity: 0.82;
   }
   .pnote {
-    min-height: 2.8em;
+    height: auto;
+    min-height: calc(3 * 1.12em + 8px);
+    font-size: 17px;
+    letter-spacing: 0.08em;
   }
-  .pline {
-    grid-area: line;
+  .pnote.none {
+    display: none;
   }
   .pin {
     pointer-events: none;

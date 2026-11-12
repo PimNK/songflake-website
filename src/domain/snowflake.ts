@@ -24,8 +24,6 @@ export interface SnowflakeParams {
   offshoots: 0 | 1 | 2;
   /** instruments 1/2/3 → inner polygon rings. */
   rings: Level;
-  /** Recorded with a band → dashed halo. */
-  halo: boolean;
 }
 
 export const FORK_SPREAD = 0.55; // rad, each side
@@ -35,7 +33,6 @@ export const OFFSHOOT_LENGTH = 0.46; // × ray length
 export const BRANCH_AT = 0.55; // along the offshoot
 export const BRANCH_ANGLE = 0.8; // rad, turning outward
 export const BRANCH_LENGTH = 0.5; // × offshoot length
-export const HALO_RADIUS = 1.12;
 export const RING_SPAN = 0.72;
 export const RING_ALPHA = 0.35;
 export const RAY_START = 0.05;
@@ -44,9 +41,9 @@ const RAY_LENGTH = [0.82, 0.58, 0.47] as const;
 const WAVE_AMPLITUDE = [0, 0.035, 0.06] as const;
 const WAVE_PERIODS = [0, 1.5, 2.5] as const;
 
-export type SnowflakeInput = Pick<Song, 'complexity' | 'band'>;
+export type SnowflakeInput = Pick<Song, 'complexity'>;
 
-export function snowflakeParams({ complexity: c, band }: SnowflakeInput): SnowflakeParams {
+export function snowflakeParams({ complexity: c }: SnowflakeInput): SnowflakeParams {
   const rayLength = RAY_LENGTH[c.rhythm - 1]!;
   return {
     rays: (c.structure * 2 + 2) as 4 | 6 | 8,
@@ -57,7 +54,6 @@ export function snowflakeParams({ complexity: c, band }: SnowflakeInput): Snowfl
     wavePeriods: WAVE_PERIODS[c.melody - 1]!,
     offshoots: (c.technique - 1) as 0 | 1 | 2,
     rings: c.instruments as Level,
-    halo: band !== null,
   };
 }
 
@@ -70,7 +66,7 @@ export const centreDotRadius = (R: number): number => Math.max(1.4, 0.045 * R);
 /** complexityTotal (5–15) → size factor, 1 at the middle total of 10. */
 export const sizeFactor = (complexityTotal: number): number => (6 + complexityTotal) / 16;
 
-/** Side of the canvas a static snowflake of radius `R` needs, halo and glow included (CSS px). */
+/** Side of the canvas a static snowflake of radius `R` needs, glow included (CSS px). */
 export const paintedSize = (R: number): number => Math.ceil(R * 2.7 + 16);
 
 /**
@@ -112,10 +108,7 @@ export interface Flake {
 }
 
 /** Everything the renderer needs for one song's snowflake. */
-export function flakeOf(
-  song: Pick<Song, 'complexity' | 'band' | 'accents'>,
-  taxonomy: Taxonomy,
-): Flake {
+export function flakeOf(song: Pick<Song, 'complexity' | 'accents'>, taxonomy: Taxonomy): Flake {
   const params = snowflakeParams(song);
   return { params, colours: rayColours(song, params.rays, taxonomy) };
 }

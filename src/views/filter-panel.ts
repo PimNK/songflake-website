@@ -33,7 +33,7 @@ interface Option {
   colour?: string;
 }
 
-// A pad: its light takes the instrument's colour (ice for the rest). No count is shown; an
+// A pad: its light takes the instrument's colour (the backlight for the rest). No count; an
 // option no song carries is dimmed.
 const option = (o: Option): string => `
   <label class="fopt pad${o.count ? '' : ' zero'}"${o.colour ? ` style="--led:${esc(o.colour)}"` : ''}>
@@ -46,8 +46,8 @@ const FUNNEL =
   '<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4.5h14l-5.4 6.3v4.6l-3.2 1.6v-6.2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>';
 
 /** A group's heading: its name with an ⓘ note, then whatever goes at its right. */
-const label = (name: string, note: string, right = ''): string =>
-  `<div class="flabel"><span class="fname">${name} ${info(note)}</span>${right}</div>`;
+const label = (name: string, note: string, right = '', end = false): string =>
+  `<div class="flabel"><span class="fname">${name} ${info(note, end)}</span>${right}</div>`;
 
 /**
  * One line with two thumbs, e.g. complexity min / max or years from / to: two range inputs over
@@ -91,15 +91,15 @@ function template(content: Content, space: FilterSpace): string {
         <div class="fgroup">${label(f.listen, f.info.listen, all)}
           <div class="pads">${accents.join('')}</div></div>
         <div class="franges">
-          <div class="fgroup">${label(f.complexity, f.info.complexity, '<b data-range-label></b>')}
+          <div class="fgroup">${label(f.complexity, f.info.complexity, '<output class="chip" data-range-label></output>')}
             ${range('range', f.complexity, ['min', 'max'], COMPLEXITY_MIN, COMPLEXITY_MAX)}</div>
-          <div class="fgroup">${label(f.year, f.info.year, '<b data-years-label></b>')}
+          <div class="fgroup">${label(f.year, f.info.year, '<output class="chip" data-years-label></output>', true)}
             ${range('years', f.year, ['from', 'to'], years.first, years.last)}</div>
         </div>
         <div class="fgroup" ${c.inProgress ? '' : 'hidden'}>${label(f.status, f.info.status)}<div class="pads">
           ${option({ kind: 'status', id: 'ready', label: f.ready, count: c.ready })}
           ${option({ kind: 'status', id: 'inProgress', label: f.inProgress, count: c.inProgress })}</div></div>
-        <button type="button" class="freset" data-reset>${f.reset}</button>
+        <div class="foot"><button type="button" class="freset" data-reset>${f.reset}</button></div>
       </div>`;
 }
 
@@ -151,7 +151,7 @@ function showDual(dual: HTMLElement, filters: FilterState): void {
   const key = (i: HTMLInputElement): 'min' | 'max' | 'from' | 'to' =>
     (i.dataset.range ?? i.dataset.years) as 'min' | 'max' | 'from' | 'to';
   const [lo, hi] = [Number(low.min), Number(low.max)];
-  const at = (v: number): string => `${hi > lo ? ((v - lo) / (hi - lo)) * 100 : 0}%`;
+  const at = (v: number): string => String(hi > lo ? (v - lo) / (hi - lo) : 0);
   low.value = String(filters[key(low)]);
   high.value = String(filters[key(high)]);
   dual.style.setProperty('--lo', at(filters[key(low)]));

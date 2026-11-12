@@ -1,170 +1,176 @@
 /* Page frame. Below 1100 px: two sections, each a screen high — the intro, then the bar and the
-   view — and scrolling snaps to them; the random-track player is frozen at the bottom of the
-   screen, from the second section on. From 1100 px: one screen; a left column with the hero row
-   (the title, the About button, which opens the intro in a window, and the language switch), the
-   player and the filter block (the labelled Record / List switch on top); the view fills the rest.
-   Narrower, the hero row holds the title and the language switch only. */
+   view — in a scrolling box that ends above the bottom player, so the player spans the width and
+   the scrollbar never runs under it; scrolling snaps to the sections. The random-track player is
+   frozen at the bottom, from the second section on; the filters are a sheet above it.
+   From 1100 px: one screen, one console — a faceplate down the left (.deck) holding the hero row,
+   the Record / List switch with the backlight knobs, the player and the filters; the view fills
+   the rest. */
 :root {
-  --gutter: clamp(16px, 3vw, 36px);
+  --gutter: 16px;
   /* above the view below 1100 px: top padding + the bar + gap */
   --bar-room: 64px;
-  /* the bottom player below 1100 px (player.css sizes its rows to fit) */
-  --player-room: calc(104px + env(safe-area-inset-bottom, 0px));
-  /* between the pads and the Record / List tabs (filters.css) and between the hero's buttons */
-  --tab-gap: 6px;
+  /* the bottom player below 1100 px (random-player.css sizes its rows to fit) */
+  --player-room: calc(132px + env(safe-area-inset-bottom, 0px));
+  /* the hero's keys: the power lamp and the language switch (and «?» from 1100 px) */
+  --keys-w: 53px;
 }
-.intro-sec {
-  padding: clamp(28px, 6vw, 52px) var(--gutter) 96px;
-  display: grid;
-  gap: 18px;
-  align-content: center;
+@media (min-width: 600px) {
+  :root {
+    --gutter: 24px;
+  }
 }
-.intro-sec h1 {
-  letter-spacing: -0.01em;
-  line-height: 1.02;
+.deck {
+  display: none;
 }
-/* The hero row: the title at the left; at the right its buttons (? and the language), which
-   together are one filter pad wide — a column of the pad grid (--pad-cols from filters.css,
-   --tab-gap apart) — and a pad high. The title takes the size that fits the room left:
-   --title-em is its width in em, measured by views/page.ts (7.6 until then). */
+/* The hero row: the title at the left, the lamp and keys at the right. The title takes the size
+   that fits the room left: --title-em is its width in em, measured by views/page.ts. */
 .hero {
   --title-em: 7.6;
   container-type: inline-size;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: var(--tab-gap);
+  gap: 12px;
+  min-width: 0;
 }
-.intro-sec .hero h1 {
-  --keys-w: calc((100cqi - (var(--pad-cols) - 1) * var(--tab-gap)) / var(--pad-cols));
-  font-size: min(
-    var(--title-max, 76px),
-    (100cqi - var(--keys-w) - var(--tab-gap)) / var(--title-em)
-  );
+.hero h1 {
+  font-size: min(var(--title-max, 64px), (100cqi - var(--keys-w) - 12px) / var(--title-em));
 }
 .hero-keys {
+  margin-left: auto;
   display: flex;
-  flex: none;
-  width: calc((100cqi - (var(--pad-cols) - 1) * var(--tab-gap)) / var(--pad-cols));
-  gap: var(--tab-gap);
-}
-.hero-btn {
-  flex: 1;
-  padding: 0;
-  color: var(--frost);
-  cursor: pointer;
-}
-.about-btn {
-  font-size: 17px;
-}
-.hero-btn:hover {
-  border-color: var(--mist);
-}
-.about {
-  display: grid;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
 }
 /* The About button is for wide screens; narrower, the intro is on the page. */
-.hero-btn.about-btn {
-  display: none;
+.about-btn {
+  display: none !important;
 }
-@media (min-width: 1100px) {
-  .hero-btn.about-btn {
-    display: flex;
+/* The intro (views/html.ts introHtml): paragraphs and list lines with a lamp for a bullet. */
+.lead {
+  max-width: 62ch;
+  font: 300 10.5px/1.8 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+.lead p {
+  margin: 0 0 0.9em;
+}
+.lead p:last-child {
+  margin: 0;
+}
+.lead ul {
+  list-style: none;
+  margin: -0.5em 0 0.9em;
+  padding: 0;
+}
+.lead li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lead li::before {
+  content: '';
+  flex: none;
+  width: 12px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--amber);
+  box-shadow: 0 0 6px rgb(var(--g) / 0.9);
+}
+/* A tablet has room: the intro reads bigger. */
+@media (min-width: 600px) {
+  .intro-sec .lead {
+    font-size: 15px;
+    line-height: 1.75;
   }
 }
-.lead {
-  max-width: 64ch;
-  color: var(--mist);
-  font-size: 15px;
-  line-height: 1.6;
-  white-space: pre-line;
+/* The Record / List switch: a slot with a sliding knob under the chosen tab. */
+.viewbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-.btn {
-  background: color-mix(in srgb, var(--panel) 85%, transparent);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 5px 12px;
-  font-size: 11.5px;
-  cursor: pointer;
-  color: var(--frost);
-}
-.btn:hover {
-  border-color: var(--mist);
-}
-
-.map-sec {
+.slot {
+  position: relative;
   display: grid;
-  gap: 10px;
-  align-content: start;
-  padding: 10px var(--gutter) 0;
-  min-width: 0;
+  grid-template-columns: 1fr 1fr;
+  width: 220px;
+  height: 38px;
+  padding: 3px;
+  border-radius: 8px;
+  background: #050403;
+  box-shadow:
+    inset 0 2px 5px #000,
+    0 1px 0 rgba(255, 220, 170, 0.1);
+}
+.slot button {
+  position: relative;
+  z-index: 1;
+  font: 500 8.5px var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--off);
+  transition: color 0.2s;
+}
+.slot button[aria-selected='true'] {
+  color: var(--hot);
+  text-shadow: var(--glow);
+}
+.knob {
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  bottom: 3px;
+  width: calc(50% - 3px);
+  border-radius: 6px;
+  background: linear-gradient(#2c2520, #15110e);
+  box-shadow:
+    0 2px 3px #000,
+    inset 0 1px 0 rgba(255, 220, 170, 0.18),
+    inset 0 -8px 12px -8px rgb(var(--g) / 0.55);
+  transition: transform 0.2s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.page[data-view='list'] .knob {
+  transform: translateX(100%);
 }
 .views {
   position: relative;
   min-width: 0;
 }
-/* The bar: the «View» label and the Record / List switch, on the page background. */
-.viewbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.vseg {
-  display: inline-flex;
-  flex: none;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 3px;
-}
-.vseg button {
-  background: none;
-  border: 0;
-  border-radius: 999px;
-  padding: 6px 16px;
-  font-size: 12px;
-  color: var(--mist);
-  cursor: pointer;
-}
-.vseg button[aria-selected='true'] {
-  background: var(--frost);
-  color: var(--void);
-}
 .notice {
-  font-size: 12px;
-  color: var(--frost);
-  background: var(--panel2);
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  position: relative;
+  z-index: 2;
+  margin-bottom: 10px;
   padding: 8px 12px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none !important;
-  }
+  border-radius: 6px;
+  font: 500 17px/1 var(--vfd);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--amber);
+  text-shadow: var(--glow);
+  background: #0c0805;
+  box-shadow: inset 0 0 0 1px rgb(var(--g) / 0.3);
 }
 /* Narrow screens: a large arrow that shows (and does) the way to the tracks; it fades out once
    the page is scrolled (views/page.ts). */
-.intro-sec {
-  position: relative;
-}
 .scroll-cue {
   position: absolute;
   left: 50%;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
   margin-left: -36px;
   width: 72px;
   display: grid;
   justify-items: center;
-  gap: 0;
-  padding: 4px 0;
-  border: 0;
-  background: none;
-  color: var(--ice);
-  cursor: pointer;
+  gap: 2px;
+  color: var(--amber);
   animation: cue 2.4s ease-in-out infinite;
   transition: opacity 0.3s;
+}
+.scroll-cue svg {
+  width: 34px;
+  height: 34px;
+  filter: drop-shadow(0 0 calc(6px * var(--lum)) rgb(var(--g) / 0.8));
 }
 .scroll-cue.gone {
   opacity: 0;
@@ -180,38 +186,50 @@
     animation: none;
   }
 }
+
 @media (max-width: 1099.98px) {
-  html {
-    scroll-snap-type: y proximity;
+  body {
+    height: 100svh;
+    overflow: hidden;
   }
-  html:has(.page[data-view='record']) {
+  .scroller {
+    position: fixed;
+    inset: 0 0 var(--player-room);
+    overflow: hidden auto;
+    overscroll-behavior: contain;
+    scroll-snap-type: y proximity;
+    scrollbar-color: #3a322a transparent;
+    transition: bottom 0.25s ease;
+  }
+  .page[data-view='record'] .scroller {
     scroll-snap-type: y mandatory;
   }
-  .intro-sec,
-  .map-sec {
+  .page.at-intro .scroller {
+    bottom: 0;
+  }
+  .intro-sec {
+    position: relative;
     min-height: 100svh;
     scroll-snap-align: start;
-  }
-  .page {
-    padding-bottom: var(--player-room);
-  }
-  /* The player is frozen at the bottom, within reach of a thumb (rows in player.css). */
-  .rplayer {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 8;
-    height: var(--player-room);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     align-content: center;
-    padding: 8px var(--gutter) calc(env(safe-area-inset-bottom, 0px) + 8px);
-    border-top: 1px solid var(--line);
-    background: color-mix(in srgb, var(--void) 92%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    transition:
-      transform 0.25s ease,
-      visibility 0.25s;
+    gap: 26px;
+    padding: calc(env(safe-area-inset-top, 0px) + 28px) var(--gutter) 110px;
+  }
+  .map-sec {
+    min-height: calc(100svh - var(--player-room));
+    scroll-snap-align: start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: 10px;
+    padding: 14px var(--gutter) 16px;
+  }
+  .ctl {
+    display: flex;
+    align-items: center;
+    height: 44px;
   }
   /* Not on the first screen: the player slides in once the intro is scrolled away (page.ts). */
   .page.at-intro .rplayer,
@@ -223,48 +241,84 @@
 /* Phones: the list only — no Record / List switch (app/main.ts keeps the view on the list; its
    PHONE query must match this breakpoint). */
 @media (max-width: 599.98px) {
-  .viewbar {
+  .ctl {
     display: none;
   }
 }
 @media (min-width: 1100px) {
+  :root {
+    --keys-w: 97px;
+  }
+  body {
+    height: 100svh;
+    overflow: hidden;
+  }
   .page {
     display: grid;
     height: 100svh;
-    grid-template-columns: minmax(0, clamp(420px, 34vw, 600px)) minmax(0, 1fr);
-    grid-template-rows: auto auto minmax(0, auto) minmax(0, 1fr);
+    grid-template-columns: 468px minmax(0, 1fr);
+    grid-template-rows: auto auto auto minmax(0, 1fr);
     grid-template-areas:
-      'title view'
+      'hero view'
+      'ctl view'
       'play view'
-      'filt view'
-      '. view';
-    column-gap: 28px;
-    padding-left: var(--gutter);
+      'filt view';
+    padding: 12px 0 12px 12px;
   }
+  .scroller,
   .intro-sec,
   .map-sec {
     display: contents;
+  }
+  .deck {
+    display: block;
+    grid-column: 1;
+    grid-row: 1 / -1;
   }
   .scroll-cue,
   .about {
     display: none;
   }
-  /* Room between the hero and the player. */
+  .about-btn {
+    display: grid !important;
+  }
   .hero {
-    --title-max: 56px;
-    grid-area: title;
-    padding-block: 18px 64px;
+    --title-max: 30px;
+    grid-area: hero;
+    position: relative;
+    margin: 26px 28px 0;
   }
-  .rplayer {
-    grid-area: play;
-    padding-bottom: 14px;
+  .ctl {
+    grid-area: ctl;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    margin: 14px 28px 0;
   }
-  .fanchor {
-    grid-area: filt;
+  .ctl .viewbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: 190px;
+  }
+  .ctl .slot {
+    width: auto;
+  }
+  .ctl .dials {
+    margin-left: auto;
   }
   .views {
     grid-area: view;
-    height: 100svh;
-    overflow: auto;
+    grid-row: 1 / -1;
+    min-height: 0;
+    margin-top: -12px;
+    margin-bottom: -12px;
+  }
+  .notice {
+    position: absolute;
+    top: 24px;
+    left: 34px;
   }
 }

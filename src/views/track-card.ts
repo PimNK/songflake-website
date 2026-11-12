@@ -1,15 +1,21 @@
-// The track card modal (CLAUDE.md §4.3): title and ✕; the player laid out like the random player
-// (previous · play / pause · next, then its caption and the waveform line), the turning snowflake
-// beside it; the four cells below. Swiping left / right on touch steps tracks.
+// The track card modal (CLAUDE.md §4.3), the console's player, wider: a display with the caption
+// and time, the title (one line; a ticker on narrow cards), the oscilloscope line with the pins,
+// the pin note and the turning snowflake at its right; under it previous · play / pause · next
+// and the volume fader (✕ at the top right); the four cells below. Swiping left / right on touch
+// steps tracks.
 // Focus is trapped while open and returned to the opener; page scroll is locked.
 // Closing (✕, Esc, backdrop) and prev/next go through the caller, which owns the state.
 import type { Content } from '../content/load';
 import type { Song } from '../content/parse';
 import { strings } from '../strings';
 import { renderCardBody } from './card-body';
-import { SKIP_ICON } from './html';
+import { CLOSE_ICON, icon } from './html';
 import { trapFocus } from './modal';
+import type { Playback } from './playback';
+import { NARROW } from './pin-markers';
 import { emptyPlayer } from './player';
+import { refitOnResize, setRun } from './ticker';
+import { volumeFader } from './volume';
 
 export interface CardHooks {
   close(): void;
@@ -21,7 +27,7 @@ export interface CardHooks {
 export interface PlayerSlots {
   /** Between the previous and next buttons: the round play / pause button goes here. */
   play: HTMLElement;
-  /** Beside and under the keys: the caption with the pin note, the waveform with pins, the time. */
+  /** In the display: the caption and time, the oscilloscope line with pins, the pin note. */
   body: HTMLElement;
 }
 
@@ -34,8 +40,8 @@ const c = strings.card;
 const p = strings.player;
 const SWIPE_PX = 60;
 
-export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
-  const modal = createModal();
+export function mountTrackCard(content: Content, playback: Playback, hooks: CardHooks): TrackCard {
+  const modal = createModal(playback);
   const title = modal.querySelector<HTMLElement>('#card-title')!;
   const slots: PlayerSlots = {
     play: modal.querySelector<HTMLElement>('.play-slot')!,
@@ -58,15 +64,15 @@ export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
   return {
     show(song, cue) {
       if (modal.hidden) opener = document.activeElement as HTMLElement | null;
-      title.textContent = song.title;
+      setRun(title, song.title, NARROW.matches);
       title.title = song.title; // one line on wide cards: the whole title on hover
       clearPlayer();
       if (song.audioSrc) disposePlayer = hooks.player(slots, song, cue);
       else {
-        slots.play.innerHTML = `<button class="play" type="button" disabled aria-label="${p.play}">${p.playGlyph}</button>`;
+        slots.play.innerHTML = `<button class="btn play" type="button" disabled aria-label="${p.play}">${icon('play')}</button>`;
         slots.body.innerHTML = emptyPlayer();
       }
-      renderCardBody(grid, flake, song, content.taxonomy, content.bands);
+      renderCardBody(grid, flake, song, content.taxonomy);
       const opening = modal.hidden;
       modal.hidden = false;
       document.body.classList.add('locked');
@@ -86,7 +92,8 @@ export function mountTrackCard(content: Content, hooks: CardHooks): TrackCard {
   };
 }
 
-function createModal(): HTMLElement {
+/** The card's frame, once for the page: the display, the keys with the volume, the cells. */
+function createModal(playback: Playback): HTMLElement {
   const modal = document.createElement('div');
   modal.className = 'modal';
   modal.hidden = true;
@@ -94,26 +101,25 @@ function createModal(): HTMLElement {
   modal.setAttribute('aria-modal', 'true');
   modal.setAttribute('aria-labelledby', 'card-title');
   modal.innerHTML = `
-    <article class="sheet">
-      <header class="mhead">
-        <h2 id="card-title"></h2>
-        <div class="mnav">
-          <button class="btn" type="button" data-close aria-label="${c.close}">✕</button>
-        </div>
-      </header>
-      <div class="mtop">
-        <section class="player-blk" aria-label="${p.label}">
-          <div class="transport">
-            <button class="nav" type="button" data-step="-1" aria-label="${c.prev}">${SKIP_ICON}</button>
-            <div class="play-slot"></div>
-            <button class="nav next" type="button" data-step="1" aria-label="${c.next}">${SKIP_ICON}</button>
-          </div>
+    <article class="sheet panel">
+      <button class="btn s x" type="button" data-close aria-label="${c.close}">${CLOSE_ICON}</button>
+      <section class="mtop" aria-label="${p.label}">
+        <div class="vfd mscreen">
+          <h2 class="mtitle" id="card-title"></h2>
           <div class="player-body"></div>
-        </section>
-        <div class="mflake flake-clip" aria-hidden="true"></div>
-      </div>
+          <div class="mflake flake-clip" aria-hidden="true"></div>
+        </div>
+        <div class="mtransport">
+          <button class="btn k" type="button" data-step="-1" aria-label="${c.prev}">${icon('prev')}</button>
+          <div class="play-slot"></div>
+          <button class="btn k" type="button" data-step="1" aria-label="${c.next}">${icon('next')}</button>
+        </div>
+      </section>
       <div class="mgrid"></div>
     </article>`;
+  modal.querySelector('.mtransport')!.append(volumeFader(playback));
+  // The title runs as a ticker on narrow cards only: refitted when its width changes.
+  refitOnResize(modal.querySelector<HTMLElement>('#card-title')!, () => NARROW.matches);
   document.body.append(modal);
   return modal;
 }

@@ -1,5 +1,5 @@
-// Taxonomy (styles, instruments and their colours) and bands: schemas and validation.
-// The YAML files are the only place these names and colours exist (CLAUDE.md §2.2, §2.3).
+// Taxonomy (styles, instruments and their colours): schema and validation.
+// The YAML file is the only place these names and colours exist (CLAUDE.md §2.2).
 import { z } from 'zod';
 
 const colour = z.string().regex(/^#[0-9a-fA-F]{6}$/, { error: 'must be a colour like "#ff8a65"' });
@@ -11,17 +11,6 @@ const taxonomySchema = z.object({
     z.object({ name: z.string().min(1), ru: z.string().min(1).optional(), colour }),
   ),
 });
-
-const bandsSchema = z.record(
-  z.string(),
-  z
-    .object({
-      years: z.string().optional(),
-      about: z.string().optional(),
-      about_ru: z.string().optional(),
-    })
-    .nullable(),
-);
 
 export interface Accent {
   id: string;
@@ -38,16 +27,6 @@ export interface Taxonomy {
   accents: Accent[];
 }
 
-export interface Band {
-  name: string;
-  years?: string;
-  about?: string;
-  /** The Russian description; `about` when absent. */
-  aboutRu?: string;
-}
-
-export type Bands = Record<string, Band>;
-
 function describe(error: z.ZodError): string {
   return error.issues
     .map((i) => `  ${i.path.map(String).join('.') || '(root)'}: ${i.message}`)
@@ -63,16 +42,4 @@ export function toTaxonomy(raw: unknown, file = 'content/taxonomy.yaml'): Taxono
     styles,
     accents: Object.entries(accents).map(([id, a]) => ({ id, ...a })),
   };
-}
-
-/** Validates parsed bands YAML. Throws with every problem listed. */
-export function toBands(raw: unknown, file = 'content/bands.yaml'): Bands {
-  const parsed = bandsSchema.safeParse(raw ?? {});
-  if (!parsed.success) throw new Error(`${file}:\n${describe(parsed.error)}`);
-  return Object.fromEntries(
-    Object.entries(parsed.data).map(([name, b]) => {
-      const { about_ru, ...rest } = b ?? {};
-      return [name, { name, ...rest, ...(about_ru ? { aboutRu: about_ru } : {}) }];
-    }),
-  );
 }

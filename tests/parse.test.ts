@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { displayOrder, firstSentence, parseSong, type ParseResult } from '../src/content/parse';
-import { bands, md, song, taxonomy, valid } from './fixtures';
+import { md, song, taxonomy, valid } from './fixtures';
 
 const audio = [{ name: 'audio.mp3', url: '/songs/x/audio.mp3' }];
 const run = (fm: string, opts: { slug?: string; audio?: typeof audio; body?: string } = {}) =>
-  parseSong(opts.slug ?? 'x', md(fm, opts.body), opts.audio ?? [], taxonomy, bands);
+  parseSong(opts.slug ?? 'x', md(fm, opts.body), opts.audio ?? [], taxonomy);
 const errorsOf = (r: ParseResult) => (r.ok ? [] : r.errors);
 
 describe('parseSong — valid input', () => {
@@ -14,7 +14,6 @@ describe('parseSong — valid input', () => {
     if (!r.ok) return;
     expect(r.song).toMatchObject({
       title: 'Destination',
-      band: 'Vita Brevis',
       complexityTotal: 8,
       status: 'ready',
       excerpt: 'A story.',
@@ -34,10 +33,9 @@ describe('parseSong — valid input', () => {
     expect(errorsOf(r)[0]).toContain('title must be a quoted string');
   });
 
-  it('treats a missing ready year as in progress and a missing band as solo', () => {
-    const r = run(valid.replace('band: "Vita Brevis"\n', '').replace(', ready: 2011', ''));
+  it('treats a missing ready year as in progress', () => {
+    const r = run(valid.replace(', ready: 2011', ''));
     expect(r.ok && r.song.status).toBe('in-progress');
-    expect(r.ok && r.song.band).toBeNull();
   });
 
   it('prefers a local audio file over audio_url', () => {
@@ -138,9 +136,7 @@ describe('parseSong — errors from CLAUDE.md §2.4', () => {
     expect(errorsOf(run(valid, { slug: 'Bad_Slug' }))[0]).toContain(
       'folder name must be lowercase',
     );
-    expect(errorsOf(parseSong('x', 'no frontmatter', [], taxonomy, bands))[0]).toContain(
-      'no frontmatter',
-    );
+    expect(errorsOf(parseSong('x', 'no frontmatter', [], taxonomy))[0]).toContain('no frontmatter');
     expect(errorsOf(run('title: "a"\nstyle: [')).length).toBe(1);
   });
 });
@@ -153,18 +149,18 @@ describe('parseSong — warnings', () => {
     ]);
   });
 
-  it('band "" and a band missing from bands.yaml', () => {
-    expect(run(valid.replace('"Vita Brevis"', '""')).warnings[0]).toContain('band is ""');
-    expect(run(valid.replace('"Vita Brevis"', '"Other"')).warnings[0]).toContain(
-      'band "Other" is not in content/bands.yaml',
-    );
+  it('band is no longer a field: an unknown key', () => {
+    expect(
+      run(`${valid}
+band: "Vita Brevis"`).warnings,
+    ).toEqual(['songs/x/index.md: unknown field "band"']);
   });
 
   it('long pin text', () => {
-    const fm = `${valid}\npins:\n  - at: "0:10"\n    text: "${'x'.repeat(201)}"`;
+    const fm = `${valid}\npins:\n  - at: "0:10"\n    text: "${'x'.repeat(401)}"`;
     const r = run(fm, { audio });
     expect(r.ok).toBe(true);
-    expect(r.warnings[0]).toContain('pins[0].text is 201 characters');
+    expect(r.warnings[0]).toContain('pins[0].text is 401 characters');
   });
 });
 

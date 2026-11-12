@@ -16,7 +16,7 @@ import { sampleComplexity, song, taxonomy } from './fixtures';
 
 describe('snowflakeParams (§5.1)', () => {
   const at = (axis: string, v: number) =>
-    snowflakeParams({ complexity: sampleComplexity({ [axis]: v }), band: null });
+    snowflakeParams({ complexity: sampleComplexity({ [axis]: v }) });
 
   it('structure → 4 / 6 / 8 rays', () => {
     expect([1, 2, 3].map((v) => at('structure', v).rays)).toEqual([4, 6, 8]);
@@ -29,11 +29,9 @@ describe('snowflakeParams (§5.1)', () => {
     expect([1, 2, 3].map((v) => at('melody', v).waveAmplitude)).toEqual([0, 0.035, 0.06]);
     expect([1, 2, 3].map((v) => at('melody', v).wavePeriods)).toEqual([0, 1.5, 2.5]);
   });
-  it('technique → offshoots, instruments → rings, band → halo', () => {
+  it('technique → offshoots, instruments → rings', () => {
     expect([1, 2, 3].map((v) => at('technique', v).offshoots)).toEqual([0, 1, 2]);
     expect([1, 2, 3].map((v) => at('instruments', v).rings)).toEqual([1, 2, 3]);
-    expect(snowflakeParams({ complexity: sampleComplexity(), band: '' }).halo).toBe(true);
-    expect(snowflakeParams({ complexity: sampleComplexity(), band: null }).halo).toBe(false);
   });
   it('is a pure function of the data', () => {
     const s = song();

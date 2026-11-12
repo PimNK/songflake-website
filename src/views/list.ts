@@ -6,14 +6,14 @@ import type { Song } from '../content/parse';
 import { flakeOf, tileFlake } from '../domain/snowflake';
 import { paintSnowflake } from '../render/snowflake';
 import { strings } from '../strings';
-import { bandRing, esc, turnStyle } from './html';
+import { esc, turnStyle } from './html';
 
 export interface ListView {
   update(match: (song: Song) => boolean): void;
   setPlaying(slug: string | null): void;
 }
 
-const TILE_RADIUS = 40;
+const TILE_RADIUS = 36;
 
 function tile(song: Song, content: Content): HTMLButtonElement {
   const { taxonomy } = content;
@@ -34,7 +34,7 @@ function tile(song: Song, content: Content): HTMLButtonElement {
   const dots = song.accents
     .map((id) => {
       const a = taxonomy.accents.find((x) => x.id === id);
-      return a ? `<i style="background:${esc(a.colour)}" title="${esc(a.name)}"></i>` : '';
+      return a ? `<i style="--led:${esc(a.colour)}" title="${esc(a.name)}"></i>` : '';
     })
     .join('');
   const box = document.createElement('span');
@@ -45,7 +45,7 @@ function tile(song: Song, content: Content): HTMLButtonElement {
   b.insertAdjacentHTML(
     'beforeend',
     `<b>${esc(song.title)}</b><small>${esc(strings.list.year(song.style, year))}</small>
-     <span class="dots">${dots}${song.band !== null ? bandRing(11, strings.list.band) : ''}</span>`,
+     <span class="dots">${dots}</span>`,
   );
   return b;
 }

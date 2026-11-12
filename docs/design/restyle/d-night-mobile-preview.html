@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SONGFLAKE — мобильный макет D, предпросмотр</title>
+<style>
+/* Preview only: the mobile mockup in a phone and a tablet frame side by side on a desktop screen. */
+body{margin:0;min-height:100vh;background:#0b0a09;color:#a98a62;font:500 11px/1.4 ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;
+  display:flex;flex-wrap:wrap;gap:40px;justify-content:center;align-items:flex-start;padding:28px}
+figure{margin:0;display:grid;gap:10px;justify-items:center}
+.dev{border-radius:34px;padding:12px;background:#1a1612;box-shadow:0 0 0 1px #2a231d,0 20px 60px #000}
+.dev iframe{display:block;border:0;border-radius:24px;background:#020202}
+.tab{width:calc(820px * .72 + 24px);height:calc(1180px * .72 + 24px);overflow:hidden}
+.tab iframe{width:820px;height:1180px;transform:scale(.72);transform-origin:0 0}
+</style>
+</head>
+<body>
+<figure><div class="dev"><iframe src="d-night-mobile.html" width="390" height="844" title="Телефон, 390 × 844"></iframe></div><figcaption>Телефон · 390 × 844</figcaption></figure>
+<figure><div class="dev"><iframe src="d-night-mobile.html" width="360" height="740" title="Маленький телефон, 360 × 740"></iframe></div><figcaption>Маленький телефон · 360 × 740</figcaption></figure>
+<figure><div class="dev tab"><iframe src="d-night-mobile.html" title="Планшет, 820 × 1180"></iframe></div><figcaption>Планшет · 820 × 1180 (в масштабе 0,72)</figcaption></figure>
+<script>
+// every frame loads the mockup afresh, so an edit shows without clearing the cache
+document.querySelectorAll('iframe').forEach((f) => (f.src = 'd-night-mobile.html?v=' + Date.now()));
+</script>
+</body>
+</html>

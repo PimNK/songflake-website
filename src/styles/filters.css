@@ -1,147 +1,87 @@
-/* Filter panel. Options are drum-machine pads (the look is .pad in base.css): one size, one
-   grid, a light that glows in the instrument's colour (ice for the rest) when the pad is on. Ranges are one line with two thumbs.
-   Wide screens: one block on the page background under the player — the Record / List switch on
-   top, then the filters — always open. Narrower: a sheet above the bottom player. Instrument
-   colours are set inline from the taxonomy. */
+/* Filter panel. Options are drum-machine pads (the look is .pad in base.css): one size, one grid,
+   a lamp that glows in the instrument's colour (the backlight for the rest) when the pad is on.
+   Ranges are faders with two caps. Wide screens: sections on the faceplate under the player,
+   always open. Narrower: a sheet above the bottom player, its foot holding Reset and the
+   backlight knobs. Instrument colours are set inline from the taxonomy. */
 :root {
   --pad-cols: 3;
-  --pad-h: 52px;
+  --pad-h: clamp(44px, 7svh, 50px);
 }
 @media (min-width: 600px) {
   :root {
     --pad-cols: 4;
   }
 }
-/* Below 1100 px the sheet must fit above the player without scrolling: pads shrink on a low
-   screen, never under 44 px. */
-@media (max-width: 1099.98px) {
-  :root {
-    --pad-h: clamp(44px, 7svh, 52px);
-  }
-}
 @media (min-width: 1100px) {
   :root {
-    --pad-h: 42px;
+    --pad-h: 50px;
   }
 }
 .fanchor {
   position: relative;
-  z-index: 6;
-}
-@media (max-width: 1099.98px) {
-  .fpanel {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: var(--player-room);
-    z-index: 9;
-    max-height: calc(100svh - var(--player-room));
-    overflow: auto;
-    overscroll-behavior: contain;
-    padding: 18px var(--gutter) 20px;
-    border: 1px solid var(--line);
-    border-bottom: 0;
-    border-radius: 18px 18px 0 0;
-    background: color-mix(in srgb, var(--panel) 96%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.45);
-  }
-}
-/* Wide: the block — the view switch, then the filters — scrolls inside itself on a low window. */
-@media (min-width: 1100px) {
-  .fanchor {
-    display: grid;
-    gap: 22px;
-    align-self: start;
-    max-height: 100%;
-    overflow: auto;
-    overscroll-behavior: contain;
-  }
-  .viewbar {
-    display: grid;
-    gap: 6px;
-  }
-  .vseg {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--tab-gap);
-    border: 0;
-    padding: 0;
-  }
-  .vseg button {
-    height: var(--pad-h);
-    border-radius: 8px;
-    border: 1px solid var(--line);
-    background: linear-gradient(180deg, var(--panel2), var(--panel));
-    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.35);
-    font-size: 13px;
-  }
-  .vseg button:hover {
-    border-color: var(--mist);
-  }
-  .vseg button[aria-selected='true'] {
-    border-color: var(--ice);
-    background: color-mix(in srgb, var(--ice) 16%, var(--panel2));
-    color: var(--frost);
-  }
+  z-index: 11;
 }
 .fbody {
   display: grid;
-  gap: 28px;
+  gap: 14px;
 }
-@media (min-width: 1100px) {
-  .fbody {
-    gap: 22px;
-  }
+/* Each group sits in a groove of the faceplate. */
+.fgroup,
+.franges,
+.foot {
+  border-top: 1px solid #000;
+  box-shadow: inset 0 1px 0 rgba(255, 200, 140, 0.08);
+  padding-top: 13px;
+}
+.franges .fgroup {
+  border: 0;
+  box-shadow: none;
+  padding: 0;
 }
 .fgroup {
   position: relative;
   display: grid;
-  gap: 8px;
+  gap: 9px;
 }
 .flabel {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
-}
-.flabel b {
-  white-space: nowrap;
-  color: var(--frost);
-  font-weight: 500;
-  letter-spacing: 0;
+  min-height: 22px;
 }
 .flabel button {
-  background: none;
-  border: 0;
-  padding: 8px 0;
-  margin-block: -8px;
-  color: var(--ice);
+  padding: 6px 0;
+  margin-block: -6px;
   font: inherit;
-  letter-spacing: 0;
-  cursor: pointer;
-  text-transform: none;
-  white-space: nowrap;
+  color: var(--label);
+  text-shadow: inherit;
+}
+.flabel button:hover {
+  color: var(--hot);
 }
 .fname {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 /* The pads: same size, aligned in columns and rows across every group. */
 .pads {
   display: grid;
   grid-template-columns: repeat(var(--pad-cols), minmax(0, 1fr));
-  gap: var(--tab-gap);
+  gap: 9px 8px;
 }
 /* An option is a pad (styles/base.css); here only what makes it a control. */
 .fopt {
   cursor: pointer;
   user-select: none;
 }
-.fopt:hover {
-  border-color: var(--mist);
+.fopt:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 1px 0 #050403,
+    0 2px 3px #000,
+    inset 0 1px 0 rgba(255, 220, 170, 0.1);
 }
 .fopt.zero {
   opacity: 0.45;
@@ -154,7 +94,7 @@
   margin: 0;
 }
 .fopt:has(input:focus-visible) {
-  outline: 2px solid var(--ice);
+  outline: 2px solid var(--amber);
   outline-offset: 2px;
 }
 /* Complexity and Year side by side; their headings share a row (subgrid), so the two lines stay
@@ -163,125 +103,129 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   grid-template-rows: auto auto;
-  gap: 8px 20px;
+  gap: 9px 20px;
 }
 .franges .fgroup {
   grid-row: span 2;
   grid-template-rows: subgrid;
 }
 .franges .flabel {
-  align-items: end;
+  align-items: flex-end;
+  min-height: 32px;
+}
+.franges .chip {
+  flex: none;
+  font-size: 17px;
 }
 @media (min-width: 600px) {
   .franges {
     column-gap: 28px;
   }
 }
-/* A range: one track, two thumbs (two range inputs stacked; only their thumbs take the pointer).
-   The track is inset by the thumb's radius, so --lo / --hi line up with the thumbs' centres. */
-.dual {
-  --thumb: 18px;
-  position: relative;
-  height: 32px;
+@media (min-width: 1100px) {
+  .franges {
+    column-gap: 26px;
+  }
+  .franges .flabel {
+    min-height: 22px;
+  }
 }
-.dual::before {
-  content: '';
-  position: absolute;
-  left: calc(var(--thumb) / 2);
-  right: calc(var(--thumb) / 2);
-  top: 50%;
-  height: 4px;
-  margin-top: -2px;
-  border-radius: 2px;
-  background: linear-gradient(
-    90deg,
-    rgba(232, 238, 255, 0.14) var(--lo, 0%),
-    var(--ice) var(--lo, 0%) var(--hi, 100%),
-    rgba(232, 238, 255, 0.14) var(--hi, 100%)
-  );
-}
-.dual input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  background: none;
-  appearance: none;
-  -webkit-appearance: none;
-  pointer-events: none;
-}
-.dual input.top {
-  z-index: 1;
-}
-.dual input::-webkit-slider-runnable-track {
-  height: 4px;
-  background: none;
-  border: 0;
-}
-.dual input::-moz-range-track {
-  height: 4px;
-  background: none;
-  border: 0;
-}
-.dual input::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: var(--thumb);
-  height: var(--thumb);
-  margin-top: calc(2px - var(--thumb) / 2);
-  border: 0;
-  border-radius: 50%;
-  background: var(--frost);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--ice) 70%, transparent);
-  pointer-events: auto;
-  cursor: grab;
-}
-.dual input::-moz-range-thumb {
-  width: var(--thumb);
-  height: var(--thumb);
-  border: 0;
-  border-radius: 50%;
-  background: var(--frost);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--ice) 70%, transparent);
-  pointer-events: auto;
-  cursor: grab;
-}
-.dual input:focus-visible {
-  outline: none;
-}
-.dual input:focus-visible::-webkit-slider-thumb {
-  box-shadow: 0 0 0 3px var(--ice);
-}
-.dual input:focus-visible::-moz-range-thumb {
-  box-shadow: 0 0 0 3px var(--ice);
+/* Reset: a key with a red lamp; on narrow screens the backlight knobs share its row. */
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .freset {
-  height: var(--pad-h);
-  justify-self: start;
-  padding-inline: 18px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: none;
-  font-size: 13px;
-  cursor: pointer;
+  white-space: nowrap;
 }
-.freset:hover {
-  border-color: var(--mist);
+.freset::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff5a2a;
+  box-shadow: 0 0 8px #ff5a2a;
+}
+.foot .dials {
+  margin-left: auto;
 }
 /* The ⓘ notes open downwards, under the group's heading, inside the panel. */
 .fpanel .qi {
   position: static;
 }
-.fpanel .bubble {
-  top: 22px;
-  bottom: auto;
+.fpanel .fgroup .bubble {
   left: 0;
-  transform: none;
-  width: 240px;
-  max-width: calc(100vw - 2 * var(--gutter));
+  top: 32px;
+  width: 280px;
 }
-/* The right-hand range opens its note leftwards, so it never sticks out of the panel. */
-.franges .fgroup:last-child .bubble {
+.fpanel .fgroup .qi.end .bubble {
   left: auto;
   right: 0;
+}
+
+@media (max-width: 1099.98px) {
+  .fpanel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--player-room) - 14px);
+    z-index: 11;
+    max-height: calc(100svh - var(--player-room) + 14px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: 22px var(--gutter) 30px;
+    border-radius: 14px 14px 0 0;
+    transition:
+      transform 0.25s ease,
+      opacity 0.2s;
+  }
+  /* closed: slides down behind the player (kept in the layout so it can slide) */
+  .fpanel[hidden] {
+    display: block !important;
+    transform: translateY(24px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .fbody > .fgroup:first-child {
+    border-top: 0;
+    box-shadow: none;
+    padding-top: 0;
+  }
+  .foot .freset {
+    height: var(--pad-h);
+    padding: 0 12px;
+  }
+}
+@media (max-width: 399.98px) {
+  .foot {
+    gap: 6px;
+  }
+  .foot .dim {
+    gap: 4px;
+  }
+  .foot .dials {
+    gap: 8px;
+  }
+  .freset {
+    letter-spacing: 0.08em;
+  }
+}
+@media (min-width: 1100px) {
+  .fanchor {
+    grid-area: filt;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    margin-top: 14px;
+    padding: 0 28px 22px;
+    scrollbar-color: #3a322a transparent;
+  }
+  /* on the faceplate: no plate of its own */
+  .fpanel {
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
 }

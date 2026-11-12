@@ -6,7 +6,7 @@ import {
   isDefault,
   matches,
   neighbour,
-  nextPlayable,
+  playableNeighbour,
   setRange,
   setYears,
   toggle,
@@ -19,7 +19,7 @@ const space = { taxonomy, years };
 const d = defaultFilters(space);
 
 describe('filters (§4.2)', () => {
-  const s = song({ style: 'Ambient', accents: ['Keys', 'Vox'], band: 'X' });
+  const s = song({ style: 'Ambient', accents: ['Keys', 'Vox'] });
 
   it('default matches everything', () => expect(matches(s, d, years)).toBe(true));
   it('style', () =>
@@ -125,31 +125,36 @@ describe('neighbour (card prev / next)', () => {
   });
 });
 
-describe('nextPlayable (auto-advance)', () => {
+describe('playableNeighbour (auto-advance, card keys)', () => {
   const a = song({ style: 'Ambient' });
   const b = song({ style: 'Ambient' });
   const c = song({ style: 'Ambient' });
   const all = [a, b, c];
   it('skips tracks without a recording and wraps', () => {
     const playable = (s: typeof a) => s !== b;
-    expect(nextPlayable(all, d, years, a.slug, playable)).toBe(c.slug);
-    expect(nextPlayable(all, d, years, c.slug, playable)).toBe(a.slug);
+    expect(playableNeighbour(all, d, years, a.slug, 1, playable)).toBe(c.slug);
+    expect(playableNeighbour(all, d, years, c.slug, 1, playable)).toBe(a.slug);
+  });
+  it('steps back too, skipping tracks without a recording', () => {
+    const playable = (s: typeof a) => s !== b;
+    expect(playableNeighbour(all, d, years, c.slug, -1, playable)).toBe(a.slug);
+    expect(playableNeighbour(all, d, years, a.slug, -1, playable)).toBe(c.slug);
   });
   it('is null when no other track can play', () => {
-    expect(nextPlayable(all, d, years, a.slug, (s) => s === a)).toBeNull();
+    expect(playableNeighbour(all, d, years, a.slug, 1, (s) => s === a)).toBeNull();
   });
 });
 
-describe('nextPlayable with filters', () => {
+describe('playableNeighbour with filters', () => {
   const a = song({ style: 'Ambient' });
   const b = song({ style: 'Alternative' });
   const c = song({ style: 'Ambient' });
   const all = [a, b, c];
   const ambient = { ...d, styles: new Set(['Ambient']) };
   it('follows the filtered order', () => {
-    expect(nextPlayable(all, ambient, years, a.slug, () => true)).toBe(c.slug);
+    expect(playableNeighbour(all, ambient, years, a.slug, 1, () => true)).toBe(c.slug);
   });
   it('a filtered-out track continues through the full order', () => {
-    expect(nextPlayable(all, ambient, years, b.slug, () => true)).toBe(c.slug);
+    expect(playableNeighbour(all, ambient, years, b.slug, 1, () => true)).toBe(c.slug);
   });
 });

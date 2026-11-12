@@ -4,7 +4,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { AUDIO_EXTENSIONS, parseSong } from '../src/content/parse.ts';
-import { toBands, toTaxonomy } from '../src/content/taxonomy.ts';
+import { toTaxonomy } from '../src/content/taxonomy.ts';
 
 const root = join(import.meta.dirname, '..');
 const read = (path: string): string => readFileSync(join(root, path), 'utf8');
@@ -17,10 +17,9 @@ export function checkContent(): {
 } {
   const errors: string[] = [];
   const warnings: string[] = [];
-  let taxonomy, bands;
+  let taxonomy;
   try {
     taxonomy = toTaxonomy(parseYaml(read('content/taxonomy.yaml')));
-    bands = toBands(parseYaml(read('content/bands.yaml')));
   } catch (e) {
     return { songs: 0, hidden: 0, errors: [(e as Error).message], warnings };
   }
@@ -44,7 +43,7 @@ export function checkContent(): {
     const audio = readdirSync(dir)
       .filter((f) => (AUDIO_EXTENSIONS as readonly string[]).includes(extname(f).slice(1)))
       .map((name) => ({ name, url: name }));
-    const result = parseSong(slug, read(`songs/${slug}/index.md`), audio, taxonomy, bands);
+    const result = parseSong(slug, read(`songs/${slug}/index.md`), audio, taxonomy);
     warnings.push(...result.warnings);
     if (!result.ok) errors.push(...result.errors);
     else if (result.hidden) hidden++;

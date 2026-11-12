@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SONGFLAKE — макет B «Дека»</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;500;700;800&family=Handjet:wght@400;500;600&family=Martian+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --chassis:#d6d2c8; --ink:#191815; --label:#4d4a42; --orange:#ff5416; --lcd:#b9c5a2; --lcdink:#1a2113;
+  --sans:'Geologica',system-ui,sans-serif; --mono:'Martian Mono',ui-monospace,monospace; --lcdf:'Handjet','Martian Mono',monospace;
+  --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .5 -.19'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+*{box-sizing:border-box}
+body{margin:0;height:100vh;overflow:hidden;color:var(--ink);font:400 13px/1.3 var(--sans);background:#bfbbb0 var(--noise)}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.page{display:grid;grid-template-columns:468px minmax(0,1fr);gap:12px;height:100vh;padding:12px}
+.lab{font:500 8.5px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--label)}
+
+/* a faceplate: brushed, screwed down at the corners */
+.panel{position:relative;border-radius:14px;
+  background:
+    radial-gradient(circle at 14px 14px,#77736a 0 2.5px,#f2efe7 3px 4.5px,transparent 5px),
+    radial-gradient(circle at calc(100% - 14px) 14px,#77736a 0 2.5px,#f2efe7 3px 4.5px,transparent 5px),
+    radial-gradient(circle at 14px calc(100% - 14px),#77736a 0 2.5px,#f2efe7 3px 4.5px,transparent 5px),
+    radial-gradient(circle at calc(100% - 14px) calc(100% - 14px),#77736a 0 2.5px,#f2efe7 3px 4.5px,transparent 5px),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,rgba(0,0,0,.025) 1px 2px),
+    linear-gradient(#dfdbd2,#cfcbc0);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75),inset 0 -1px 0 rgba(0,0,0,.18),0 2px 5px rgba(0,0,0,.3)}
+.col{display:flex;flex-direction:column;gap:14px;padding:26px 28px 22px;overflow-y:auto}
+.sec{border-top:1px solid rgba(0,0,0,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.6);padding-top:13px}
+
+.hero{display:flex;align-items:flex-end;gap:12px}
+h1{margin:0;font:800 34px/1 var(--sans);letter-spacing:.01em}
+.hero .lab{display:block;margin-top:6px}
+.hero-keys{margin-left:auto;display:flex;align-items:center;gap:10px}
+.pwr{width:8px;height:8px;border-radius:50%;background:#6c2a12;box-shadow:inset 0 1px 1px rgba(0,0,0,.5)}
+body[data-playing] .pwr{background:var(--orange);box-shadow:0 0 8px var(--orange),0 0 2px #fff inset}
+.btn{border-radius:50%;display:grid;place-items:center;color:var(--ink);
+  background:radial-gradient(circle at 50% 30%,#f7f4ed,#d9d5ca);
+  box-shadow:0 3px 0 #9a958a,0 5px 7px rgba(0,0,0,.28),inset 0 1px 0 #fff;transition:transform .06s,box-shadow .06s}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #9a958a,0 2px 3px rgba(0,0,0,.3),inset 0 1px 0 #fff}
+.btn.s{width:34px;height:34px;font:500 10px var(--mono)}
+
+/* LCD */
+.lcd{position:relative;border-radius:7px;padding:11px 14px 12px;color:var(--lcdink);font-family:var(--lcdf);
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.045) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(0,0,0,.045) 0 1px,transparent 1px 3px),linear-gradient(#c0cca9,#aab894);
+  box-shadow:inset 0 2px 7px rgba(0,0,0,.45),inset 0 0 0 1px rgba(0,0,0,.35),0 1px 0 rgba(255,255,255,.7)}
+.lcd-top{display:flex;justify-content:space-between;font-size:17px;line-height:1;letter-spacing:.08em;text-transform:uppercase}
+.lcd-main{display:flex;align-items:center;gap:10px;height:62px}
+.lcd-main b{flex:1;min-width:0;font:500 40px/1 var(--lcdf);text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+[data-sf=pmeta]{display:block;font-size:16px;line-height:1;letter-spacing:.06em;text-transform:uppercase;opacity:.75;margin-bottom:9px}
+.pline{position:relative;height:10px;cursor:pointer;background:repeating-linear-gradient(90deg,rgba(26,33,19,.2) 0 6px,transparent 6px 8px)}
+.pline i{position:absolute;inset:0 auto 0 0;width:calc(var(--at,0)*100%);background:repeating-linear-gradient(90deg,var(--lcdink) 0 6px,transparent 6px 8px)}
+
+.transport{display:flex;align-items:flex-start;gap:16px}
+.tk{display:flex;flex-direction:column;align-items:center;gap:9px}
+.btn.k{width:46px;height:46px;font-size:18px;margin-top:8px}
+.btn.play{width:62px;height:62px;font-size:26px;color:#fff;background:radial-gradient(circle at 50% 28%,#ff8552,#f2440a);
+  box-shadow:0 4px 0 #a9340a,0 7px 10px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.55)}
+.btn.play:active{box-shadow:0 1px 0 #a9340a,0 2px 4px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.55);transform:translateY(3px)}
+.vsw{margin-left:auto;display:flex;flex-direction:column;gap:8px;width:176px;padding-top:8px}
+.vsw-h{display:flex;justify-content:space-between}
+.slot{position:relative;display:grid;grid-template-columns:1fr 1fr;height:38px;padding:3px;border-radius:8px;background:#1b1a18;box-shadow:inset 0 2px 5px #000,0 1px 0 rgba(255,255,255,.65)}
+.slot button{position:relative;z-index:1;font:500 8.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#8d897e;transition:color .2s}
+.slot button[aria-selected=true]{color:var(--ink)}
+.knob{position:absolute;left:3px;top:3px;bottom:3px;width:calc(50% - 3px);border-radius:6px;background:linear-gradient(#f5f2eb,#d2cec3);box-shadow:0 2px 3px rgba(0,0,0,.6),inset 0 1px 0 #fff;transition:transform .2s cubic-bezier(.3,1.4,.5,1)}
+body[data-view=list] .knob{transform:translateX(100%)}
+.chip{font:500 19px/1 var(--lcdf);letter-spacing:.06em;color:var(--lcdink);background:#b6c29f;padding:2px 7px 1px;border-radius:3px;box-shadow:inset 0 1px 3px rgba(0,0,0,.45)}
+
+/* pads */
+.grp-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;min-height:22px}
+.pads{display:grid;grid-template-columns:repeat(4,1fr);gap:9px 8px}
+.pad{height:50px;padding:8px 8px 7px;display:flex;flex-direction:column;justify-content:space-between;border-radius:7px;
+  background:linear-gradient(#383633,#242321);color:#8b877c;font:500 8.5px/1 var(--mono);letter-spacing:.05em;text-transform:uppercase;
+  box-shadow:0 3px 0 #0f0f0e,0 5px 7px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.14);transition:transform .06s,box-shadow .06s}
+.pad:active{transform:translateY(2px);box-shadow:0 1px 0 #0f0f0e,0 2px 3px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.14)}
+.pad .led{width:16px;height:5px;border-radius:2px;background:#4c4a45;box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}
+.pad:has(:checked){color:#ece8de}
+.pad:has(:checked) .led{background:var(--led);box-shadow:0 0 9px var(--led),0 0 2px var(--led)}
+.pad:has(:focus-visible){outline:2px solid var(--orange);outline-offset:2px}
+.ranges{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.dual{height:36px;--t:14px;background:repeating-linear-gradient(90deg,var(--label) 0 1px,transparent 1px 10%) 7px 0/calc(100% - 14px) 4px no-repeat}
+.dual::before{content:"";position:absolute;left:0;right:0;top:17px;height:7px;border-radius:4px;background:#1b1a18;box-shadow:inset 0 2px 3px #000,0 1px 0 rgba(255,255,255,.65)}
+.dual::after{content:"";position:absolute;top:19px;height:3px;border-radius:2px;background:var(--orange);
+  left:calc(var(--t)/2 + var(--lo)*(100% - var(--t)));right:calc(var(--t)/2 + (1 - var(--hi))*(100% - var(--t)))}
+.dual input{top:5px;height:31px}
+.dual input::-webkit-slider-thumb{width:14px;height:28px;border-radius:3px;background:linear-gradient(90deg,#f6f3ec 0 5px,#191815 5px 9px,#f6f3ec 9px);box-shadow:0 2px 0 #9a958a,0 4px 5px rgba(0,0,0,.45),inset 0 1px 0 #fff}
+.dual input::-moz-range-thumb{width:14px;height:28px;border:0;border-radius:3px;background:linear-gradient(90deg,#f6f3ec 0 5px,#191815 5px 9px,#f6f3ec 9px);box-shadow:0 2px 0 #9a958a,0 4px 5px rgba(0,0,0,.45)}
+.foot{display:flex;align-items:center;gap:10px}
+.reset{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;font:500 8.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;
+  background:linear-gradient(#f3f0e9,#d6d2c7);box-shadow:0 2px 0 #9a958a,0 3px 5px rgba(0,0,0,.25),inset 0 1px 0 #fff}
+.reset:active{transform:translateY(2px);box-shadow:0 0 0 #9a958a,inset 0 1px 2px rgba(0,0,0,.3)}
+.reset::before{content:"";width:7px;height:7px;border-radius:50%;background:#c8281c}
+
+/* the deck */
+.view{position:relative;min-width:0;overflow:hidden}
+.stage{position:absolute;inset:0}
+.silk{position:absolute;z-index:2;pointer-events:none}
+.s1{left:30px;top:28px}.s2{left:30px;bottom:26px}.s3{right:30px;bottom:26px;text-align:right}
+.tip{width:210px;padding:10px 12px;border-radius:6px;color:var(--lcdink);font-family:var(--lcdf);text-transform:uppercase;letter-spacing:.05em;
+  background:linear-gradient(#c0cca9,#aab894);box-shadow:inset 0 0 0 1px rgba(0,0,0,.4),0 6px 16px rgba(0,0,0,.45)}
+.tt{display:block;font:600 26px/1 var(--lcdf)}
+.tm{display:block;font-size:15px;line-height:1.1;margin:2px 0 7px;opacity:.8}
+.tax div{display:flex;align-items:center;gap:3px;font-size:16px;line-height:1.15}
+.tax span{flex:1}
+.tax i{width:14px;height:7px;background:rgba(26,33,19,.18)}
+.tax i.on{background:var(--lcdink)}
+.tacc{display:flex;flex-wrap:wrap;gap:2px 10px;margin-top:7px;padding-top:6px;border-top:1px solid rgba(26,33,19,.35);font-size:15px}
+.tacc .led{display:none}
+
+.list{position:absolute;inset:0;overflow:auto;padding:58px 34px 40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(142px,1fr));gap:18px 14px;align-content:start}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:8px 10px 10px;border-radius:9px;color:#ece8de;text-align:left;
+  background:linear-gradient(#32302d,#1f1e1c);box-shadow:0 4px 0 #0f0f0e,0 7px 10px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.13);transition:transform .08s,box-shadow .08s}
+.tile:hover{transform:translateY(-2px)}
+.tile:active{transform:translateY(3px);box-shadow:0 1px 0 #0f0f0e,0 2px 3px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.13)}
+.tnum{display:none}
+.fbox{align-self:stretch;height:112px;display:grid;place-items:center;border-radius:6px;background:#0c0c0d;box-shadow:inset 0 2px 6px #000}
+.tile .tt{font:500 9.5px/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+.tile .tm{font:400 8px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#8b877c;margin:0;opacity:1}
+.dots{display:flex;gap:4px;align-items:center}
+.dots .led{width:12px;height:4px;border-radius:2px;background:var(--led);box-shadow:0 0 6px var(--led)}
+.band{width:9px;height:9px;border:1px dashed #ece8de;border-radius:50%}
+.tile.playing{box-shadow:0 4px 0 #a9340a,0 0 0 2px var(--orange),0 7px 14px rgba(255,84,22,.35)}
+@media(max-width:1099px){body{height:auto;overflow:auto}.page{display:block;height:auto}.view{height:100vh;margin-top:12px}}
+</style>
+</head>
+<body>
+<div class="page">
+  <aside class="panel col">
+    <header class="hero">
+      <div><h1>SONGFLAKE</h1><span class="lab">SF‑22 · музыкальный дневник · stereo</span></div>
+      <div class="hero-keys"><i class="pwr"></i><button class="btn s" aria-label="О проекте">?</button><button class="btn s" aria-label="Язык">RU</button></div>
+    </header>
+
+    <section class="lcd" aria-label="Плеер">
+      <div class="lcd-top"><span data-sf="pcap" data-idle="⤮ случайный трек" data-on="▶ играет" data-off="❚❚ пауза"></span><span data-sf="ptime"></span></div>
+      <div class="lcd-main"><b data-sf="ptitle" data-idle="нажми play"></b><canvas data-sf="pflake" data-r="19"></canvas></div>
+      <span data-sf="pmeta" data-idle="22 трека · 2011—2026"></span>
+      <div class="pline" data-sf="pline"><i></i></div>
+    </section>
+
+    <section class="transport">
+      <div class="tk"><button class="btn k" data-sf="prev" aria-label="Назад"><i data-ico="prev"></i></button><span class="lab">назад</span></div>
+      <div class="tk"><button class="btn play" data-sf="play" aria-label="Играть"><i data-ico="play"></i><i data-ico="pause"></i></button><span class="lab">play</span></div>
+      <div class="tk"><button class="btn k" data-sf="next" aria-label="Следующий"><i data-ico="next"></i></button><span class="lab">случайный</span></div>
+      <div class="vsw"><div class="vsw-h"><span class="lab">вид</span><span class="chip" data-sf="count" data-sep="/"></span></div>
+        <div class="slot"><button data-sf="tab-record">пластинка</button><button data-sf="tab-list">список</button><i class="knob"></i></div></div>
+    </section>
+
+    <section class="sec"><div class="grp-h"><span class="lab">01 · стиль</span></div><div class="pads" data-sf="styles"></div></section>
+    <section class="sec"><div class="grp-h"><span class="lab">02 · на что обратить внимание</span></div><div class="pads" data-sf="accents"></div></section>
+    <section class="sec ranges">
+      <div><div class="grp-h"><span class="lab">03 · сложность</span><output class="chip" data-sf="cxval"></output></div><div class="dual" data-sf="cx"></div></div>
+      <div><div class="grp-h"><span class="lab">04 · год</span><output class="chip" data-sf="yrval"></output></div><div class="dual" data-sf="yr"></div></div>
+    </section>
+    <div class="foot"><button class="reset" data-sf="reset">сброс фильтров</button></div>
+  </aside>
+
+  <main class="panel view">
+    <span class="lab silk s1">side a · 33⅓ rpm</span>
+    <span class="lab silk s2 rec-only">тяни — крутить · колесо — приблизить</span>
+    <span class="lab silk s3 rec-only">радиус = год записи</span>
+    <div class="stage" data-sf="stage"></div>
+    <div class="list" data-sf="list"></div>
+  </main>
+</div>
+
+<script src="engine.js"></script>
+<script>
+const { TAU, fitText } = SF.util;
+let armR = 1150;
+SF.start({
+  fonts: ['500 9px "Martian Mono"', '800 16px "Geologica"'],
+  flake: { core: '#ffffff', ring: 'rgba(232,238,255,.35)', halo: 'rgba(255,255,255,.55)', glow: 1 },
+  playerFlake: { mono: '#1a2113', core: '#1a2113', ring: 'rgba(26,33,19,.5)', halo: 'rgba(26,33,19,.7)', centre: '#1a2113', glow: 0, w: 1.6, minW: 1 },
+  styleLed: '#ff5416',
+  tileR: 34,
+  record: {
+    fitR: 1190, flakeR: 0.058,
+    ring: { stroke: 'rgba(255,255,255,.17)', font: '500 9px "Martian Mono"', chip: '#0c0c0d', fill: 'rgba(255,255,255,.62)' },
+    title: { font: '500 8.5px "Martian Mono"', upper: true, ls: '0.6px', fill: 'rgba(236,232,222,.6)', hi: '#ffffff' },
+    beat(ctx, x, y, R, p) {
+      ctx.save(); ctx.shadowColor = '#ff5416'; ctx.shadowBlur = 14 * p;
+      ctx.strokeStyle = `rgba(255,84,22,${0.3 + 0.6 * p})`; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(x, y, R * 1.3, 0, TAU); ctx.stroke(); ctx.restore();
+    },
+    disc(ctx, g) {
+      const s = g.s, P = 1160 * s;
+      // platter
+      ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 10;
+      const m = ctx.createConicGradient(0.6, 0, 0);
+      ['#f1eee7', '#a8a59c', '#e9e6de', '#9d9a91', '#f1eee7', '#a8a59c', '#e9e6de', '#9d9a91', '#f1eee7']
+        .forEach((c, i) => m.addColorStop(i / 8, c));
+      ctx.beginPath(); ctx.arc(0, 0, P, 0, TAU); ctx.fillStyle = m; ctx.fill(); ctx.restore();
+      ctx.save(); ctx.rotate(g.phi); ctx.fillStyle = '#1b1a18';
+      for (let i = 0; i < 150; i++) { ctx.rotate(TAU / 150); ctx.fillRect(-2.2 * s * 3, -P + 12 * s, 13 * s, 26 * s); }
+      ctx.restore();
+      // mat and vinyl
+      ctx.beginPath(); ctx.arc(0, 0, 1092 * s, 0, TAU); ctx.fillStyle = '#161514'; ctx.fill();
+      ctx.beginPath(); ctx.arc(0, 0, 1070 * s, 0, TAU); ctx.fillStyle = '#0b0b0c'; ctx.fill();
+      ctx.lineWidth = 1;
+      for (let r = 214, i = 0; r <= 1050; r += 7.6, i++) {
+        ctx.beginPath(); ctx.arc(0, 0, r * s, 0, TAU);
+        ctx.strokeStyle = `rgba(255,255,255,${0.02 + 0.03 * ((i * 7) % 5) / 4})`; ctx.stroke();
+      }
+      const sh = ctx.createConicGradient(-0.9, 0, 0);
+      [[0, 0], [0.06, 0.1], [0.12, 0], [0.5, 0], [0.56, 0.1], [0.62, 0], [1, 0]]
+        .forEach(([o, a]) => sh.addColorStop(o, `rgba(255,255,255,${a})`));
+      ctx.beginPath(); ctx.arc(0, 0, 1070 * s, 0, TAU); ctx.fillStyle = sh; ctx.fill();
+      ctx.beginPath(); ctx.arc(0, 0, 1068 * s, 0, TAU); ctx.strokeStyle = 'rgba(255,255,255,.14)'; ctx.stroke();
+      // label
+      const L = 186 * s, k = L / 75;
+      ctx.beginPath(); ctx.arc(0, 0, 210 * s, 0, TAU); ctx.fillStyle = '#060606'; ctx.fill();
+      ctx.beginPath(); ctx.arc(0, 0, L, 0, TAU); ctx.fillStyle = '#ff5416'; ctx.fill();
+      ctx.save(); ctx.rotate(g.phi); ctx.fillStyle = '#191815'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillRect(-L * 0.78, -L * 0.1, L * 1.56, Math.max(1, 1.2 * k));
+      fitText(ctx, 'SONGFLAKE', L * 1.5, (z) => `800 ${z}px "Geologica"`, 16 * k);
+      ctx.fillText('SONGFLAKE', 0, -L * 0.36);
+      ctx.font = `500 ${Math.max(6, 6.6 * k)}px "Martian Mono"`;
+      ctx.fillText(`SIDE A · ${g.Y0}—${g.Y1}`, 0, L * 0.34);
+      ctx.fillText(`${g.n} TRACKS · 33⅓`, 0, L * 0.58);
+      ctx.restore();
+      ctx.beginPath(); ctx.arc(0, 0, 9 * k, 0, TAU); ctx.fillStyle = '#cfcbc0'; ctx.fill();
+      ctx.beginPath(); ctx.arc(0, 0, 4 * k, 0, TAU); ctx.fillStyle = '#77736a'; ctx.fill();
+    },
+    // the tonearm follows the simulated playback: outer groove at the start, the label at the end
+    over(ctx, g) {
+      const s = g.s, p = g.P;
+      const target = p.cur ? 1000 - 700 * (p.pos / p.cur.dur) : 1150;
+      armR += (target - armR) * 0.06;
+      const px = 1000, py = -900, d = Math.hypot(px, py), Lw = 1250;
+      const a = (d * d + Lw * Lw - armR * armR) / (2 * d), h = Math.sqrt(Math.max(0, Lw * Lw - a * a));
+      const ux = -px / d, uy = -py / d; // pivot → spindle; (uy, -ux) points to the lower right
+      const ang = Math.atan2(a * uy - h * ux, a * ux + h * uy);
+      ctx.save(); ctx.translate(px * s, py * s);
+      ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 6;
+      ctx.beginPath(); ctx.arc(0, 0, 92 * s, 0, TAU); ctx.fillStyle = '#c9c5ba'; ctx.fill();
+      ctx.shadowOffsetY = 9;
+      ctx.rotate(ang);
+      ctx.fillStyle = '#2a2927'; ctx.fillRect(-260 * s, -46 * s, 150 * s, 92 * s); // counterweight
+      const tube = ctx.createLinearGradient(0, -12 * s, 0, 12 * s);
+      tube.addColorStop(0, '#fbf9f3'); tube.addColorStop(0.5, '#cfcbc0'); tube.addColorStop(1, '#8f8b81');
+      ctx.fillStyle = tube; ctx.fillRect(-120 * s, -11 * s, (Lw + 60) * s, 22 * s);
+      ctx.fillStyle = '#ff5416'; ctx.fillRect((Lw - 70) * s, -30 * s, 130 * s, 60 * s); // headshell
+      ctx.shadowColor = 'transparent';
+      ctx.fillStyle = '#191815'; ctx.fillRect((Lw - 12) * s, -30 * s, 24 * s, 60 * s);
+      ctx.rotate(-ang);
+      ctx.beginPath(); ctx.arc(0, 0, 52 * s, 0, TAU); ctx.fillStyle = '#f1eee7'; ctx.fill();
+      ctx.beginPath(); ctx.arc(0, 0, 20 * s, 0, TAU); ctx.fillStyle = '#77736a'; ctx.fill();
+      ctx.restore();
+    },
+  },
+});
+</script>
+</body>
+</html>

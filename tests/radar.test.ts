@@ -6,7 +6,7 @@ describe('radarSvg', () => {
   const svg = radarSvg(sampleComplexity({ rhythm: 3, melody: 1 }), '#ff9100');
 
   it('draws grid rings at 1/2/3, five axes and the value polygon in the lead colour', () => {
-    expect(svg.match(/class="radar-grid" points=/g)).toHaveLength(3);
+    expect(svg.match(/class="radar-grid( dash)?" points=/g)).toHaveLength(3);
     expect(svg.match(/<line class="radar-grid"/g)).toHaveLength(5);
     expect(svg).toContain('stroke="#ff9100"');
     expect(svg.match(/class="radar-dot"/g)).toHaveLength(5);

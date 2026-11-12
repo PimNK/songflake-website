@@ -1,17 +1,18 @@
-// The card's player (CLAUDE.md §4.6), laid out like the random player: the round play/pause in the
-// lead colour (between the card's skip keys), a caption (playing / paused / press play) with the
-// note of the active pin under it, then the waveform seek bar with pin markers and a thumb, and
-// m:ss / m:ss at its right (pins have no list of their own: a marker shows its text on hover and
-// once reached). Narrow cards: no caption, the note under the waveform, markers that only mark.
+// The card's player (CLAUDE.md §4.6), the console's display, wider: the caption (playing /
+// paused / press play; on narrow cards playing / paused) and m:ss / m:ss at the top, the
+// oscilloscope line with pin markers that seeks (on narrow cards the time follows the line), and
+// the note of the active pin under it (pins have no list of their own: a marker shows its text on
+// hover and once reached). The note's box holds hidden copies of every pin note, so on narrow
+// cards it is as high as the song's longest one; wide cards keep three lines. The round play /
+// pause key goes between the card's skip keys.
 // The <audio> element lives in views/playback.ts; time maths lives in domain/pins.ts.
 import type { Song } from '../content/parse';
 import { activePin, formatTime, type Pin } from '../domain/pins';
-import { barCount, resample } from '../domain/waveform';
-import { devicePixelRatioCapped } from '../render/snowflake';
 import { strings } from '../strings';
-import { esc } from './html';
-import type { Playback, Recording } from './playback';
-import { renderMarkers } from './pin-markers';
+import { esc, icon } from './html';
+import type { Playback } from './playback';
+import { NARROW, renderMarkers } from './pin-markers';
+import { mountScope, type Scope } from './scope';
 import { wireSeek } from './seek';
 import type { PlayerSlots } from './track-card';
 
@@ -22,33 +23,39 @@ export interface PlayerHooks {
 
 const p = strings.player;
 const r = strings.random;
-const PLAYED_REST = 'rgba(232,238,255,.22)';
+
+/** The note under the line says what to listen for; the marker's popover has the time. */
+const noteHtml = (pin: Pin): string => esc(pin.text);
 
 const template = (song: Song): string => `
-  <div class="pcap"><small class="pstate"></small><div class="pnote${song.pins.length ? '' : ' none'}" aria-live="polite"></div></div>
-  <div class="pline">
+  <div class="vfd-top"><span class="pstate"></span><span class="ptime"></span></div>
+  <div class="wline">
     <div class="wave-wrap">
-      <div class="wave" role="slider" tabindex="0" aria-label="${p.seek}" aria-valuemin="0"><canvas></canvas><b></b></div>
+      <div class="wave" role="slider" tabindex="0" aria-label="${p.seek}" aria-valuemin="0"><canvas></canvas></div>
       <div class="pins-layer"></div>
     </div>
-    <small class="ptime"><b data-now>0:00</b> / <span data-dur>–:––</span></small>
+    <span class="wtime"></span>
+  </div>
+  <div class="pnote${song.pins.length ? '' : ' none'}">
+    ${song.pins.map((pin) => `<span class="ghost" aria-hidden="true">${noteHtml(pin)}</span>`).join('')}
+    <span class="now" aria-live="polite"></span>
   </div>`;
 
 /** A card with no recording: the same rows as the player's, so the card keeps its shape. */
 export const emptyPlayer = (): string => `
-  <div class="pcap"><p class="no-audio">${p.noAudio}</p></div>
-  <div class="pline"><div class="wave-wrap"><div class="wave off"></div></div><small class="ptime">–:––</small></div>`;
+  <div class="vfd-top"><span class="pstate no-audio">${p.noAudio}</span></div>
+  <div class="wline"><div class="wave-wrap"><div class="wave off"></div></div></div>
+  <div class="pnote none"></div>`;
 
 /** Mounts the player for one song into the card's slot; returns a cleanup function. */
 export function mountPlayer(
   slots: PlayerSlots,
   song: Song,
   cue: number | null,
-  colour: string,
   playback: Playback,
   hooks: PlayerHooks,
 ): () => void {
-  const player = new CardPlayer(slots, song, colour, playback, hooks);
+  const player = new CardPlayer(slots, song, playback, hooks);
   // A cue moves a track that is not playing; it never jumps one that is.
   if (cue !== null && !playback.isPlaying(song)) playback.seek(song, cue);
   return () => player.dispose();
@@ -57,20 +64,18 @@ export function mountPlayer(
 class CardPlayer {
   private slot: HTMLElement;
   private play: HTMLButtonElement;
-  private rec: Recording | null = null;
+  private known = 0;
   private raf = 0;
   private alive = true;
   private unsubscribe: () => void;
   private resize: ResizeObserver;
-  /** Wave size in CSS px, from the ResizeObserver (no layout reads per frame). */
-  private size = { width: 0, height: 0 };
+  private scope: Scope;
   /** Last values written to the DOM, so unchanged ones are not rewritten every frame. */
   private shown: Record<string, string> = {};
 
   constructor(
     slots: PlayerSlots,
     private song: Song,
-    private colour: string,
     private playback: Playback,
     hooks: PlayerHooks,
   ) {
@@ -78,23 +83,24 @@ class CardPlayer {
     this.slot.innerHTML = template(song);
     this.play = document.createElement('button');
     this.play.type = 'button';
-    this.play.className = 'play';
-    this.play.style.background = colour;
+    this.play.className = 'btn play';
+    this.play.innerHTML = icon('play') + icon('pause');
     slots.play.replaceChildren(this.play);
     this.wire();
     this.unsubscribe = playback.subscribe(() => this.update());
-    this.resize = new ResizeObserver(([entry]) => {
-      const box = entry!.contentRect;
-      this.size = { width: box.width, height: box.height };
-      sizeCanvas(this.q('canvas'), this.size);
-      this.draw();
-      this.markers();
+    this.scope = mountScope(this.q('canvas'), {
+      at: () => this.progress(),
+      playing: () => playback.isPlaying(song),
+      loaded: () => playback.isCurrent(song),
+      volume: () => playback.volume,
     });
+    // The markers are laid out by pixel distance: again when the line changes width.
+    this.resize = new ResizeObserver(() => this.markers());
     this.resize.observe(this.q('.wave'));
-    void playback.recording(song).then((r) => {
+    void playback.duration(song).then((d) => {
       if (!this.alive) return;
-      this.rec = r;
-      warnPastEnd(song, r.duration, hooks);
+      this.known = d;
+      warnPastEnd(song, d, hooks);
       this.markers();
       this.update();
     });
@@ -106,6 +112,7 @@ class CardPlayer {
     cancelAnimationFrame(this.raf);
     this.unsubscribe();
     this.resize.disconnect();
+    this.scope.dispose();
   }
 
   private q<T extends HTMLElement>(selector: string): T {
@@ -114,14 +121,12 @@ class CardPlayer {
 
   private duration(): number {
     const live = this.playback.isCurrent(this.song) ? this.playback.audio.duration || 0 : 0;
-    return this.rec?.duration || live;
+    return this.known || live;
   }
 
-  private draw(): void {
+  private progress(): number {
     const d = this.duration();
-    const progress = d ? this.playback.position(this.song) / d : 0;
-    drawWave(this.q('canvas'), this.size, this.rec, progress, this.colour);
-    this.q('.wave').style.setProperty('--at', `${(progress * 100).toFixed(2)}%`);
+    return d ? Math.min(1, this.playback.position(this.song) / d) : 0;
   }
 
   private markers(): void {
@@ -136,21 +141,27 @@ class CardPlayer {
     const playing = this.playback.isPlaying(this.song);
     const pin = activePin(this.song.pins, t);
     const current = this.playback.isCurrent(this.song);
-    this.write('.pstate', 'text', playing ? r.nowPlaying : current ? r.paused : p.ready);
-    this.write('[data-now]', 'text', formatTime(t));
-    if (d) this.write('[data-dur]', 'text', formatTime(d));
+    // Narrow cards have no «press play»: the key says it.
+    const caption = playing ? r.nowPlaying : current || NARROW.matches ? r.paused : p.ready;
+    this.write('.pstate', 'text', caption);
+    const time = `${formatTime(t)} / ${d ? formatTime(d) : '–:––'}`;
+    this.write('.ptime', 'text', time);
+    this.write('.wtime', 'text', time);
     if (this.play.dataset.playing !== String(playing)) {
       this.play.dataset.playing = String(playing);
-      this.play.textContent = playing ? p.pauseGlyph : p.playGlyph;
+      this.play.toggleAttribute('data-on', playing);
       this.play.setAttribute('aria-label', playing ? p.pause : p.play);
     }
     this.write('.wave', 'aria-valuemax', String(Math.round(d)));
     this.write('.wave', 'aria-valuenow', String(Math.round(t)));
     this.write('.wave', 'aria-valuetext', `${formatTime(t)} / ${formatTime(d)}`);
     // The note is a live region: rewrite it only when the active pin changes.
-    this.write('.pnote', 'html', pin ? `<b>${formatTime(pin.at)}</b>${esc(pin.text)}` : '');
-    this.draw();
-    // timeupdate is coarse: animate the bar smoothly while playing
+    this.write('.pnote .now', 'html', pin ? noteHtml(pin) : '');
+    for (const m of this.slot.querySelectorAll<HTMLElement>('.pin')) {
+      m.classList.toggle('past', current && Number(m.dataset.at) <= t);
+    }
+    this.scope.wake();
+    // timeupdate is coarse: follow the time and the pins every frame while playing
     if (playing && !this.raf) {
       this.raf = requestAnimationFrame(() => {
         this.raf = 0;
@@ -182,45 +193,6 @@ class CardPlayer {
         ),
     );
   }
-}
-
-type Size = { width: number; height: number };
-
-/** Allocates the canvas backing store; only on resize. */
-function sizeCanvas(canvas: HTMLCanvasElement, box: Size): void {
-  const dpr = devicePixelRatioCapped();
-  canvas.width = Math.round(box.width * dpr);
-  canvas.height = Math.round(box.height * dpr);
-}
-
-function drawWave(
-  canvas: HTMLCanvasElement,
-  box: Size,
-  rec: Recording | null,
-  progress: number,
-  colour: string,
-): void {
-  if (!box.width) return;
-  const dpr = canvas.width / box.width;
-  const g = canvas.getContext('2d')!;
-  g.setTransform(dpr, 0, 0, dpr, 0, 0);
-  g.clearRect(0, 0, box.width, box.height);
-  if (!rec?.peaks) {
-    // Plain progress bar when the waveform could not be decoded.
-    const y = box.height / 2 - 2;
-    g.fillStyle = PLAYED_REST;
-    g.fillRect(0, y, box.width, 4);
-    g.fillStyle = colour;
-    g.fillRect(0, y, box.width * progress, 4);
-    return;
-  }
-  const bars = resample(rec.peaks, barCount(box.width));
-  const bw = box.width / bars.length;
-  bars.forEach((v, i) => {
-    const h = Math.max(2, v * box.height * 0.95);
-    g.fillStyle = (i + 0.5) / bars.length <= progress ? colour : PLAYED_REST;
-    g.fillRect(i * bw + 0.5, (box.height - h) / 2, Math.max(1, bw - 1.5), h);
-  });
 }
 
 function warnPastEnd(song: Song, duration: number, hooks: PlayerHooks): void {

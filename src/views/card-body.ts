@@ -1,16 +1,15 @@
-// The track card's sections (CLAUDE.md §4.3): four equal cells — idea → recording, what to listen
-// for (and the band marker), the story, total complexity with the radar — and the turning
-// snowflake, which sits beside the player. DOM only; rules come from domain/.
+// The track card's sections (CLAUDE.md §4.3): four cells — idea → recording (three indicator
+// lamps), the main instrument (lit pads), the story, total complexity with the radar — and the
+// turning snowflake, which sits in the player's display. DOM only; rules come from domain/.
 import { AXES, type Song } from '../content/parse';
-import type { Bands, Taxonomy } from '../content/taxonomy';
-import { rgba } from '../domain/colour';
+import type { Taxonomy } from '../content/taxonomy';
 import { FROST_LINE } from '../domain/ray-colours';
 import { flakeOf } from '../domain/snowflake';
-import { timeline, type Station } from '../domain/timeline';
+import { timeline, type Gap, type Station } from '../domain/timeline';
 import { radarSvg } from '../render/radar';
 import { paintSnowflake } from '../render/snowflake';
 import { strings } from '../strings';
-import { bandRing, esc, info, turnStyle } from './html';
+import { esc, info, turnStyle } from './html';
 import { renderMarkdown } from './markdown';
 
 const c = strings.card;
@@ -20,7 +19,7 @@ export const leadColour = (song: Song, taxonomy: Taxonomy): string =>
   taxonomy.accents.find((a) => a.id === song.accents[0])?.colour ?? FROST_LINE;
 
 /** One lit pad per instrument, as in the filter panel, its light in the instrument's colour. */
-function listenChips(song: Song, taxonomy: Taxonomy): string {
+function listenPads(song: Song, taxonomy: Taxonomy): string {
   return song.accents
     .map((id) => {
       const a = taxonomy.accents.find((x) => x.id === id);
@@ -40,32 +39,24 @@ const totalInfo = (): string =>
     '',
   ) + `<small>${c.totalInfoNote}</small>`;
 
-function bandMarker(song: Song, bands: Bands): string {
-  if (song.band === null) return '';
-  if (song.band.trim() === '') {
-    return `<span class="pad lit bandchip" tabindex="0">${bandRing(16)}${c.recordedWithBand}<span class="bubble" role="tooltip"><b>${c.bandUnnamed}</b>${c.bandUnnamedHint}</span></span>`;
-  }
-  const b = bands[song.band];
-  const about = b?.about ? esc(b.about) : c.bandNoAbout;
-  const years = b?.years ? `<small>${esc(b.years)}</small>` : '';
-  const name = esc(song.band);
-  return `<span class="pad lit bandchip" tabindex="0">${bandRing(16)}${c.recordedWith} <b>${name}</b><span class="bubble" role="tooltip"><b>${name}</b>${about}${years}</span></span>`;
-}
-
-function stations(song: Song, colour: string): string {
+/** Three lamps — hollow, half, full — with the years; the lines between them as long as the years. */
+function stations(song: Song): string {
   const { stations: st, gaps } = timeline(song.years);
-  const fill = (s: Station): string =>
-    s.fill === 'hollow' ? 'transparent' : s.fill === 'half' ? rgba(colour, 0.45) : colour;
   const label = { idea: c.idea, concept: c.concept, ready: c.ready };
-  const station = (s: Station): string =>
-    `<div class="st${s.year === null ? ' missing' : ''}"><i style="border-color:${colour};background:${s.year === null ? 'transparent' : fill(s)}"></i><b>${s.year ?? (s.key === 'ready' ? c.notYet : '—')}</b><span>${label[s.key]}</span></div>`;
-  const grad = `linear-gradient(90deg,${rgba(colour, 0.35)},${colour})`;
-  const link = (g: (typeof gaps)[number]): string => {
-    const text = g.years === null ? '' : g.years === 0 ? c.sameYear : strings.years(g.years);
-    return `<div class="link" style="flex-grow:${g.grow};--grad:${grad}"><span>${text}</span></div>`;
+  const station = (s: Station): string => {
+    const missing = s.year === null;
+    const year = s.year ?? (s.key === 'ready' ? c.notYet : '—');
+    return `<div class="st${missing ? ' missing' : ''}"><i class="lamp ${missing ? 'off' : s.fill}"></i><span class="label">${label[s.key]}</span><span class="chip">${year}</span></div>`;
+  };
+  const link = (g: Gap): string => {
+    const kind = g.years === null ? ' none' : g.years === 0 ? ' zero' : '';
+    return `<div class="link${kind}" style="flex-grow:${g.grow}"><i></i></div>`;
   };
   return station(st[0]!) + link(gaps[0]!) + station(st[1]!) + link(gaps[1]!) + station(st[2]!);
 }
+
+const heading = (text: string, note = ''): string =>
+  `<div class="ch"><h3>${text}</h3>${note}</div>`;
 
 /** Fills the card's cells and its snowflake slot for one song. */
 export function renderCardBody(
@@ -73,25 +64,18 @@ export function renderCardBody(
   flakeSlot: HTMLElement,
   song: Song,
   taxonomy: Taxonomy,
-  bands: Bands,
 ): void {
   const colour = leadColour(song, taxonomy);
-  const story = song.story ? renderMarkdown(song.story) : `<p class="muted">${c.storyEmpty}</p>`;
+  const story = song.story ? renderMarkdown(song.story) : `<p>${c.storyEmpty}</p>`;
+  grid.style.setProperty('--lead', colour);
   grid.innerHTML = `
-    <section class="cell"><div class="spot-h"><h3>${c.timeline}</h3>${info(timelineInfo())}</div>
-      <div class="stations">${stations(song, colour)}</div></section>
-    <section class="cell" aria-labelledby="spot-h">
-      <div class="spot-h"><h3 id="spot-h">${c.listen}</h3>${info(c.listenInfo)}</div>
-      <div class="spot-body">
-        <div class="pads">${listenChips(song, taxonomy)}</div>
-        <div class="band-row">${bandMarker(song, bands)}</div>
-      </div>
-    </section>
-    <section class="cell story-cell"><h3>${c.story}</h3><div class="story">${story}</div></section>
-    <section class="cell total-cell">
-      <div class="spot-h total"><h3>${c.total(song.complexityTotal)}</h3>${info(totalInfo())}</div>
-      <div class="radar-box">${radarSvg(song.complexity, colour)}</div>
-    </section>`;
+    <section class="cell">${heading(c.timeline, info(timelineInfo()))}
+      <div class="stations">${stations(song)}</div></section>
+    <section class="cell">${heading(c.listen, info(c.listenInfo, true))}
+      <div class="lpads">${listenPads(song, taxonomy)}</div></section>
+    <section class="cell story-cell">${heading(c.story)}<div class="story">${story}</div></section>
+    <section class="cell total-cell">${heading(c.total, info(totalInfo(), true))}
+      <div class="radar-box">${radarSvg(song.complexity, colour)}</div></section>`;
   flakeSlot.innerHTML = `<canvas class="turn" style="${turnStyle(song)}"></canvas>`;
   const flake = flakeOf(song, taxonomy);
   paintSnowflake(

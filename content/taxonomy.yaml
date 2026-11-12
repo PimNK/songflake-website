@@ -3,14 +3,13 @@
 styles:
   - Alternative
   - Progressive
-  - Electronic
   - Ambient
 
 accents:           # id → display name (ru: the Russian one) + colour
-  Guitar:   { name: Guitar,      ru: Гитара,       colour: "#ff9100" }
-  Vox:      { name: Vocals,      ru: Вокал,        colour: "#00e5ff" }
-  Keys:     { name: Keys,        ru: Клавишные,    colour: "#d500f9" }
-  Drums:    { name: Drums,       ru: Барабаны,     colour: "#ff1744" }
-  Bass:     { name: Bass,        ru: Бас,          colour: "#00e676" }
-  Flute:    { name: Flute,       ru: Флейта,       colour: "#ffee58" }
-  Electric: { name: Electronics, ru: Электроника,  colour: "#2979ff" }
+  Guitar:      { name: Guitar,      ru: Гитара,      colour: "#ff9100" }
+  Vox:         { name: Vocals,      ru: Вокал,       colour: "#00e5ff" }
+  Piano:       { name: Piano,       ru: Фортепиано,  colour: "#d500f9" }
+  Drums:       { name: Drums,       ru: Барабаны,    colour: "#ff1744" }
+  Bass:        { name: Bass,        ru: Бас,         colour: "#00e676" }
+  Synthesizer: { name: Synthesizer, ru: Синтезатор,  colour: "#2979ff" }
+  Brass:       { name: Brass,       ru: Духовые,     colour: "#ff4fa3" }

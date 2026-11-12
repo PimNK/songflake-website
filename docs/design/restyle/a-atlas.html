@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SONGFLAKE — макет A «Атлас»</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#ebe3d1; --sheet:#f6f0e3; --ink:#231f1a; --graphite:#756d5f; --rule:#b9ad95;
+  --red:#c23a1e; --blue:#2c4a8c;
+  --serif:'Old Standard TT',Georgia,serif; --hand:'Caveat','Segoe Script',cursive; --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;height:100vh;overflow:hidden;color:var(--ink);font:16px/1.35 var(--serif);
+  background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .24 0 0 0 0 .12 0 0 0 .55 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.page{display:grid;grid-template-columns:468px minmax(0,1fr);height:100vh}
+
+/* left column: a notebook page with a margin line */
+.col{position:relative;display:flex;flex-direction:column;gap:20px;padding:24px 32px 20px 44px;overflow-y:auto;border-right:3px double var(--rule)}
+.col::before{content:"";position:absolute;left:26px;top:0;bottom:0;border-left:1px solid rgba(194,58,30,.4)}
+.mono{font:500 10.5px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--graphite)}
+.kick{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.stamps{display:flex;gap:8px}
+.stamp{width:30px;height:30px;border:1.5px solid var(--ink);border-radius:50%;font:500 11px var(--mono);transition:.15s}
+.stamp:hover{background:var(--ink);color:var(--sheet)}
+h1{margin:10px 0 0;font:700 46px/1 var(--serif);letter-spacing:.13em;text-transform:uppercase;padding-bottom:12px;border-bottom:3px double var(--ink)}
+.sub{margin:8px 0 0;font-style:italic;font-size:17px;color:var(--graphite)}
+
+/* the player: a catalogue card taped to the page */
+.card{position:relative;background:var(--sheet);border:1px solid var(--ink);box-shadow:3px 4px 0 rgba(35,31,26,.13);transform:rotate(-.5deg);margin-top:6px}
+.card::before{content:"";position:absolute;top:-11px;left:50%;width:86px;height:22px;background:rgba(216,196,132,.6);transform:translateX(-50%) rotate(-2.5deg);box-shadow:0 1px 2px rgba(0,0,0,.14)}
+.card-h{display:flex;justify-content:space-between;padding:9px 14px 7px;border-bottom:1px solid var(--ink)}
+.card-h [data-sf=pcap]{color:var(--red)}
+.prow{display:flex;align-items:center;gap:14px;padding:12px 14px 4px}
+.keys{display:flex;align-items:center;gap:8px;flex:none}
+.key{width:36px;height:36px;border:1px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-size:15px;transition:.15s}
+.key:hover{background:var(--ink);color:var(--sheet)}
+.key.play{width:52px;height:52px;background:var(--ink);color:var(--sheet);font-size:22px}
+.key.play:hover{background:var(--red);border-color:var(--red)}
+.pmeta{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.pmeta b{font:italic 400 23px/1.1 var(--serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pmeta span{font:400 10px var(--mono);color:var(--graphite);letter-spacing:.04em}
+[data-sf=pflake]{flex:none}
+body:not([data-loaded]) [data-sf=pflake]{border:1px dashed var(--rule);border-radius:50%}
+.pfoot{display:flex;align-items:center;gap:12px;padding:6px 14px 12px}
+.pline{position:relative;flex:1;height:18px;cursor:pointer;border-bottom:1px solid var(--ink);
+  background:repeating-linear-gradient(90deg,var(--ink) 0 1px,transparent 1px 8px) left bottom/100% 5px no-repeat,
+             repeating-linear-gradient(90deg,var(--ink) 0 1px,transparent 1px 40px) left bottom/100% 10px no-repeat}
+.pline i{position:absolute;left:calc(var(--at,0)*100%);top:0;bottom:-1px;width:2px;background:var(--red)}
+.pline i::before{content:"";position:absolute;left:-4px;top:-3px;width:10px;height:10px;border-radius:50%;background:var(--red)}
+[data-sf=ptime]{font:400 11px var(--mono);font-variant-numeric:tabular-nums}
+
+/* filters */
+.filters{display:flex;flex-direction:column;gap:17px}
+.viewbar{display:flex;align-items:flex-end;gap:14px;border-bottom:1px solid var(--ink)}
+.viewbar .mono{padding-bottom:8px}
+.tabs{display:flex;gap:4px}
+.tabs button{padding:6px 14px 5px;border:1px solid var(--ink);border-bottom:0;border-radius:5px 5px 0 0;font-style:italic;font-size:16px;color:var(--graphite);background:rgba(35,31,26,.05)}
+.tabs button[aria-selected=true]{background:var(--ink);color:var(--sheet)}
+.count{margin-left:auto;font:700 22px/1 var(--hand);color:var(--blue);padding-bottom:5px;transform:rotate(-2deg)}
+h3{margin:0 0 8px;display:flex;align-items:baseline;gap:7px}
+h3 em{font:italic 400 15px var(--serif);color:var(--red);letter-spacing:0;text-transform:none}
+h3 output{margin-left:auto;font:700 20px/1 var(--hand);color:var(--blue);letter-spacing:0}
+.pads{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pad{height:46px;padding:7px 8px 5px;display:flex;flex-direction:column;justify-content:space-between;
+  border:1px dashed var(--rule);color:var(--graphite);font-style:italic;font-size:14px;line-height:1;transition:.12s}
+.pad:hover{border-color:var(--ink)}
+.pad .led{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--led)}
+.pad:has(:checked){border:1px solid var(--ink);background:var(--sheet);color:var(--ink);box-shadow:2px 2px 0 rgba(35,31,26,.1)}
+.pad:has(:checked) .led{background:var(--led)}
+.pad:has(:checked)::after{content:"";position:absolute;top:5px;right:9px;width:6px;height:12px;border:solid var(--blue);border-width:0 2px 2px 0;transform:rotate(38deg) skew(-6deg)}
+.pad:has(:focus-visible){outline:2px solid var(--blue);outline-offset:2px}
+[data-sf=styles] .led{border-radius:0;transform:rotate(45deg) scale(.85)}
+.ranges{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.dual{height:26px;--t:14px}
+.dual::before{content:"";position:absolute;left:0;right:0;top:12px;height:8px;border-top:1px solid var(--ink);
+  background:repeating-linear-gradient(90deg,var(--graphite) 0 1px,transparent 1px 10%) }
+.dual::after{content:"";position:absolute;top:11px;height:3px;background:var(--ink);
+  left:calc(var(--t)/2 + var(--lo)*(100% - var(--t)));right:calc(var(--t)/2 + (1 - var(--hi))*(100% - var(--t)))}
+.dual input::-webkit-slider-thumb{width:14px;height:14px;border-radius:50%;background:var(--sheet);border:2px solid var(--ink)}
+.dual input::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--sheet);border:2px solid var(--ink)}
+.dual input:hover::-webkit-slider-thumb{background:var(--red);border-color:var(--red)}
+.reset{align-self:flex-start;font-style:italic;font-size:15px;color:var(--graphite);border-bottom:1px dotted var(--graphite)}
+.reset:hover{color:var(--red);border-color:var(--red)}
+
+/* the view */
+.view{position:relative;min-width:0}
+.stage{position:absolute;inset:0}
+.note{position:absolute;z-index:2;margin:0;font:500 21px/1.15 var(--hand);color:var(--blue);pointer-events:none}
+.note b{font-weight:700}
+.n1{left:34px;top:26px;transform:rotate(-3deg)}
+.n2{right:22px;bottom:16px;max-width:168px;transform:rotate(1.5deg);text-align:right;font-size:17px}
+.plate{position:absolute;right:30px;top:26px;text-align:right}
+.tip{width:216px;padding:10px 12px;background:var(--sheet);border:1px solid var(--ink);box-shadow:3px 3px 0 rgba(35,31,26,.14)}
+.tt{display:block;font:italic 400 19px/1.1 var(--serif)}
+.tm{display:block;margin:3px 0 8px;font:400 10px var(--mono);color:var(--graphite)}
+.tax div{display:flex;align-items:center;gap:4px;font-size:13px;line-height:1.45}
+.tax span{flex:1}
+.tax i{width:8px;height:8px;border-radius:50%;border:1px solid var(--ink)}
+.tax i.on{background:var(--ink)}
+.tacc{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:8px;padding-top:7px;border-top:1px solid var(--rule);font-style:italic;font-size:13px}
+.tacc span{display:flex;align-items:center;gap:5px}
+.tacc .led,.dots .led{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--led)}
+
+.list{position:absolute;inset:0;overflow:auto;padding:56px 40px 40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:20px;align-content:start}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:22px 10px 12px;background:var(--sheet);border:1px solid var(--ink);box-shadow:2px 3px 0 rgba(35,31,26,.12);transition:transform .15s}
+.tile:nth-child(3n){transform:rotate(.6deg)} .tile:nth-child(4n+1){transform:rotate(-.7deg)}
+.tile:hover{transform:translateY(-3px) rotate(-1deg)}
+.tnum{position:absolute;left:8px;top:7px;font:400 9.5px var(--mono);color:var(--graphite)}
+.fbox{height:112px;display:grid;place-items:center}
+.tile .tt{font-size:17px;text-align:center}
+.tile .tm{margin:0}
+.dots{display:flex;gap:4px;align-items:center;height:12px}
+.band{width:11px;height:11px;border:1px dashed var(--ink);border-radius:50%}
+.tile.playing{border-color:var(--red);box-shadow:0 0 0 1px var(--red),2px 3px 0 rgba(194,58,30,.25)}
+.tile.playing::after{content:"играет";position:absolute;right:6px;top:4px;font:700 17px var(--hand);color:var(--red);transform:rotate(6deg)}
+@media(max-width:1099px){body{height:auto;overflow:auto}.page{display:block;height:auto}.view{height:100vh}}
+</style>
+</head>
+<body>
+<div class="page">
+  <aside class="col">
+    <header>
+      <div class="kick"><span class="mono">Тетрадь № 1 · 2011—2026 · 22 записи</span>
+        <span class="stamps"><button class="stamp" aria-label="О проекте">?</button><button class="stamp" aria-label="Язык">RU</button></span></div>
+      <h1>Songflake</h1>
+      <p class="sub">музыкальный дневник, где каждая песня — снежинка</p>
+    </header>
+
+    <section class="card" aria-label="Плеер">
+      <div class="card-h mono"><span>Карточка записи</span><span data-sf="pcap" data-idle="случайная запись" data-on="● звучит" data-off="пауза"></span></div>
+      <div class="prow">
+        <div class="keys">
+          <button class="key" data-sf="prev" aria-label="Назад"><i data-ico="prev"></i></button>
+          <button class="key play" data-sf="play" aria-label="Играть"><i data-ico="play"></i><i data-ico="pause"></i></button>
+          <button class="key" data-sf="next" aria-label="Следующий"><i data-ico="next"></i></button>
+        </div>
+        <div class="pmeta"><b data-sf="ptitle" data-idle="наугад"></b><span data-sf="pmeta" data-idle="нажмите ▶ — выпадет трек"></span></div>
+        <canvas data-sf="pflake" data-r="20"></canvas>
+      </div>
+      <div class="pfoot"><div class="pline" data-sf="pline"><i></i></div><span data-sf="ptime"></span></div>
+    </section>
+
+    <section class="filters">
+      <div class="viewbar"><span class="mono">Вид</span>
+        <div class="tabs"><button data-sf="tab-record">Пластинка</button><button data-sf="tab-list">Список</button></div>
+        <span class="count" data-sf="count" data-sep="из"></span></div>
+      <div><h3 class="mono"><em>§ 1</em>Стиль</h3><div class="pads" data-sf="styles"></div></div>
+      <div><h3 class="mono"><em>§ 2</em>На что обратить внимание</h3><div class="pads" data-sf="accents"></div></div>
+      <div class="ranges">
+        <div><h3 class="mono"><em>§ 3</em>Сложность<output data-sf="cxval"></output></h3><div class="dual" data-sf="cx"></div></div>
+        <div><h3 class="mono"><em>§ 4</em>Год<output data-sf="yrval"></output></h3><div class="dual" data-sf="yr"></div></div>
+      </div>
+      <button class="reset" data-sf="reset">сбросить фильтры ↺</button>
+    </section>
+  </aside>
+
+  <main class="view">
+    <p class="note n1 rec-only">покрутите диск ↻<br>колёсико — ближе</p>
+    <p class="plate mono rec-only">Табл. I<br>радиус — год записи</p>
+    <p class="note n2 rec-only">лучей больше — сложнее <b>структура</b>, вилки на концах — <b>ритм</b>, волна — <b>мелодия</b>, цвет луча — <b>инструмент</b></p>
+    <div class="stage" data-sf="stage"></div>
+    <div class="list" data-sf="list"></div>
+  </main>
+</div>
+
+<script src="engine.js"></script>
+<script>
+const { TAU, fitText } = SF.util;
+const INK = '#231f1a', ink = (a) => `rgba(35,31,26,${a})`;
+SF.start({
+  fonts: ['italic 13px "Old Standard TT"', '700 16px "Old Standard TT"', '500 10px "IBM Plex Mono"'],
+  // pigments instead of neon: the colours of a box of pencils
+  flake: {
+    palette: { Guitar: '#c9601a', Vox: '#17879a', Keys: '#86399b', Drums: '#c42b2b', Bass: '#2a8a4e', Flute: '#b3920f', Electric: '#2a52b6' },
+    core: INK, stops: [0.2, 0.55], fade: 0.5, ring: ink(0.4), halo: ink(0.6), centre: INK, glow: 0, w: 1.4, minW: 0.85,
+  },
+  styleLed: INK,
+  tileR: 36,
+  record: {
+    flakeR: 0.062, fitR: 1140,
+    ring: { stroke: ink(0.5), dash: [5, 4], font: '500 10px "IBM Plex Mono"', chip: '#f6f0e3', fill: INK },
+    title: { font: 'italic 13.5px "Old Standard TT"', fill: ink(0.78), hi: '#c23a1e' },
+    beat(ctx, x, y, R, p) {
+      ctx.save(); ctx.strokeStyle = `rgba(194,58,30,${0.35 + 0.5 * p})`; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(x, y, R * 1.32, R * 1.26, 0.4, 0, TAU); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(x + 1, y - 1, R * 1.27, R * 1.34, -0.3, 0.3, TAU - 0.4); ctx.stroke();
+      ctx.restore();
+    },
+    // a volvelle: a paper wheel riveted to the page
+    disc(ctx, g) {
+      const R = 1135 * g.s, k = R / 450;
+      ctx.save();
+      ctx.shadowColor = 'rgba(70,48,16,.3)'; ctx.shadowBlur = 26; ctx.shadowOffsetY = 8;
+      ctx.beginPath(); ctx.arc(0, 0, R, 0, TAU); ctx.fillStyle = '#f6f0e3'; ctx.fill();
+      ctx.restore();
+      ctx.lineWidth = 1;
+      for (let r = 292, i = 0; r <= 1010; r += 11, i++) {
+        ctx.beginPath(); ctx.arc(0, 0, r * g.s, 0, TAU);
+        ctx.strokeStyle = ink(i % 4 ? 0.055 : 0.12); ctx.stroke();
+      }
+      ctx.save(); ctx.rotate(g.phi);
+      ctx.strokeStyle = INK; ctx.fillStyle = INK; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = `500 ${Math.max(7, 9 * k)}px "IBM Plex Mono"`;
+      for (let i = 0; i < 180; i++) {
+        const big = i % 15 === 0, mid = i % 5 === 0;
+        ctx.save(); ctx.rotate((i / 180) * TAU);
+        ctx.globalAlpha = big ? 0.9 : mid ? 0.6 : 0.35;
+        ctx.beginPath(); ctx.moveTo(0, -R + 3 * k); ctx.lineTo(0, -R + (big ? 20 : mid ? 14 : 9) * k); ctx.stroke();
+        if (big) ctx.fillText(i * 2 + '°', 0, -R + 29 * k);
+        ctx.restore();
+      }
+      ctx.restore();
+      ctx.strokeStyle = INK; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(0, 0, R - 1, 0, TAU); ctx.stroke();
+      // the label
+      const L = 186 * g.s;
+      ctx.beginPath(); ctx.arc(0, 0, L, 0, TAU); ctx.fillStyle = '#e7dcc3'; ctx.fill();
+      ctx.lineWidth = 1.2; ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 0, L - 4 * k, 0, TAU); ctx.lineWidth = 0.6; ctx.stroke();
+      ctx.save(); ctx.rotate(g.phi); ctx.fillStyle = INK; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      if ('letterSpacing' in ctx) ctx.letterSpacing = `${1.6 * k}px`;
+      fitText(ctx, 'SONGFLAKE', L * 1.5, (s) => `700 ${s}px "Old Standard TT"`, 17 * k);
+      ctx.fillText('SONGFLAKE', 0, -L * 0.42);
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+      ctx.font = `italic ${Math.max(8, 11.5 * k)}px "Old Standard TT"`;
+      ctx.fillText(`Табл. I · ${g.Y0}—${g.Y1}`, 0, L * 0.4);
+      ctx.font = `500 ${Math.max(6, 7.5 * k)}px "IBM Plex Mono"`;
+      ctx.fillText(`${g.n} ЗАПИСИ · 33⅓`, 0, L * 0.66);
+      ctx.restore();
+      // the brass rivet
+      const b = ctx.createRadialGradient(-3 * k, -3 * k, 1, 0, 0, 11 * k);
+      b.addColorStop(0, '#f5e3a6'); b.addColorStop(0.6, '#b08a3c'); b.addColorStop(1, '#6f531c');
+      ctx.beginPath(); ctx.arc(0, 0, 10 * k, 0, TAU); ctx.fillStyle = b; ctx.fill();
+      ctx.strokeStyle = 'rgba(40,28,8,.6)'; ctx.lineWidth = 1; ctx.stroke();
+    },
+  },
+});
+</script>
+</body>
+</html>

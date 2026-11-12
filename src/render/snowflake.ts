@@ -11,7 +11,6 @@ import {
   FORK_SCALE,
   FORK_SPREAD,
   glowBlur,
-  HALO_RADIUS,
   lineWidth,
   OFFSHOOT_ANGLE,
   OFFSHOOT_LENGTH,
@@ -57,15 +56,6 @@ function polygon(ctx: Ctx, sides: number, r: number): void {
     else ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
   }
   ctx.closePath();
-}
-
-function halo(ctx: Ctx, R: number, w: number): void {
-  ctx.save();
-  ctx.setLineDash([R * 0.08, R * 0.08]);
-  ctx.beginPath();
-  ctx.arc(0, 0, R * HALO_RADIUS, 0, Math.PI * 2);
-  ink(ctx, 'rgba(255,255,255,.55)', w, '#ffffff');
-  ctx.restore();
 }
 
 /** Main ray points: straight at the centre, a gentle wave growing with √t. */
@@ -139,29 +129,49 @@ function offshoots(s: Stroke, p: SnowflakeParams, pts: Pt[], R: number): void {
   }
 }
 
+/**
+ * How a snowflake is inked. The default: rays in their colours fading to white at the centre,
+ * frost rings, a white centre. The random player's phosphor snowflake is inked in the display's
+ * colours instead (one ray colour, `core` for the fade and the centre, `ring` for the rings),
+ * with a stronger glow and a bolder line.
+ */
+export interface FlakeInk {
+  core: string;
+  ring: string;
+  glow: number;
+  width: number;
+}
+
+const DEFAULT_INK: FlakeInk = {
+  core: '#ffffff',
+  ring: rgba(FROST_LINE, RING_ALPHA),
+  glow: 1,
+  width: 1,
+};
+
 /** Draws a snowflake of radius R centred on the context origin. */
 export function drawSnowflake(
   ctx: Ctx,
   p: SnowflakeParams,
   colours: readonly string[],
   R: number,
+  look: FlakeInk = DEFAULT_INK,
 ): void {
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  ctx.shadowBlur = glowBlur(R);
-  const w = lineWidth(R);
-  if (p.halo) halo(ctx, R, w);
+  ctx.shadowBlur = glowBlur(R) * look.glow;
+  const w = Math.max(lineWidth(R), lineWidth(R) * look.width);
   for (let k = 1; k <= p.rings; k++) {
     polygon(ctx, p.rays, (R * RING_SPAN * k) / (p.rings + 0.5));
-    ink(ctx, rgba(FROST_LINE, RING_ALPHA), w, FROST_LINE);
+    ink(ctx, look.ring, w, look.ring);
   }
   const gradients = new Map<string, CanvasGradient>();
   const gradientFor = (colour: string): CanvasGradient => {
     let g = gradients.get(colour);
     if (!g) {
       g = ctx.createRadialGradient(0, 0, 0, 0, 0, R * GRADIENT_RADIUS);
-      for (const [offset, c] of rayGradientStops(colour)) g.addColorStop(offset, c);
+      for (const [offset, c] of rayGradientStops(colour, look.core)) g.addColorStop(offset, c);
       gradients.set(colour, g);
     }
     return g;
@@ -180,18 +190,19 @@ export function drawSnowflake(
     fork(s, end[0], end[1], tangent(pts, WAVE_SAMPLES), R * p.forkLength, p.forkDepth);
     ctx.restore();
   }
-  dot(ctx, 0, 0, centreDotRadius(R), '#ffffff', '#ffffff');
+  dot(ctx, 0, 0, centreDotRadius(R), look.core, look.core);
   ctx.restore();
 }
 
 export const devicePixelRatioCapped = (): number => Math.min(2, window.devicePixelRatio || 1);
 
-/** Sizes a canvas for a static snowflake of radius R (halo and glow included) and draws it. */
+/** Sizes a canvas for a static snowflake of radius R (glow included) and draws it. */
 export function paintSnowflake(
   canvas: HTMLCanvasElement,
   p: SnowflakeParams,
   colours: readonly string[],
   R: number,
+  look?: FlakeInk,
 ): void {
   const dpr = devicePixelRatioCapped();
   const size = paintedSize(R);
@@ -204,7 +215,7 @@ export function paintSnowflake(
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, size, size);
   ctx.translate(size / 2, size / 2);
-  drawSnowflake(ctx, p, colours, R);
+  drawSnowflake(ctx, p, colours, R, look);
 }
 
 export interface Sprite {

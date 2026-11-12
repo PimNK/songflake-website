@@ -7,7 +7,6 @@ export const site = 'SONGFLAKE';
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
 
 export const en = {
-  years: (n: number) => plural(n, 'year'),
   aboutBlock: 'About this block',
 
   hero: {
@@ -20,12 +19,18 @@ export const en = {
     langLabel: 'Language: English. Switch to Russian',
     // Shown with its line breaks; «_» opens a list line.
     intro: [
-      'You are looking at my music diary:',
-      '_my solo recordings,',
-      '_collaboration recordings.',
+      'You are looking at my music diary,',
+      'which holds mostly my solo recordings.',
+      '',
+      'I have always wanted to know what lies beneath the sounds and parts of a song I like — or, on the contrary, of one I do not understand.',
+      'I wish artists would suggest what to listen for, and why.',
+      '',
+      'Here I offer a way for artists and listeners to talk:',
+      'notes and the story behind each song, right beside it.',
       '',
       'Each song is a snowflake.',
-      "It's computed from song parameters:",
+      'Colours come from the main instruments.',
+      'Shape is computed from the song’s parameters:',
       '_rhythm,',
       '_melody,',
       '_technique,',
@@ -33,7 +38,7 @@ export const en = {
       '_structure.',
       '',
       'Click a snowflake to open the track.',
-      'Check the notes on where to focus your attention.',
+      'Enjoy.',
     ].join('\n'),
   },
 
@@ -49,8 +54,6 @@ export const en = {
     label: 'View',
     record: 'Record',
     list: 'List',
-    recordGlyph: '◉',
-    listGlyph: '☰',
     mapLabel: 'Track map',
     toRecord: 'Scroll down to the tracks',
     scroll: 'scroll',
@@ -85,8 +88,6 @@ export const en = {
   record: {
     canvasLabel:
       'A vinyl record map of tracks: distance from the label is the year. The List view shows the same tracks as tiles.',
-    tooltip: (style: string, band: boolean, year: string, total: number) =>
-      `${style} · ${band ? 'band' : 'solo'} · ${year} · complexity ${total}/15`,
     labelSide: (first: number, last: number) => `SIDE A · ${first} — ${last}`,
     labelTracks: (n: number) => `${plural(n, 'TRACK', 'TRACKS')} · 33⅓ RPM`,
     labelShort: '33⅓ RPM',
@@ -96,7 +97,6 @@ export const en = {
   list: {
     year: (style: string, year: string) => `${style} · ${year}`,
     inProgress: 'in progress',
-    band: 'recorded with a band',
     empty: 'No tracks match these filters. Use “Reset filters” on the panel.',
   },
 
@@ -104,14 +104,9 @@ export const en = {
     prev: 'Previous track',
     next: 'Next track',
     close: 'Close',
-    listen: 'What to listen for',
+    listen: 'Main instrument',
     listenInfo:
       "What I'd like you to notice while listening — the parts this track is built around. They also colour the rays of the snowflake.",
-    recordedWith: 'Recorded with',
-    recordedWithBand: 'Recorded with a band',
-    bandUnnamed: 'Band not named yet',
-    bandUnnamedHint: 'The name of the band is not filled in yet.',
-    bandNoAbout: 'No description yet.',
     story: 'Story',
     storyEmpty: 'The story of this track is still to be written.',
     timeline: 'From idea to recording',
@@ -123,9 +118,8 @@ export const en = {
     idea: 'Idea',
     concept: 'Concept',
     ready: 'Ready',
-    sameYear: 'same year',
     notYet: 'not yet',
-    total: (n: number) => `Total complexity <b>${n}</b> / 15`,
+    total: 'Total complexity',
     totalInfo: {
       rhythm: 'how intricate the beat is: meter, syncopation, changes of groove.',
       melody: 'how far the tunes travel: range, leaps, how many lines move at once.',
@@ -143,12 +137,11 @@ export const en = {
     label: 'Player',
     play: 'Play',
     pause: 'Pause',
-    playGlyph: '▶',
-    pauseGlyph: '❚❚',
     noAudio: 'Recording coming soon',
     ready: 'Press play to listen',
     pinAt: (time: string, text: string) => `Pin at ${time}: ${text}`,
     seek: 'Seek',
+    volume: 'Volume',
     pastEnd: (slug: string, time: string) =>
       `songs/${slug}/index.md: pin at ${time} is past the end of the recording`,
   },
@@ -162,6 +155,14 @@ export const en = {
     prev: 'Previous track',
     next: 'Next random track',
     openCard: (title: string) => `Open “${title}”`,
+  },
+
+  backlight: {
+    brightness: 'Backlight brightness',
+    tone: 'Backlight colour: from cold to warm',
+    cold: 'cold',
+    neutral: 'neutral',
+    warm: 'warm',
   },
 
   hints: {

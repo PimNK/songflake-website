@@ -1,17 +1,21 @@
-// The static page frame: the star sky behind everything and two sections — the intro (the hero
-// row: the title, the About button that opens the intro in a window on wide screens and the
-// language switch; then About and its text, on the page narrower) and the map
-// (the random-track player with the Filters toggle, the filter block — the labelled Record / List
-// switch, then the filter panel — and the views). On wide screens CSS lays them out as one left
-// column beside the view; narrower, the player is frozen at the bottom. Returns the slots other
-// views fill in.
-import { drawSky } from '../render/sky';
-import { devicePixelRatioCapped } from '../render/snowflake';
+// The static page frame: the room's light behind everything and two sections in a scrolling box
+// — the intro (the hero row: the title, the power lamp, the About button that opens the intro in
+// a window on wide screens and the language switch; then the intro text, on the page narrower)
+// and the map (the labelled Record / List switch and the views) — with the random-track player
+// (and its Filters toggle) and the filter panel beside them. On wide screens CSS lays them out as
+// one console — a faceplate down the left with the hero, the switch and the backlight knobs, the
+// player and the filters — beside the view; narrower, the player is frozen at the bottom and the
+// scrolling box ends above it. Returns the slots other views fill in.
 import { lang, otherLang, switchLang } from '../lang';
 import { strings } from '../strings';
+import { introHtml } from './html';
 
 export interface PageSlots {
   page: HTMLElement;
+  /** The scrolling box of the two sections (below 1100 px). */
+  scroller: HTMLElement;
+  /** The row with the Record / List switch; the backlight knobs join it on wide screens. */
+  controls: HTMLElement;
   filterToggle: HTMLButtonElement;
   aboutButton: HTMLButtonElement;
   filters: HTMLElement;
@@ -27,55 +31,59 @@ export interface PageSlots {
 
 /** The page markup; CSS places its parts for each width. */
 const frame = (v = strings.views): string => `
-    <canvas class="sky" aria-hidden="true"></canvas>
-    <div class="page" data-view="record">
-      <header class="intro-sec">
-        <div class="hero">
-          <h1>${strings.hero.title}</h1>
-          <div class="hero-keys">
-            <button type="button" class="pad hero-btn about-btn" aria-haspopup="dialog" aria-label="${strings.hero.about}">${strings.hero.aboutGlyph}</button>
-            <button type="button" class="pad hero-btn lang-btn" aria-label="${strings.hero.langLabel}">${strings.hero.lang}</button>
-          </div>
-        </div>
-        <section class="about" aria-labelledby="about-h">
-          <h2 class="label" id="about-h">${strings.hero.about}</h2>
-          <p class="lead">${strings.hero.intro}</p>
-        </section>
-        <button type="button" class="scroll-cue" aria-label="${v.toRecord}">${CHEVRON}<small>${v.scroll}</small></button>
-      </header>
-      <main class="map-sec" aria-label="${v.mapLabel}">
-        <div class="rplayer">
-          <button type="button" class="ftoggle" aria-expanded="false" aria-controls="filters"></button>
-          <div class="rp" data-slot="player"></div>
-        </div>
-        <div class="fanchor">
-          <div class="viewbar">
-            <span class="vlabel label" id="view-label">${v.label}</span>
-            <div class="vseg tabs" role="tablist" aria-labelledby="view-label">
-              <button type="button" role="tab" id="tab-record" aria-controls="stage"><span class="glyph">${v.recordGlyph} </span>${v.record}</button>
-              <button type="button" role="tab" id="tab-list" aria-controls="listview"><span class="glyph">${v.listGlyph} </span>${v.list}</button>
+    <div class="page at-intro" data-view="record">
+      <div class="deck panel" aria-hidden="true"></div>
+      <div class="scroller">
+        <header class="intro-sec">
+          <div class="hero">
+            <h1>${strings.hero.title}</h1>
+            <div class="hero-keys">
+              <i class="pwr" aria-hidden="true"></i>
+              <button type="button" class="btn s about-btn" aria-haspopup="dialog" aria-label="${strings.hero.about}">${strings.hero.aboutGlyph}</button>
+              <button type="button" class="btn s lang-btn" aria-label="${strings.hero.langLabel}">${strings.hero.lang}</button>
             </div>
           </div>
-          <div class="fpanel" id="filters" data-slot="filters" hidden></div>
-        </div>
-        <div class="views">
-          <p class="notice" role="status" data-slot="notice" hidden></p>
-          <div class="stage" id="stage" role="tabpanel" aria-labelledby="tab-record"></div>
-          <div class="listview" id="listview" role="tabpanel" aria-labelledby="tab-list" hidden></div>
-        </div>
-      </main>
+          <section class="about lead" aria-label="${strings.hero.about}">${introHtml(strings.hero.intro)}</section>
+          <button type="button" class="scroll-cue" aria-label="${v.toRecord}">${CHEVRON}<small class="label">${v.scroll}</small></button>
+        </header>
+        <main class="map-sec" aria-label="${v.mapLabel}">
+          <div class="ctl">
+            <div class="viewbar">
+              <span class="vlabel label" id="view-label">${v.label}</span>
+              <div class="slot" role="tablist" aria-labelledby="view-label">
+                <button type="button" role="tab" id="tab-record" aria-controls="stage">${v.record}</button>
+                <button type="button" role="tab" id="tab-list" aria-controls="listview">${v.list}</button>
+                <i class="knob" aria-hidden="true"></i>
+              </div>
+            </div>
+          </div>
+          <div class="views">
+            <p class="notice" role="status" data-slot="notice" hidden></p>
+            <div class="stage" id="stage" role="tabpanel" aria-labelledby="tab-record"></div>
+            <div class="listview" id="listview" role="tabpanel" aria-labelledby="tab-list" hidden></div>
+          </div>
+        </main>
+      </div>
+      <section class="rplayer panel">
+        <button type="button" class="btn ftoggle" aria-expanded="false" aria-controls="filters"></button>
+        <div class="rp" data-slot="player"></div>
+      </section>
+      <div class="fanchor">
+        <div class="fpanel panel" id="filters" data-slot="filters" hidden></div>
+      </div>
     </div>`;
 
 export function renderPage(root: HTMLElement): PageSlots {
   document.documentElement.lang = lang;
   root.innerHTML = frame();
   root.querySelector('.lang-btn')!.addEventListener('click', () => switchLang(otherLang));
-  mountSky(root.querySelector<HTMLCanvasElement>('.sky')!);
   wireScrollCue(root);
   measureTitle(root.querySelector<HTMLElement>('.hero h1')!);
   const q = <T extends HTMLElement>(sel: string): T => root.querySelector<T>(sel)!;
   return {
     page: q('.page'),
+    scroller: q('.scroller'),
+    controls: q('.ctl'),
     filterToggle: q('.ftoggle'),
     aboutButton: q('.about-btn'),
     filters: q('[data-slot="filters"]'),
@@ -90,8 +98,8 @@ export function renderPage(root: HTMLElement): PageSlots {
 }
 
 /**
- * The hero title is sized to the room its buttons leave (layout.css), which needs its width in
- * em: measured once the fonts are in, so any site name fits.
+ * The hero title is sized to the room its keys leave (layout.css), which needs its width in em:
+ * measured once the fonts are in, so any site name fits.
  */
 function measureTitle(h1: HTMLElement): void {
   void document.fonts.ready.then(() => {
@@ -108,41 +116,43 @@ const CHEVRON =
 
 /**
  * Narrow screens: the arrow scrolls to the second section; it fades out once the page moves.
- * While the intro fills most of the screen, `at-intro` on the page keeps the bottom player out of
- * sight (layout.css).
+ * While the intro fills most of the screen, `at-intro` on the page keeps the bottom player and the
+ * filter sheet out of sight (layout.css), and the scrolling box reaches the bottom.
  */
 function wireScrollCue(root: HTMLElement): void {
   const cue = root.querySelector<HTMLElement>('.scroll-cue')!;
   const intro = root.querySelector<HTMLElement>('.intro-sec')!;
   const page = root.querySelector<HTMLElement>('.page')!;
+  const scroller = root.querySelector<HTMLElement>('.scroller')!;
   cue.addEventListener('click', () =>
     root.querySelector('.map-sec')!.scrollIntoView({ behavior: 'smooth', block: 'start' }),
   );
   const fade = (): void => {
-    cue.classList.toggle('gone', window.scrollY > 24);
+    cue.classList.toggle('gone', scroller.scrollTop > 24);
     page.classList.toggle(
       'at-intro',
-      intro.getBoundingClientRect().bottom > window.innerHeight / 2,
+      !WIDE.matches && intro.getBoundingClientRect().bottom > window.innerHeight / 2,
     );
   };
-  window.addEventListener('scroll', fade, { passive: true });
+  scroller.addEventListener('scroll', fade, { passive: true });
   window.addEventListener('resize', fade);
   fade();
 }
 
-/** The fixed star sky, redrawn only when the window size changes. */
-function mountSky(canvas: HTMLCanvasElement): void {
-  const paint = (): void => {
-    const dpr = devicePixelRatioCapped();
-    const [w, h] = [window.innerWidth, window.innerHeight];
-    canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
-    const ctx = canvas.getContext('2d')!;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    drawSky(ctx, w, h);
+/** From this width the page is one console (layout.css). */
+const WIDE = window.matchMedia('(min-width: 1100px)');
+
+/**
+ * The backlight knobs sit beside the Record / List switch on wide screens and at the foot of the
+ * filter sheet, beside Reset, narrower. Call once the filter panel is mounted.
+ */
+export function placeDials(slots: PageSlots, dials: HTMLElement): void {
+  const put = (): void => {
+    const foot = slots.filters.querySelector('.foot') ?? slots.filters;
+    (WIDE.matches ? slots.controls : foot).append(dials);
   };
-  paint();
-  window.addEventListener('resize', paint);
+  put();
+  WIDE.addEventListener('change', put);
 }
 
 /** Shows one view, marks its tab, and sets the notice. */

@@ -162,8 +162,8 @@ describe('viewport', () => {
   });
 
   it('flakes grow slower than the map; spin slows when zoomed', () => {
-    expect(flakeRadius(1, 1, 1)).toBe(16);
-    expect(flakeRadius(1, 1, 8)).toBeCloseTo(16 * Math.pow(8, 0.45));
+    expect(flakeRadius(1, 1, 1)).toBe(20);
+    expect(flakeRadius(1, 1, 8)).toBeCloseTo(20 * Math.pow(8, 0.45));
     expect(spinRate(1)).toBe(0.03);
     expect(spinRate(4)).toBeCloseTo(0.03 / 8);
   });
