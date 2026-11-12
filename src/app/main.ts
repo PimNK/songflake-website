@@ -95,7 +95,7 @@ const card = mountTrackCard(content, playback, {
     const at = store.get().openSlug;
     const to = at ? playableStep(at, direction) : null;
     if (!to) return;
-    playback.play(to, 'order');
+    playback.playFromStart(to, 'order');
     store.set({ openSlug: to.slug, cue: null });
   },
   player: (slot, song, cue) =>

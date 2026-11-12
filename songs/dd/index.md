@@ -12,9 +12,25 @@ years:
   idea: 2023
   concept: 2024
   ready: 2024
-# pins:                # add once the audio file is in this folder
-#   - at: "0:42"
-#     text: "What happens at this moment"
+pins:
+  - at: "0:00"
+    text: "Two voices in the song, both played within a single guitar part: the lower one sets the rhythm, the upper one carries the melody."
+    text_ru: "В песне два голоса. Оба сыграны в рамках одной партии на гитаре. Нижний задает ритм. Верхний задает мелодию."
+  - at: "0:11"
+    text: "A one-bar switch to 4/4, then back to 9/8."
+    text_ru: "Временная смена размера в одном такте на 4/4 и снова возврат к 9/8."
+  - at: "0:21"
+    text: "The main theme, in 9/8. From here on the metre keeps changing from one to another, yet the overall pulse of the song seems to hold."
+    text_ru: "Основная тема. Размер 9/8. Здесь и далее будет постоянно происходить переход от одного размера к другому. Но, кажется, общая пульсация песни сохраняется."
+  - at: "0:41"
+    text: "The slow part. The melody sways between triple and duple patterns (counting in 3 and in 2)."
+    text_ru: "Медленная часть. Качаем мелодию между трехдольным и двухдольным рисунками (счет на 3 и на 2)."
+  - at: "1:12"
+    text: "A cool slap at the climax."
+    text_ru: "Прикольный слэп в кульминационном моменте."
+  - at: "1:44"
+    text: "A move to another key and a slight change of mood. Just for variety, so the listener doesn't get bored."
+    text_ru: "Переходим в другую тональность и меняем немного настроение. Просто вопрос разнообразия, чтобы слушатель не заскучал."
 ---
 
 A song I wrote on acoustic guitar in Turkey. One of the most difficult songs I have written, both technically and structurally: it has a lot of tapping with both the right and the left hand. The guitar part needs close listening, so I decided to record the guitar alone. The reason to finally record the track came with a friend's wedding: I wanted to give her a small creative gift.

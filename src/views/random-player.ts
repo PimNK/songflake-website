@@ -160,7 +160,7 @@ export function mountRandomPlayer(
   el.querySelector('.rp-keys')!.append(volumeFader(playback));
   const history = new ShuffleHistory();
   const start = (song: Song | null | undefined): void => {
-    if (song) playback.play(song, 'shuffle');
+    if (song) playback.playFromStart(song, 'shuffle');
   };
   const forward = (): Song | null => {
     const slug = history.next(h.pool(), Math.random);

@@ -87,6 +87,14 @@ export class Playback {
     void this.audio.play().catch(() => this.emit());
   }
 
+  /** Plays a song from the top, whatever position it was left at (⏮ / ⏭, auto-advance). */
+  playFromStart(song: Song, mode: PlayMode = 'order'): void {
+    if (!song.audioSrc) return;
+    this.pending.delete(song.slug);
+    if (this.isCurrent(song)) this.audio.currentTime = 0;
+    this.play(song, mode);
+  }
+
   toggle(song: Song): void {
     if (this.isPlaying(song)) this.audio.pause();
     else this.play(song);
@@ -105,7 +113,7 @@ export class Playback {
       const to = ended && next(ended, this.mode);
       if (!ended || !to) return;
       moved(ended, to);
-      this.play(to, this.mode);
+      this.playFromStart(to, this.mode);
     });
   }
 
