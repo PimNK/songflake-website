@@ -26,7 +26,7 @@ pins:
     text: "A cool pulsing lower voice."
     text_ru: "Клевый пульсирующий нижний голос."
   - at: "3:26"
-    text: "The climax. I loved playing this part on the piano: you can really hammer the keys. The synth doesn't render every accent perfectly, but the drums helped me pull the moment off."
+    text: "The peak of the piece. I loved playing this part on the piano: you can really hammer the keys. The synth doesn't render every accent perfectly, but the drums helped me pull the moment off."
     text_ru: "Кульминация. Мне очень нравилось играть этот фрагмент на фортепьяно. Можно прям мочить по клавишам. Синтезатор не передает идеально все акценты, но за счет поддержки ударных получилось вытащить момент."
 ---
 

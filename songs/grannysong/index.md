@@ -23,13 +23,13 @@ pins:
     text: "The mood turns lighter. Little by little, the burden of responsibility and of cares you never chose falls away."
     text_ru: "Смена настроения на более легкое. Постепенное освобождение от груза ответственности и забот, которые ты не выбирала."
   - at: "1:36"
-    text: "Freedom begins: travel and drive. The hardest section of the song, but it's my favourite. The whole orchestra follows the same idea and the same direction in which the melody develops, but every instrument has its own accents and melodic sequences."
+    text: "Freedom begins: travel and energy. The hardest section of the song, but it's my favourite. The whole orchestra follows the same idea and the same direction in which the melody develops, but every instrument has its own accents and melodic sequences."
     text_ru: "Начало свободы. Путешествия и драйв. Самая сложная часть песни, но моя любимая. Весь оркестр следует одной идее и одному направлению развития мелодии, но у каждого инструмента свои акценты и мелодические секвенции."
   - at: "2:11"
-    text: "Choosing a calmer pace of life, a chance to live for yourself. Light two-handed tapping on the guitar."
+    text: "Choosing a calmer pace of life, a chance to live for yourself. Light two-handed tapping in the guitar part."
     text_ru: "Выбор более спокойного режима жизни. Возможность пожить для себя. Легкий тэппинг для двух рук в гитаре."
   - at: "2:28"
-    text: "Calm gives way to a full life: new interests and hobbies. The two-handed tapping in the guitar part comes twice as often."
+    text: "Calm gives way to a life lived to the full: new interests and hobbies. The two-handed tapping in the guitar part gets twice as dense."
     text_ru: "Спокойствие сменяется полнотой жизни. Новые интересы и хобби. Тэппинг для двух рук становится в два раза более частым в гитарной партии."
 ---
 

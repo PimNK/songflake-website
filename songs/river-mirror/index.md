@@ -36,7 +36,7 @@ pins:
     text_ru: "Часть 7. Снова основная тема и завершение."
 ---
 
-Recorded during the COVID pandemic. The structure is symmetrical and has 7 parts. Yet the symmetrical parts do not fully repeat each other: they are like real objects and their reflection in a running river. Parts 1, 4 and 7 are the main theme; parts 2 and 6 share the same composition, but the guitars swap places; parts 3 and 5 are opposites in many ways (one warm and slow, the other cold and fast).
+Recorded during the COVID pandemic. The structure is symmetrical and has 7 parts. Yet the symmetrical parts do not fully repeat each other: they are like objects and their reflections in a flowing river. Parts 1, 4 and 7 are the main theme; parts 2 and 6 share the same composition, but the guitars swap places; parts 3 and 5 are opposites in many ways (one warm and slow, the other cold and fast).
 
 <!-- ru -->
 

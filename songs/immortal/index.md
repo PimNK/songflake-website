@@ -26,7 +26,7 @@ pins:
     text: "To me every dream (even a nightmare) has something pleasant in it, because I don't dream often. I think it's the adrenaline, and the old-school major synth stands for it."
     text_ru: "Для меня в любом сне (даже в кошмаре) есть что-то приятное, так как сны я вижу нечасто. Думаю, что это адреналин. Его символизирует олдскульный мажорный синт."
   - at: "1:22"
-    text: "A detuned synth part. The warrior appears from round the corner and spots his prey."
+    text: "A detuned synth part. The warrior comes round the corner and spots his prey."
     text_ru: "Партия расстроенного синтезатора. Воин показывается из-за угла и замечает жертву."
   - at: "1:38"
     text: "The chase and the fight."

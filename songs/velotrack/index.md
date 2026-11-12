@@ -42,7 +42,7 @@ pins:
     text_ru: "Финальный отрезок."
 ---
 
-Memories of a bicycle trip from Antalya to Bodrum. Drive, freedom and pushing past your own limits. What else do you need to be happy?
+Memories of a bicycle trip from Antalya to Bodrum. Energy, freedom and pushing past your own limits. What else do you need to be happy?
 
 <!-- ru -->
 

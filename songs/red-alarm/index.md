@@ -17,7 +17,7 @@ pins:
     text: "In the recording you can hear the guitar rushing ahead of the drums. A pity I didn't hear it in time."
     text_ru: "На записи можно услышать, как гитара торопится относительно барабанов. Жаль, что я вовремя это не услышал."
   - at: "0:33"
-    text: "On the whole I find the pentatonic scale rather boring, so here I decided to move into another key."
+    text: "On the whole I find the pentatonic scale rather boring, so here I decided to modulate to another key."
     text_ru: "Вообще пентатоника мне кажется довольно скучной. Поэтому здесь я решил сделать переход в другую тональность."
   - at: "1:20"
     text: "This guitar passage is my favourite in the piece. It came out pretty well."

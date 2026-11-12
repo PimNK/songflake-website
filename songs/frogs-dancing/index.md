@@ -17,10 +17,10 @@ pins:
     text: "It's a waltz. To me, frogs can only dance a waltz — at least, that's what I associate them with."
     text_ru: "Это вальс. Мне кажется, лягушки могут танцевать только вальс. У меня, по крайней мере, такая ассоциация."
   - at: "1:20"
-    text: "Culmination. My favorite place in the song."
+    text: "The peak of the song. My favourite moment in it."
     text_ru: "Кульминация. Моё любимое место в песне."
   - at: "1:44"
-    text: "A chord sequence from root notes to dissonant chords, which I love."
+    text: "A chord progression moving from root notes to dissonant chords, which I love."
     text_ru: "Последовательность аккордов — от основных тонов к диссонирующим аккордам, которые я люблю."
 ---
 

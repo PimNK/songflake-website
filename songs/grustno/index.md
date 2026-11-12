@@ -14,7 +14,7 @@ years:
   ready: 2024
 pins:
   - at: "0:00"
-    text: "The main theme is cyclic and spans 5 bars: in each next bar the note steps down the scale. Most melodies take an even number of bars or beats within a bar. We use a fifth bar with the lowest note to stand for the depth of the feeling and the drop in energy."
+    text: "The main theme is cyclic and spans 5 bars: with each bar the note steps down the scale. Most melodies run over an even number of bars, or of beats in a bar. We add a fifth bar, with the lowest note, to convey the depth of the feeling and the slump in energy."
     text_ru: "Основная тема циклична и занимает 5 тактов: в каждом следующем такте нота спускается по гамме вниз. Большинство мелодий занимают чётное количество тактов или долей внутри такта. Мы используем пятый такт с самой низкой нотой, символизируя глубину переживания и энергетическую яму."
   - at: "0:37"
     text: "The piano stands for the first hint of something to lean on."
@@ -23,7 +23,7 @@ pins:
     text: "A synth and a more confident drum part come in. They mark the start of accepting the sadness."
     text_ru: "Вступают синтезатор и более уверенная партия барабанов. Они символизируют начало процесса принятия грусти."
   - at: "1:53"
-    text: "The brass stands for the start of movement, using shorter notes. Right at this moment Ignat calls for a concrete action. Still, the melody itself stays minor and sticky, showing how heavy even the simplest action feels."
+    text: "The brass, with its shorter notes, marks the start of movement. Right at this moment Ignat calls for a concrete action. Still, the melody itself stays minor and sticky, showing how heavy even the simplest action feels."
     text_ru: "Духовые символизируют начало движения, используя более короткие ноты. Как раз в этот момент Игнат призывает к конкретному действию. Тем не менее сама мелодия остаётся минорной и залипающей, символизируя тяжесть даже самого простого действия."
   - at: "2:35"
     text: "A countdown before the move into a new state."
@@ -33,7 +33,7 @@ pins:
     text_ru: "Переход в новое состояние, когда по-прежнему грустно, но уже появилась энергия на действия (рояль минорный, но звучит значительно легче, чем прежние звуки). Щебетание птиц показывает, что жизнь вокруг продолжается."
 ---
 
-My brother Ignat and I had an idea to write several songs about emotions and feelings, to help people recognise and accept them. Ignat is a psychologist: he planned to use these recordings to help his clients. Here is our experiment about sadness.
+My brother Ignat and I had an idea to write several songs about emotions and feelings, to help people recognise and accept them. Ignat is a psychologist: he planned to use these recordings to help his clients. This is our experiment with sadness.
 
 <!-- ru -->
 

@@ -14,7 +14,7 @@ years:
   ready: 2024
 pins:
   - at: "0:00"
-    text: "The video begins. A manifesto on the importance of engineering is read out. The music has to create drive, support and a mood without getting in the way of the speech."
+    text: "The video begins. A manifesto on the importance of engineering is read out. The music has to give momentum, a foundation and a mood without getting in the way of the speech."
     text_ru: "Начало видео. Произносится манифест, объясняющий важность инженерного дела. Музыка должна создавать напор, опору, настроение, но не мешать прослушиванию речи."
   - at: "0:53"
     text: "A second, higher synth comes in. I like how the flashes of high-pitched sound turned out: grinding metal and sparks."
@@ -30,7 +30,7 @@ pins:
     text_ru: "В видео возникает запись процесса настройки микровыключателей электропривода. Со стороны это выглядит как процесс настройки часового механизма. Аккуратные и острые пробежки верхнего синтезатора озвучивают этот процесс."
 ---
 
-A track for OKAN, the company I worked for. I made the first sketch in 2021, playing with GarageBand on an iPad. But it lacked an overall concept until I was asked to make a soundtrack for an engineering company. Straight away it was clear how to turn the sketch into a track.
+A track for OKAN, the company I worked for. I made the first sketch in 2021, playing around with GarageBand on an iPad. But it lacked an overall concept until I was asked to make a soundtrack for an engineering company. Straight away it was clear how to turn the sketch into a track.
 
 <!-- ru -->
 
