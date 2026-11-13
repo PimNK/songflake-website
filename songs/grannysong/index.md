@@ -1,7 +1,7 @@
 ---
 title: "grannysong"
 style: Progressive
-accents: [Guitar, Brass]
+accents: [Guitar]
 complexity:
   rhythm: 2
   melody: 2

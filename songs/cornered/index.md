@@ -1,7 +1,7 @@
 ---
 title: "cornered"
 style: Ambient
-accents: [Synthesizer, Drums, Brass]
+accents: [Synthesizer, Drums]
 complexity:
   rhythm: 3
   melody: 2
