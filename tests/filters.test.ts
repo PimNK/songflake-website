@@ -9,7 +9,7 @@ import {
   playableNeighbour,
   setRange,
   setYears,
-  toggle,
+  choose,
   toQuery,
 } from '../src/domain/filters';
 import { song, taxonomy } from './fixtures';
@@ -23,7 +23,9 @@ describe('filters (§4.2)', () => {
 
   it('default matches everything', () => expect(matches(s, d, years)).toBe(true));
   it('style', () =>
-    expect(matches(s, { ...d, styles: toggle(d.styles, 'Ambient', false) }, years)).toBe(false));
+    expect(matches(s, { ...d, styles: choose(taxonomy.styles, 'Progressive') }, years)).toBe(
+      false,
+    ));
   it('complexity range inclusive', () => {
     expect(matches(s, { ...d, min: 10, max: 10 }, years)).toBe(true);
     expect(matches(s, { ...d, min: 11 }, years)).toBe(false);
@@ -74,14 +76,18 @@ describe('filters ⇄ query (§4.5)', () => {
     expect(toQuery(d, space)).toEqual({});
     expect(isDefault(d, space)).toBe(true);
   });
-  it('only differences, in taxonomy order', () => {
-    const f = { ...d, styles: new Set(['Ambient', 'Progressive']), min: 9 };
-    expect(toQuery(f, space)).toEqual({ style: 'Progressive,Ambient', min: '9' });
+  it('only differences', () => {
+    const f = { ...d, styles: choose(taxonomy.styles, 'Ambient'), min: 9 };
+    expect(toQuery(f, space)).toEqual({ style: 'Ambient', min: '9' });
+  });
+  it('choose keeps one option, or all of them', () => {
+    expect([...choose(['A', 'B'], 'B')]).toEqual(['B']);
+    expect([...choose(['A', 'B'], null)]).toEqual(['A', 'B']);
   });
   it('round-trips', () => {
     const f = {
       ...d,
-      styles: new Set<string>(),
+      styles: new Set(['Ambient']),
       accents: new Set(['Vox']),
       max: 12,
       from: 2013,
@@ -89,7 +95,7 @@ describe('filters ⇄ query (§4.5)', () => {
     };
     const back = fromQuery(new URLSearchParams(toQuery(f, space)), space);
     expect(toQuery(back, space)).toEqual(toQuery(f, space));
-    expect(back.styles.size).toBe(0);
+    expect([...back.styles]).toEqual(['Ambient']);
     expect(back).toMatchObject({ from: 2013, to: 2020 });
   });
   it('ignores unknown status, lists and empty numbers', () => {
@@ -97,7 +103,13 @@ describe('filters ⇄ query (§4.5)', () => {
     expect(isDefault(f, space)).toBe(true);
     const none = fromQuery(new URLSearchParams('status=none&style='), space);
     expect(none).toMatchObject({ ready: false, inProgress: false });
-    expect(none.styles.size).toBe(0);
+    expect(none.styles.size).toBe(taxonomy.styles.length);
+  });
+  it('several or no styles in a link pick them all', () => {
+    expect(
+      isDefault(fromQuery(new URLSearchParams('style=Progressive,Ambient'), space), space),
+    ).toBe(true);
+    expect(isDefault(fromQuery(new URLSearchParams('listen='), space), space)).toBe(true);
   });
 
   it('ignores unknown values', () => {

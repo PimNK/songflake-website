@@ -30,12 +30,12 @@ describe('router (§4.5)', () => {
     expect(stateToHash({ ...base, view: 'list' }, space)).toBe('#/list');
     const f = {
       ...base.filters,
-      styles: new Set(['Progressive', 'Ambient']),
+      styles: new Set(['Ambient']),
       min: 9,
       ready: false,
     };
     expect(stateToHash({ ...base, view: 'list', filters: f }, space)).toBe(
-      '#/list?style=Progressive,Ambient&min=9&status=in-progress',
+      '#/list?style=Ambient&min=9&status=in-progress',
     );
   });
 

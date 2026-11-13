@@ -50,16 +50,6 @@
   gap: 8px;
   min-height: 22px;
 }
-.flabel button {
-  padding: 6px 0;
-  margin-block: -6px;
-  font: inherit;
-  color: var(--label);
-  text-shadow: inherit;
-}
-.flabel button:hover {
-  color: var(--hot);
-}
 .fname {
   display: inline-flex;
   align-items: center;
@@ -70,6 +60,10 @@
   display: grid;
   grid-template-columns: repeat(var(--pad-cols), minmax(0, 1fr));
   gap: 9px 8px;
+}
+/* «Select all» of the instruments takes two columns. */
+.fopt.wide {
+  grid-column: span 2;
 }
 /* An option is a pad (styles/base.css); here only what makes it a control. */
 .fopt {

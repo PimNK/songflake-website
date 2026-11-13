@@ -12,4 +12,3 @@ accents:           # id → display name (ru: the Russian one) + colour
   Drums:       { name: Drums,       ru: Барабаны,    colour: "#ff1744" }
   Bass:        { name: Bass,        ru: Бас,         colour: "#00e676" }
   Synthesizer: { name: Synthesizer, ru: Синтезатор,  colour: "#2979ff" }
-  Brass:       { name: Brass,       ru: Духовые,     colour: "#ff4fa3" }

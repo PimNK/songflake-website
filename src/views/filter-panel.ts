@@ -1,7 +1,9 @@
 // Filter controls generated from the taxonomy, the songs' years and the counts (CLAUDE.md §4.2).
 // Options are pads of one size in one grid, each with a light (the instrument's colour). Each group
-// has an ⓘ note. From 1100 px the panel is always open under the player; narrower, it is a sheet
-// above the bottom player, opened by the player's funnel toggle (closed by default).
+// has an ⓘ note. Style and instrument are a choice of one: a «Select all» pad leads each (twice as
+// wide for instruments) and lights every pad of its group when on. From 1100 px the panel is
+// always open under the player; narrower, it is a sheet above the bottom player, opened by the
+// player's funnel toggle (closed by default).
 // No filtering logic: every change goes through domain/filters.ts and back to the store.
 import type { Content } from '../content/load';
 import {
@@ -10,9 +12,9 @@ import {
   countOptions,
   defaultFilters,
   isDefault,
+  choose,
   setRange,
   setYears,
-  toggle,
   type FilterSpace,
   type FilterState,
 } from '../domain/filters';
@@ -31,15 +33,22 @@ interface Option {
   label: string;
   count: number;
   colour?: string;
+  /** A choice of one (style, instrument): a radio named after its kind. */
+  one?: boolean;
+  wide?: boolean;
 }
 
 // A pad: its light takes the instrument's colour (the backlight for the rest). No count; an
 // option no song carries is dimmed.
 const option = (o: Option): string => `
-  <label class="fopt pad${o.count ? '' : ' zero'}"${o.colour ? ` style="--led:${esc(o.colour)}"` : ''}>
-    <input type="checkbox" data-kind="${o.kind}" data-id="${esc(o.id)}">
+  <label class="fopt pad${o.count ? '' : ' zero'}${o.wide ? ' wide' : ''}"${o.colour ? ` style="--led:${esc(o.colour)}"` : ''}>
+    <input type="${o.one ? 'radio' : 'checkbox'}"${o.one ? ` name="f-${o.kind}"` : ''} data-kind="${o.kind}" data-id="${esc(o.id)}">
     <i></i><span>${esc(o.label)}</span>
   </label>`;
+
+/** The «Select all» pad of a choice-of-one group; its id is empty. */
+const allPad = (kind: string, wide = false): string =>
+  option({ kind, id: '', label: f.all, count: 1, one: true, wide });
 
 /** A funnel: the Filters toggle's icon (the word is its accessible name). */
 const FUNNEL =
@@ -73,7 +82,7 @@ function template(content: Content, space: FilterSpace): string {
   const c = countOptions(songs, taxonomy);
   // Styles carry no colour dot here: they would read as instrument colours.
   const styles = taxonomy.styles.map((s) =>
-    option({ kind: 'style', id: s, label: s, count: c.styles[s] ?? 0 }),
+    option({ kind: 'style', id: s, label: s, count: c.styles[s] ?? 0, one: true }),
   );
   const accents = taxonomy.accents.map((a) =>
     option({
@@ -82,14 +91,14 @@ function template(content: Content, space: FilterSpace): string {
       label: a.name,
       count: c.accents[a.id] ?? 0,
       colour: a.colour,
+      one: true,
     }),
   );
-  const all = `<button type="button" data-all>${f.allNone}</button>`;
   return `
       <div class="fbody">
-        <div class="fgroup">${label(f.style, f.info.style)}<div class="pads">${styles.join('')}</div></div>
-        <div class="fgroup">${label(f.listen, f.info.listen, all)}
-          <div class="pads">${accents.join('')}</div></div>
+        <div class="fgroup">${label(f.style, f.info.style)}<div class="pads">${allPad('style')}${styles.join('')}</div></div>
+        <div class="fgroup">${label(f.listen, f.info.listen)}
+          <div class="pads">${allPad('accent', true)}${accents.join('')}</div></div>
         <div class="franges">
           <div class="fgroup">${label(f.complexity, f.info.complexity, '<output class="chip" data-range-label></output>')}
             ${range('range', f.complexity, ['min', 'max'], COMPLEXITY_MIN, COMPLEXITY_MAX)}</div>
@@ -103,15 +112,43 @@ function template(content: Content, space: FilterSpace): string {
       </div>`;
 }
 
-function isChecked(filters: FilterState, kind: string, id: string): boolean {
-  if (kind === 'style') return filters.styles.has(id);
-  if (kind === 'accent') return filters.accents.has(id);
-  return id === 'ready' ? filters.ready : filters.inProgress;
+/** Every option of a choice-of-one group, in taxonomy order. */
+interface Choices {
+  style: readonly string[];
+  accent: readonly string[];
 }
 
-function withOption(filters: FilterState, kind: string, id: string, on: boolean): FilterState {
-  if (kind === 'style') return { ...filters, styles: toggle(filters.styles, id, on) };
-  if (kind === 'accent') return { ...filters, accents: toggle(filters.accents, id, on) };
+const chosen = (filters: FilterState, kind: string): ReadonlySet<string> =>
+  kind === 'style' ? filters.styles : filters.accents;
+
+/**
+ * Whether a pad is lit, and whether its input is checked: a choice-of-one group with all options
+ * on lights every pad but checks only «Select all».
+ */
+function padState(
+  filters: FilterState,
+  kind: string,
+  id: string,
+  all: Choices,
+): [boolean, boolean] {
+  if (kind === 'status') {
+    const on = id === 'ready' ? filters.ready : filters.inProgress;
+    return [on, on];
+  }
+  const set = chosen(filters, kind);
+  const every = set.size === all[kind as keyof Choices].length;
+  return [every || set.has(id), every ? id === '' : set.has(id)];
+}
+
+function withOption(
+  filters: FilterState,
+  kind: string,
+  id: string,
+  all: Choices,
+  on: boolean,
+): FilterState {
+  if (kind === 'style') return { ...filters, styles: choose(all.style, id || null) };
+  if (kind === 'accent') return { ...filters, accents: choose(all.accent, id || null) };
   return { ...filters, [id === 'ready' ? 'ready' : 'inProgress']: on };
 }
 
@@ -172,12 +209,15 @@ export function mountFilterPanel(
   toggle.innerHTML = `${FUNNEL}<span class="fdot" hidden></span>`;
   wireToggle(toggle, el);
   const total = content.songs.length;
-  const allAccents = content.taxonomy.accents.map((a) => a.id);
+  const all: Choices = {
+    style: content.taxonomy.styles,
+    accent: content.taxonomy.accents.map((a) => a.id),
+  };
 
   el.addEventListener('change', (e) => {
     const input = e.target as HTMLInputElement;
     if (input.dataset.kind) {
-      onChange(withOption(current(), input.dataset.kind, input.dataset.id!, input.checked));
+      onChange(withOption(current(), input.dataset.kind, input.dataset.id!, all, input.checked));
     }
   });
   el.addEventListener('input', (e) => {
@@ -186,10 +226,6 @@ export function mountFilterPanel(
     const year = input.dataset.years as 'from' | 'to' | undefined;
     if (end) onChange(setRange(current(), end, Number(input.value)));
     if (year) onChange(setYears(current(), year, Number(input.value), space.years));
-  });
-  el.querySelector('[data-all]')!.addEventListener('click', () => {
-    const all = current().accents.size < allAccents.length;
-    onChange({ ...current(), accents: new Set(all ? allAccents : []) });
   });
   el.querySelector('[data-reset]')!.addEventListener('click', () => {
     onChange(defaultFilters(space));
@@ -202,7 +238,9 @@ export function mountFilterPanel(
       el.querySelector('[data-range-label]')!.textContent = f.range(filters.min, filters.max);
       el.querySelector('[data-years-label]')!.textContent = f.range(filters.from, filters.to);
       el.querySelectorAll<HTMLInputElement>('input[data-kind]').forEach((input) => {
-        input.checked = isChecked(filters, input.dataset.kind!, input.dataset.id!);
+        const [lit, checked] = padState(filters, input.dataset.kind!, input.dataset.id!, all);
+        input.checked = checked;
+        input.parentElement!.classList.toggle('lit', lit);
       });
       el.querySelectorAll<HTMLElement>('[data-dual]').forEach((dual) => showDual(dual, filters));
     },

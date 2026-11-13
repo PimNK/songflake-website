@@ -69,8 +69,8 @@ export const en = {
     year: 'Year',
     from: 'from',
     to: 'to',
-    listen: 'What to listen for',
-    allNone: 'all / none',
+    listen: 'Main instrument',
+    all: 'Select all',
     status: 'Status',
     ready: 'Ready',
     inProgress: 'In progress',
@@ -78,7 +78,7 @@ export const en = {
     info: {
       style: 'The genre a track leans to.',
       listen:
-        'The instruments a track is built around. A track shows when it has at least one of the checked ones.',
+        'The instruments a track is built around. Pick one to show the tracks that have it, or Select all.',
       complexity: 'Rhythm, melody, technique, instruments and structure, each 1–3, added up: 5–15.',
       year: 'The year a track was recorded. Tracks in progress count as the latest year.',
       status: 'Ready tracks are recorded; tracks in progress are still being worked on.',

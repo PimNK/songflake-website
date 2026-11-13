@@ -77,11 +77,12 @@ export function setYears(
     : { ...f, to: v, from: Math.min(f.from, v) };
 }
 
-export function toggle(set: ReadonlySet<string>, id: string, on: boolean): Set<string> {
-  const next = new Set(set);
-  if (on) next.add(id);
-  else next.delete(id);
-  return next;
+/**
+ * Style and instrument hold either every option (the «Select all» pad) or exactly one: picking an
+ * option keeps only it, `null` picks them all.
+ */
+export function choose(all: readonly string[], id: string | null): Set<string> {
+  return new Set(id === null ? all : [id]);
 }
 
 export interface FilterCounts {
@@ -115,7 +116,7 @@ export function isDefault(f: FilterState, space: FilterSpace): boolean {
 const pair = (a: boolean, b: boolean, names: [string, string]): string | null =>
   a && b ? null : a ? names[0] : b ? names[1] : 'none';
 
-/** Only what differs from the default, e.g. `{ style: 'Progressive,Ambient', min: '9' }`. */
+/** Only what differs from the default, e.g. `{ style: 'Progressive', min: '9' }`. */
 export function toQuery(f: FilterState, space: FilterSpace): Record<string, string> {
   const { taxonomy } = space;
   const d = defaultFilters(space);
@@ -141,13 +142,10 @@ export function toQuery(f: FilterState, space: FilterSpace): Record<string, stri
 export function fromQuery(q: URLSearchParams, space: FilterSpace): FilterState {
   const { taxonomy, years } = space;
   let f = defaultFilters(space);
-  // An empty list means "none checked"; a list with only unknown names keeps the default.
+  // One known name picks it; anything else (none, several, unknown) keeps all of them (`choose`).
   const list = (key: string, known: string[]): Set<string> | null => {
-    const raw = q.get(key);
-    if (raw === null) return null;
-    const items = raw.split(',').filter(Boolean);
-    const kept = items.filter((x) => known.includes(x));
-    return items.length && !kept.length ? null : new Set(kept);
+    const kept = (q.get(key) ?? '').split(',').filter((x) => known.includes(x));
+    return kept.length === 1 ? choose(known, kept[0]!) : null;
   };
   const styles = list('style', taxonomy.styles);
   const accents = list(
