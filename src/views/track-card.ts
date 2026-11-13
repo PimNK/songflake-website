@@ -2,7 +2,8 @@
 // and time, the title (one line; a ticker on narrow cards), the oscilloscope line with the pins,
 // the pin note and the turning snowflake at its right; under it previous · play / pause · next
 // and the volume fader (✕ at the top right); the four cells below. Swiping left / right on touch
-// steps tracks.
+// steps tracks. Below 1100 px the card has no keys and no ✕: it ends above the bottom player, which
+// is its transport (CSS), and focus goes round the card, the filter sheet and that player (`dock`).
 // Focus is trapped while open and returned to the opener; page scroll is locked.
 // Closing (✕, Esc, backdrop) and prev/next go through the caller, which owns the state.
 import type { Content } from '../content/load';
@@ -11,6 +12,7 @@ import { strings } from '../strings';
 import { renderCardBody } from './card-body';
 import { CLOSE_ICON, icon } from './html';
 import { trapFocus } from './modal';
+import { WIDE } from './page';
 import type { Playback } from './playback';
 import { NARROW } from './pin-markers';
 import { emptyPlayer } from './player';
@@ -40,7 +42,13 @@ const c = strings.card;
 const p = strings.player;
 const SWIPE_PX = 60;
 
-export function mountTrackCard(content: Content, playback: Playback, hooks: CardHooks): TrackCard {
+/** `dock`: the filter sheet and the bottom player, the card's transport below 1100 px. */
+export function mountTrackCard(
+  content: Content,
+  playback: Playback,
+  hooks: CardHooks,
+  dock: HTMLElement[],
+): TrackCard {
   const modal = createModal(playback);
   const title = modal.querySelector<HTMLElement>('#card-title')!;
   const slots: PlayerSlots = {
@@ -59,7 +67,7 @@ export function mountTrackCard(content: Content, playback: Playback, hooks: Card
     slots.body.replaceChildren();
   };
 
-  wireEvents(modal, sheet, hooks);
+  wireEvents(modal, sheet, hooks, dock);
 
   return {
     show(song, cue) {
@@ -73,13 +81,7 @@ export function mountTrackCard(content: Content, playback: Playback, hooks: Card
         slots.body.innerHTML = emptyPlayer();
       }
       renderCardBody(grid, flake, song, content.taxonomy);
-      const opening = modal.hidden;
-      modal.hidden = false;
-      document.body.classList.add('locked');
-      if (opening) {
-        sheet.scrollTop = 0;
-        modal.querySelector<HTMLElement>('[data-close]')!.focus({ preventScroll: true });
-      }
+      present(modal, sheet);
     },
     hide() {
       if (modal.hidden) return;
@@ -92,16 +94,33 @@ export function mountTrackCard(content: Content, playback: Playback, hooks: Card
   };
 }
 
+/**
+ * Shows the card and locks the page's scroll. A card that opens starts at the top with the focus
+ * on ✕; below 1100 px (no ✕) on the sheet.
+ */
+function present(modal: HTMLElement, sheet: HTMLElement): void {
+  const opening = modal.hidden;
+  modal.hidden = false;
+  document.body.classList.add('locked');
+  if (!opening) return;
+  sheet.scrollTop = 0;
+  const x = modal.querySelector<HTMLElement>('[data-close]')!;
+  (x.offsetParent ? x : sheet).focus({ preventScroll: true });
+}
+
 /** The card's frame, once for the page: the display, the keys with the volume, the cells. */
 function createModal(playback: Playback): HTMLElement {
   const modal = document.createElement('div');
   modal.className = 'modal';
   modal.hidden = true;
   modal.setAttribute('role', 'dialog');
-  modal.setAttribute('aria-modal', 'true');
+  // Below 1100 px the bottom player stays usable beside the card: it is not a modal window there.
+  const modalWide = (): void => modal.setAttribute('aria-modal', String(WIDE.matches));
+  modalWide();
+  WIDE.addEventListener('change', modalWide);
   modal.setAttribute('aria-labelledby', 'card-title');
   modal.innerHTML = `
-    <article class="sheet panel">
+    <article class="sheet panel" tabindex="-1">
       <button class="btn s x" type="button" data-close aria-label="${c.close}">${CLOSE_ICON}</button>
       <section class="mtop" aria-label="${p.label}">
         <div class="vfd mscreen">
@@ -150,7 +169,12 @@ function wireSwipe(sheet: HTMLElement, hooks: CardHooks): void {
   });
 }
 
-function wireEvents(modal: HTMLElement, sheet: HTMLElement, hooks: CardHooks): void {
+function wireEvents(
+  modal: HTMLElement,
+  sheet: HTMLElement,
+  hooks: CardHooks,
+  dock: HTMLElement[],
+): void {
   wireSwipe(sheet, hooks);
   modal.addEventListener('click', (e) => {
     const t = e.target as HTMLElement;
@@ -172,6 +196,9 @@ function wireEvents(modal: HTMLElement, sheet: HTMLElement, hooks: CardHooks): v
     if (e.key === 'Escape') hooks.close();
     else if (e.key === 'ArrowLeft' && !typing) hooks.step(-1);
     else if (e.key === 'ArrowRight' && !typing) hooks.step(1);
-    else if (e.key === 'Tab') trapFocus(e, sheet);
+    else if (e.key === 'Tab') {
+      if (WIDE.matches) trapFocus(e, sheet);
+      else trapFocus(e, sheet, ...dock);
+    }
   });
 }

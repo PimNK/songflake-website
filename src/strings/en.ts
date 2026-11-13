@@ -155,6 +155,8 @@ export const en = {
     prev: 'Previous track',
     next: 'Next random track',
     openCard: (title: string) => `Open “${title}”`,
+    card: 'Open the track card',
+    toList: 'Back to the tracks',
   },
 
   backlight: {

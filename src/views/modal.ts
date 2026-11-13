@@ -2,20 +2,19 @@
 
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
-/** On Tab, wraps focus round the window's visible, enabled controls. */
-export function trapFocus(e: KeyboardEvent, root: HTMLElement): void {
-  const items = [...root.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
-    (x) => !(x as HTMLButtonElement).disabled && x.offsetParent !== null,
-  );
+/**
+ * On Tab, moves focus round the window's visible, enabled controls, wrapping. With several roots
+ * (the narrow card and the bottom player, which is its transport) it goes round all of them in
+ * the order given.
+ */
+export function trapFocus(e: KeyboardEvent, ...roots: HTMLElement[]): void {
+  const items = roots
+    .flatMap((root) => [...root.querySelectorAll<HTMLElement>(FOCUSABLE)])
+    .filter((x) => !(x as HTMLButtonElement).disabled && x.offsetParent !== null);
   if (!items.length) return;
-  const first = items[0]!;
-  const last = items[items.length - 1]!;
-  const active = document.activeElement;
-  if (e.shiftKey && (active === first || !root.contains(active))) {
-    e.preventDefault();
-    last.focus();
-  } else if (!e.shiftKey && (active === last || !root.contains(active))) {
-    e.preventDefault();
-    first.focus();
-  }
+  e.preventDefault();
+  const at = items.indexOf(document.activeElement as HTMLElement);
+  const n = items.length;
+  const to = at < 0 ? (e.shiftKey ? n - 1 : 0) : (at + (e.shiftKey ? -1 : 1) + n) % n;
+  items[to]!.focus();
 }

@@ -18,7 +18,7 @@ import { yearRange } from '../domain/record-layout';
 import { showContentOverlay } from '../views/content-overlay';
 import { mountFilterPanel } from '../views/filter-panel';
 import { mountList } from '../views/list';
-import { onViewTab, placeDials, renderPage, showView } from '../views/page';
+import { WIDE, onViewTab, placeDials, renderPage, showView } from '../views/page';
 import { mountRecord } from '../views/record';
 import { mountTrackCard } from '../views/track-card';
 import { mountRandomPlayer } from '../views/random-player';
@@ -68,6 +68,8 @@ const playback = new Playback();
 restoreVolume(playback);
 const bySlug = (slug: string | null): Song | undefined => songs.find((x) => x.slug === slug);
 const playable = songs.filter((x) => !!x.audioSrc);
+/** Below 1100 px the bottom player is the open card's transport and holds the card's track. */
+const docked = (): boolean => !WIDE.matches && !!store.get().openSlug;
 const random = mountRandomPlayer(slots.player, playback, taxonomy, {
   // Playable tracks that match the filters; all playable ones when none match.
   pool: () => {
@@ -76,6 +78,9 @@ const random = mountRandomPlayer(slots.player, playback, taxonomy, {
   },
   song: bySlug,
   open,
+  cardOpen: docked,
+  close: () => store.set({ openSlug: null, cue: null }),
+  step: (direction) => stepCard(direction),
 });
 /** The previous / next track with a recording in the card's order (filtered, wrapping). */
 const playableStep = (slug: string, direction: -1 | 1): Song | null =>
@@ -88,31 +93,45 @@ playback.autoAdvance(
     if (store.get().openSlug === from.slug) store.set({ openSlug: to.slug, cue: null });
   },
 );
-const card = mountTrackCard(content, playback, {
-  close: () => store.set({ openSlug: null, cue: null }),
-  // As on the player's keys: the previous / next track starts playing, and the card follows it.
-  step: (direction) => {
-    const at = store.get().openSlug;
-    const to = at ? playableStep(at, direction) : null;
-    if (!to) return;
-    playback.playFromStart(to, 'order');
-    store.set({ openSlug: to.slug, cue: null });
+// As on the player's keys: the previous / next track starts playing, and the card follows it.
+function stepCard(direction: -1 | 1): void {
+  const at = store.get().openSlug;
+  const to = at ? playableStep(at, direction) : null;
+  if (!to) return;
+  playback.playFromStart(to, 'order');
+  store.set({ openSlug: to.slug, cue: null });
+}
+/** Below 1100 px opening another track's card plays it at once (from its cue, else the top). */
+function playOpened(song: Song, cue: number | null): void {
+  if (WIDE.matches || !song.audioSrc || playback.isCurrent(song)) return;
+  if (cue === null) playback.playFromStart(song, 'order');
+  else playback.seek(song, cue, true);
+}
+const card = mountTrackCard(
+  content,
+  playback,
+  {
+    close: () => store.set({ openSlug: null, cue: null }),
+    step: stepCard,
+    player: (slot, song, cue) =>
+      mountPlayer(slot, song, cue, playback, {
+        warn: (message) => {
+          if (import.meta.env.DEV) showContentOverlay([], [message]);
+        },
+      }),
   },
-  player: (slot, song, cue) =>
-    mountPlayer(slot, song, cue, playback, {
-      warn: (message) => {
-        if (import.meta.env.DEV) showContentOverlay([], [message]);
-      },
-    }),
-});
+  [slots.filters, slots.player.closest<HTMLElement>('.rplayer')!],
+);
 onViewTab(slots, (view) => store.set({ view, notice: null }));
 mountAbout(slots.aboutButton, () => startHints(slots, true));
 
 store.subscribe((s, prev) => {
   if (s.openSlug !== prev.openSlug || s.cue !== prev.cue) {
     const song = songs.find((x) => x.slug === s.openSlug);
+    if (song) playOpened(song, s.cue);
     if (song) card.show(song, s.cue);
     else card.hide();
+    random.refresh();
   }
   const match = (song: Song): boolean => matches(song, s.filters, years);
   record.setMatch(match);
@@ -123,6 +142,7 @@ store.subscribe((s, prev) => {
 });
 // The current track's snowflake pulses on the record and in the list, also while paused; the
 // console's power lamp is lit while something plays.
+// Below 1100 px an open card follows the track the player moves to (⏮ / ⏭ of the random run).
 let pulsing: string | null = null;
 playback.subscribe(() => {
   slots.page.classList.toggle('playing', playback.isPlaying());
@@ -131,7 +151,9 @@ playback.subscribe(() => {
   pulsing = slug;
   record.setPlaying(slug);
   list.setPlaying(slug);
+  if (slug && docked() && store.get().openSlug !== slug) store.set({ openSlug: slug, cue: null });
 });
+WIDE.addEventListener('change', () => random.refresh());
 const router = startRouter(store, space, (slug) => songs.some((x) => x.slug === slug), fitView);
 PHONE.addEventListener('change', () => router.refit());
 if (!store.get().openSlug) startHints(slots);

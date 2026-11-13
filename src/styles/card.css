@@ -2,8 +2,9 @@
    oscilloscope line with pins, the pin note and the turning snowflake at its right; under it the
    keys and the volume; ✕ at the top right. Then four cells. From 900 px the card fits the window
    at one fixed size whatever the song, so stepping tracks moves nothing; only a long story
-   scrolls, inside its cell. Narrower: a full-height sheet that scrolls, one column, the keys
-   first. The About window uses the same frame. */
+   scrolls, inside its cell. Below 1100 px the card has no keys and no ✕: it fills the screen
+   above the bottom player, which is its transport. Below 900 px a sheet that scrolls, one column.
+   The About window uses the same frame. */
 body.locked {
   overflow: hidden;
 }
@@ -30,6 +31,9 @@ body.locked {
   /* horizontal swipes step tracks (views/track-card.ts), never the browser's back gesture */
   touch-action: pan-y pinch-zoom;
   overscroll-behavior-x: none;
+}
+.sheet:focus {
+  outline: none;
 }
 .btn.x {
   position: absolute;
@@ -138,14 +142,27 @@ body.locked {
   font-size: 11px;
 }
 
-@media (max-width: 899.98px) {
+@media (max-width: 1099.98px) {
   .modal {
+    bottom: var(--player-room);
     padding: 0;
     place-items: stretch;
   }
   .sheet {
     width: 100%;
     height: 100%;
+    border-radius: 14px 14px 0 0;
+  }
+  .sheet > .btn.x,
+  .mtransport {
+    display: none;
+  }
+  .mtop {
+    padding-right: 0;
+  }
+}
+@media (max-width: 899.98px) {
+  .sheet {
     border-radius: 0;
     overflow: auto;
     overscroll-behavior: contain;
@@ -155,22 +172,6 @@ body.locked {
     gap: 18px;
     padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px
       calc(env(safe-area-inset-bottom, 0px) + 28px);
-  }
-  .btn.x {
-    top: calc(env(safe-area-inset-top, 0px) + 28px);
-    right: 16px;
-  }
-  .mtop {
-    padding-right: 0;
-  }
-  /* the keys first, ✕ at their right */
-  .mtransport {
-    order: -1;
-    gap: 14px;
-    padding-right: 48px;
-  }
-  .mtransport .vol {
-    display: none;
   }
   /* the caption over the title, the snowflake at their right; then the line with the time at
      its end, and the note */
@@ -208,21 +209,5 @@ body.locked {
   }
   .about-sheet {
     padding-top: calc(env(safe-area-inset-top, 0px) + 28px);
-  }
-}
-@media (max-width: 359.98px) {
-  .mtransport {
-    gap: 10px;
-  }
-  .mtransport .btn.k {
-    width: 40px;
-    height: 40px;
-  }
-  .mtransport .btn.play {
-    width: 54px;
-    height: 54px;
-  }
-  .btn.x {
-    top: calc(env(safe-area-inset-top, 0px) + 24px);
   }
 }

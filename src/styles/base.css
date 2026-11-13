@@ -690,7 +690,7 @@ button {
   outline: 2px solid var(--amber);
   outline-offset: 2px;
 }
-/* The volume: the speaker and one fader; wide screens only (phones have their own keys). */
+/* The volume: the speaker and one fader; not on phones (they have their own keys). */
 .vol {
   display: flex;
   align-items: center;
@@ -701,7 +701,7 @@ button {
 .vol .dual {
   flex: 1;
 }
-@media (max-width: 1099.98px) {
+@media (max-width: 899.98px) {
   .rp .vol {
     display: none;
   }

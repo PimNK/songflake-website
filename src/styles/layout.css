@@ -10,7 +10,7 @@
   /* above the view below 1100 px: top padding + the bar + gap */
   --bar-room: 64px;
   /* the bottom player below 1100 px (random-player.css sizes its rows to fit) */
-  --player-room: calc(132px + env(safe-area-inset-bottom, 0px));
+  --player-room: calc(156px + env(safe-area-inset-bottom, 0px));
   /* the hero's keys: the power lamp and the language switch (and «?» from 1100 px) */
   --keys-w: 53px;
 }
@@ -236,6 +236,19 @@
   .page.at-intro .fpanel {
     transform: translateY(100%);
     visibility: hidden;
+  }
+  /* An open track card (body.locked) keeps the player, its transport, and the filter sheet above
+     the card's backdrop. */
+  body.locked .page.at-intro .rplayer,
+  body.locked .page.at-intro .fpanel:not([hidden]) {
+    transform: none;
+    visibility: visible;
+  }
+  body.locked .fpanel {
+    z-index: 51;
+  }
+  body.locked .rplayer {
+    z-index: 52;
   }
 }
 /* Phones: the list only — no Record / List switch (app/main.ts keeps the view on the list; its

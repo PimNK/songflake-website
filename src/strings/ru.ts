@@ -161,6 +161,8 @@ export const ru: Strings = {
     prev: 'Предыдущий трек',
     next: 'Следующий случайный трек',
     openCard: (title: string) => `Открыть «${title}»`,
+    card: 'Открыть карточку трека',
+    toList: 'Вернуться к трекам',
   },
 
   backlight: {

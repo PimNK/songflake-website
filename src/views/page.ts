@@ -139,8 +139,9 @@ function wireScrollCue(root: HTMLElement): void {
   fade();
 }
 
-/** From this width the page is one console (layout.css). */
-const WIDE = window.matchMedia('(min-width: 1100px)');
+/** From this width the page is one console (layout.css); narrower, the bottom player is the card's
+    transport too. */
+export const WIDE = window.matchMedia('(min-width: 1100px)');
 
 /**
  * The backlight knobs sit beside the Record / List switch on wide screens and at the foot of the

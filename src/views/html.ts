@@ -19,9 +19,10 @@ const PATHS = {
   pause: 'M6 5h4v14H6zM14 5h4v14h-4z',
   prev: 'M18 6l-8.5 6L18 18zM6 6h2v12H6z',
   next: 'M6 6l8.5 6L6 18zM16 6h2v12h-2z',
+  tiles: 'M5 5h5v5H5zM14 5h5v5h-5zM5 14h5v5H5zM14 14h5v5h-5z',
 };
 
-/** The transport keys' glyphs: play, pause, previous, next. */
+/** The console keys' glyphs: play, pause, previous, next, the tiles (back to the tracks). */
 export const icon = (name: keyof typeof PATHS): string =>
   `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${PATHS[name]}"/></svg>`;
 

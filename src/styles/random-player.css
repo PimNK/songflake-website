@@ -2,8 +2,9 @@
    time, the title with the phosphor snowflake, the oscilloscope line; then the keys and the volume.
    From 1100 px it sits on the faceplate: one display, the keys under it. Narrower it is frozen
    at the bottom of the screen, full width: the display on top (caption · time, the title, the
-   snowflake at its right), then the Filters toggle · the keys · the line in a display of its
-   own. */
+   snowflake at its right, a thin progress line under the title; the whole display opens the
+   card), then one centred row: the Filters toggle · the keys · the card key («i», or back to the
+   tracks while a card is open); from 900 px the volume at the right. No oscilloscope there. */
 .rp-title {
   display: block;
   min-width: 0;
@@ -68,18 +69,29 @@
   margin-left: auto;
 }
 /* The Filters toggle lives in the player: a round funnel key, lit while the sheet is open, with a
-   lamp while filters are set. From 1100 px the panel is always open and it hides. */
-.ftoggle {
+   lamp while filters are set. From 1100 px the panel is always open and it hides. The card key
+   (narrow only) matches it, lit while a card is open. */
+.ftoggle,
+.rp-card {
   position: relative;
   width: 42px;
   height: 42px;
+}
+.rp-card svg {
+  width: 17px;
+  height: 17px;
+}
+.rp-card span {
+  font: 500 22px/1 var(--vfd);
+  text-shadow: var(--glow);
 }
 .ftoggle svg {
   width: 19px;
   height: 19px;
   fill: none;
 }
-.ftoggle[aria-expanded='true'] {
+.ftoggle[aria-expanded='true'],
+.rp-card[data-on] {
   color: var(--hot);
   background: radial-gradient(circle at 50% 40%, rgb(var(--p)), #120e0b);
   box-shadow:
@@ -110,7 +122,9 @@
     box-shadow: none;
     border-radius: 0;
   }
-  .ftoggle {
+  .ftoggle,
+  .rp-card,
+  .rp-hair {
     display: none;
   }
   .rp {
@@ -160,13 +174,14 @@
     z-index: 12;
     height: var(--player-room);
     display: grid;
-    grid-template-columns: auto auto minmax(0, 1fr);
+    /* the row's keys centred: the side columns take the rest */
+    grid-template-columns: minmax(0, 1fr) auto auto auto minmax(0, 1fr);
     grid-template-areas:
-      'scr scr scr'
-      'tog keys line';
+      'scr scr scr scr scr'
+      '. tog keys card .';
     align-items: center;
     align-content: center;
-    gap: 8px 10px;
+    gap: 8px 0;
     padding: 10px var(--gutter) calc(env(safe-area-inset-bottom, 0px) + 10px);
     border-radius: 14px 14px 0 0;
     background:
@@ -205,20 +220,19 @@
   }
   .ftoggle {
     grid-area: tog;
+    margin-right: 20px;
+  }
+  .rp-card {
+    grid-area: card;
+    margin-left: 20px;
   }
   .rp-keys {
     grid-area: keys;
-    gap: 6px;
+    gap: 14px;
   }
   .rp-keys .btn.k {
-    width: 38px;
-    height: 38px;
-    font-size: 15px;
-  }
-  .rp-keys .btn.play {
-    width: 46px;
-    height: 46px;
-    font-size: 20px;
+    width: 48px;
+    height: 48px;
   }
   .rp-scr {
     grid-area: scr;
@@ -226,8 +240,9 @@
     grid-template-columns: minmax(0, 1fr) 46px;
     align-items: center;
     column-gap: 8px;
-    height: 58px;
+    height: 62px;
     padding: 6px 6px 6px 12px;
+    cursor: pointer;
   }
   .rp-scr .vfd-top {
     min-width: 0;
@@ -242,35 +257,55 @@
   }
   .rp-flake {
     grid-column: 2;
-    grid-row: 1 / 3;
+    grid-row: 1 / 4;
     width: 46px;
     height: 46px;
   }
-  .rp-line {
-    grid-area: line;
-    display: flex;
-    align-items: center;
-    height: 34px;
-    min-width: 0;
-    padding: 0 8px;
+  /* a thin progress line under the title; it does not seek */
+  .rp-hair {
+    grid-column: 1;
+    height: 2px;
+    margin-top: 5px;
+    border-radius: 1px;
+    background: rgb(var(--g) / 0.15);
   }
-  .rp-bar {
-    flex: 1;
+  .rp-hair i {
+    display: block;
     height: 100%;
+    width: calc(var(--at, 0) * 100%);
+    background: var(--amber);
+    box-shadow: 0 0 6px var(--amber);
+  }
+  .rp-line {
+    display: none;
   }
 }
-@media (max-width: 599.98px) {
-  .rplayer {
-    column-gap: 8px;
+/* Tablets: the volume at the row's right end. */
+@media (min-width: 900px) and (max-width: 1099.98px) {
+  .rp-keys .vol {
+    position: absolute;
+    right: var(--gutter);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+    height: 62px;
   }
 }
-/* The smallest phones: smaller skip keys, so the player fits. */
+/* The smallest phones: smaller keys and gaps, so the row fits. */
 @media (max-width: 359.98px) {
   .rp-keys {
-    gap: 5px;
+    gap: 10px;
   }
   .rp-keys .btn.k {
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
+  }
+  .rp-keys .btn.play {
+    width: 56px;
+    height: 56px;
+  }
+  .ftoggle {
+    margin-right: 12px;
+  }
+  .rp-card {
+    margin-left: 12px;
   }
 }
