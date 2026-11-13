@@ -61,7 +61,7 @@
   grid-template-columns: repeat(var(--pad-cols), minmax(0, 1fr));
   gap: 9px 8px;
 }
-/* «Select all» sits in the last column of the first row; the instruments' one is two rows high.
+/* From 600 px «Select all» sits in the last column of the first row; the instruments' one is two rows high.
    The other pads flow round it. */
 .fopt.all {
   grid-column: -2;
@@ -70,6 +70,15 @@
 .fopt.tall {
   grid-row: 1 / span 2;
   height: auto;
+}
+/* Phones: «Select all» is a full-width row under the group's other pads. */
+@media (max-width: 599.98px) {
+  .fopt.all,
+  .fopt.tall {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    height: var(--pad-h);
+  }
 }
 /* An option is a pad (styles/base.css); here only what makes it a control. */
 .fopt {
