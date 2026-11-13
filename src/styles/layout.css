@@ -244,7 +244,8 @@
     transform: none;
     visibility: visible;
   }
-  body.locked .fpanel {
+  /* .fanchor holds the sheet's stacking context (filters.css) */
+  body.locked .fanchor {
     z-index: 51;
   }
   body.locked .rplayer {
