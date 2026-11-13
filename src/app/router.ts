@@ -4,7 +4,7 @@
 //   filters as a query only when they differ from the default.
 // Opening a card or switching views pushes a history entry, so Back closes the card first;
 // filter changes replace the current entry.
-import { fromQuery, toQuery, type FilterSpace } from '../domain/filters';
+import { fromQuery, toQuery, type FilterSpace, type FilterState } from '../domain/filters';
 import { formatTime, parseTime } from '../domain/pins';
 import { strings } from '../strings';
 import type { AppState, Store, ViewName } from './state';
@@ -92,12 +92,17 @@ export function startRouter(
   // True while the open card has its own history entry (opened in the app, not by a deep link):
   // closing it then goes back instead of adding an entry, so Back never reopens it.
   let cardEntry = false;
+  /** The filters when the app closed a card by going back: the entry under it gets them. */
+  let kept: FilterState | null = null;
 
   const write = (push: boolean): void => writeHash(store.get(), space, push);
 
   const read = (): void => {
     const route = parseHash(location.hash);
-    const filters = fromQuery(route.query, space);
+    // Closing a card keeps the filters set over it, not the older ones of the entry under it.
+    const keep = kept ?? (store.get().openSlug && !route.slug ? store.get().filters : null);
+    kept = null;
+    const filters = keep ?? fromQuery(route.query, space);
     const t = route.query.get('t');
     reading = true;
     if (route.slug && !known(route.slug)) {
@@ -114,8 +119,8 @@ export function startRouter(
     }
     if (!route.slug) cardEntry = false;
     reading = false;
-    // A view the screen does not have (the record on a phone) is corrected in the URL too.
-    if (route.view && fitView(route.view) !== route.view) write(false);
+    // Kept filters, or a view the screen does not have (the record on a phone): the URL follows.
+    if (keep || (route.view && fitView(route.view) !== route.view)) write(false);
   };
 
   store.subscribe((s, prev) => {
@@ -123,6 +128,7 @@ export function startRouter(
     const action = historyAction(prev, s, cardEntry);
     if (action === 'back') {
       cardEntry = false;
+      kept = s.filters;
       history.back();
       return;
     }
