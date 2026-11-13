@@ -61,9 +61,15 @@
   grid-template-columns: repeat(var(--pad-cols), minmax(0, 1fr));
   gap: 9px 8px;
 }
-/* «Select all» of the instruments takes two columns. */
-.fopt.wide {
-  grid-column: span 2;
+/* «Select all» sits in the last column of the first row; the instruments' one is two rows high.
+   The other pads flow round it. */
+.fopt.all {
+  grid-column: -2;
+  grid-row: 1;
+}
+.fopt.tall {
+  grid-row: 1 / span 2;
+  height: auto;
 }
 /* An option is a pad (styles/base.css); here only what makes it a control. */
 .fopt {

@@ -1,7 +1,7 @@
 // Filter controls generated from the taxonomy, the songs' years and the counts (CLAUDE.md §4.2).
 // Options are pads of one size in one grid, each with a light (the instrument's colour). Each group
-// has an ⓘ note. Style and instrument are a choice of one: a «Select all» pad leads each (twice as
-// wide for instruments) and lights every pad of its group when on. From 1100 px the panel is
+// has an ⓘ note. Style and instrument are a choice of one: a «Select all» pad in the last column of
+// each (two rows high for instruments) and lights every pad of its group when on. From 1100 px the panel is
 // always open under the player; narrower, it is a sheet above the bottom player, opened by the
 // player's funnel toggle (closed by default).
 // No filtering logic: every change goes through domain/filters.ts and back to the store.
@@ -35,20 +35,21 @@ interface Option {
   colour?: string;
   /** A choice of one (style, instrument): a radio named after its kind. */
   one?: boolean;
-  wide?: boolean;
+  /** «Select all»: the last column; `tall` spans two rows (instruments). */
+  all?: 'one' | 'tall';
 }
 
 // A pad: its light takes the instrument's colour (the backlight for the rest). No count; an
 // option no song carries is dimmed.
 const option = (o: Option): string => `
-  <label class="fopt pad${o.count ? '' : ' zero'}${o.wide ? ' wide' : ''}"${o.colour ? ` style="--led:${esc(o.colour)}"` : ''}>
+  <label class="fopt pad${o.count ? '' : ' zero'}${o.all ? ` all${o.all === 'tall' ? ' tall' : ''}` : ''}"${o.colour ? ` style="--led:${esc(o.colour)}"` : ''}>
     <input type="${o.one ? 'radio' : 'checkbox'}"${o.one ? ` name="f-${o.kind}"` : ''} data-kind="${o.kind}" data-id="${esc(o.id)}">
     <i></i><span>${esc(o.label)}</span>
   </label>`;
 
 /** The «Select all» pad of a choice-of-one group; its id is empty. */
-const allPad = (kind: string, wide = false): string =>
-  option({ kind, id: '', label: f.all, count: 1, one: true, wide });
+const allPad = (kind: string, tall = false): string =>
+  option({ kind, id: '', label: f.all, count: 1, one: true, all: tall ? 'tall' : 'one' });
 
 /** A funnel: the Filters toggle's icon (the word is its accessible name). */
 const FUNNEL =
@@ -96,9 +97,9 @@ function template(content: Content, space: FilterSpace): string {
   );
   return `
       <div class="fbody">
-        <div class="fgroup">${label(f.style, f.info.style)}<div class="pads">${allPad('style')}${styles.join('')}</div></div>
+        <div class="fgroup">${label(f.style, f.info.style)}<div class="pads">${styles.join('')}${allPad('style')}</div></div>
         <div class="fgroup">${label(f.listen, f.info.listen)}
-          <div class="pads">${allPad('accent', true)}${accents.join('')}</div></div>
+          <div class="pads">${accents.join('')}${allPad('accent', true)}</div></div>
         <div class="franges">
           <div class="fgroup">${label(f.complexity, f.info.complexity, '<output class="chip" data-range-label></output>')}
             ${range('range', f.complexity, ['min', 'max'], COMPLEXITY_MIN, COMPLEXITY_MAX)}</div>
