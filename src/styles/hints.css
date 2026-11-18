@@ -1,13 +1,14 @@
 /* First-visit hints (wide screens): a glowing ring round one part of the page, the rest of the
-   screen dimmed, and a note beside it. The ring glides from step to step; the note fades in. Nothing blocks the page. */
+   screen dimmed, and a note beside it. The ring glides from step to step; the note fades in. The
+   layer takes every click, so only the note's keys can be pressed. */
 .hints {
   position: fixed;
   inset: 0;
   z-index: 60;
-  pointer-events: none;
 }
 .hint-ring {
   position: fixed;
+  pointer-events: none;
   border-radius: 18px;
   border: 1.5px solid var(--amber);
   /* the rest of the screen goes dark: a shadow that spreads to every edge */

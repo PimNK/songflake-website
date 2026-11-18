@@ -114,6 +114,7 @@ export const ru: Strings = {
     listen: 'Основной инструмент',
     listenInfo:
       'На что стоит обратить внимание при прослушивании — партии, на которых построен трек. Они же окрашивают лучи снежинки.',
+    style: 'Стиль',
     story: 'История',
     storyEmpty: 'История этого трека ещё не написана.',
     timeline: 'От идеи до записи',
@@ -135,8 +136,9 @@ export const ru: Strings = {
       structure: 'как построена песня: от куплета и припева до множества частей и поворотов.',
     } satisfies Record<Axis, string>,
     totalInfoNote: 'Каждая ось — от 1 до 3; вместе они дают общую сложность, 5–15.',
-    radarLabel: (pairs: [string, number][]) =>
-      `Радар сложности: ${pairs.map(([n, v]) => `${n} ${v} из 3`).join(', ')}`,
+    complexityLabel: (total: number, pairs: [string, number][]) =>
+      `Общая сложность ${total} из 15: ${pairs.map(([n, v]) => `${n} ${v} из 3`).join(', ')}`,
+    totalOf: (total: number) => `${total}/15`,
     notFound: 'Трек не найден',
   },
 

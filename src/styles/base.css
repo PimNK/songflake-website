@@ -593,11 +593,14 @@ button {
 }
 
 /* A fader: a slot with a tick scale, the lit part from --lo to --hi and a ridged cap. The range
-   lines in the filters (two caps) and the volume (one) share it. */
+   lines in the filters (two caps) and the volume (one) share it. The whole fader takes the
+   pointer (views/fader.ts): a press jumps the nearest cap there, a drag moves it. */
 .dual {
   --thumb: 14px;
   position: relative;
   height: 36px;
+  cursor: pointer;
+  touch-action: none;
   background: repeating-linear-gradient(90deg, rgb(var(--g) / 0.4) 0 1px, transparent 1px 10%) 7px
     0 / calc(100% - 14px) 4px no-repeat;
 }
@@ -662,8 +665,6 @@ button {
     0 4px 5px #000,
     inset 0 1px 0 rgba(255, 220, 170, 0.2),
     0 0 10px rgb(var(--g) / 0.35);
-  pointer-events: auto;
-  cursor: grab;
 }
 .dual input::-moz-range-thumb {
   box-sizing: border-box;
@@ -676,8 +677,6 @@ button {
     0 2px 0 #050403,
     0 4px 5px #000,
     0 0 10px rgb(var(--g) / 0.35);
-  pointer-events: auto;
-  cursor: grab;
 }
 .dual input:focus-visible {
   outline: none;

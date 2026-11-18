@@ -1,7 +1,8 @@
 // The first-visit hints on wide screens (CLAUDE.md §4.1): three steps, each a glowing ring round
 // a part of the page and a note beside it — the snowflakes, the random-track player, the
 // filter block. They move on by themselves (not while the pointer is on the note), by Next, and
-// end with Got it, Skip, Esc or a click elsewhere. Shown once per browser on their own
+// end with Got it, Skip or Esc. While they show, the layer takes every click: only the note's two
+// keys can be pressed. Shown once per browser on their own
 // (localStorage, best effort), and again whenever the About window closes.
 import { strings } from '../strings';
 import type { PageSlots } from './page';
@@ -137,14 +138,10 @@ export function startHints(slots: PageSlots, again = false): void {
     layer.remove();
     window.removeEventListener('resize', replace);
     document.removeEventListener('keydown', onKey);
-    document.removeEventListener('pointerdown', onOutside, true);
   }
 
   const onKey = (e: KeyboardEvent): void => {
     if (e.key === 'Escape') end();
-  };
-  const onOutside = (e: PointerEvent): void => {
-    if (!note.contains(e.target as Node)) end();
   };
 
   layer.querySelector('[data-next]')!.addEventListener('click', forward);
@@ -153,6 +150,7 @@ export function startHints(slots: PageSlots, again = false): void {
   note.addEventListener('pointerleave', () => (hovered = false));
   window.addEventListener('resize', replace);
   document.addEventListener('keydown', onKey);
-  document.addEventListener('pointerdown', onOutside, true);
+  // The layer covers the page: the wheel would otherwise reach the record under it.
+  layer.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
   show(0);
 }

@@ -2,6 +2,7 @@
 // phones use their own volume keys). Every fader follows the one audio element, so moving one
 // moves the others. The level is remembered in this browser (best effort).
 import { strings } from '../strings';
+import { wireFader } from './fader';
 import type { Playback } from './playback';
 
 const KEY = 'songflake.volume';
@@ -19,6 +20,16 @@ export function restoreVolume(playback: Playback): void {
   }
 }
 
+/** Sets the playback volume (0–1, clamped) and remembers it in this browser. */
+export function setVolume(playback: Playback, v: number): void {
+  playback.volume = v;
+  try {
+    localStorage.setItem(KEY, playback.volume.toFixed(2));
+  } catch {
+    // Storage blocked: the level is not kept.
+  }
+}
+
 /** A fader for the playback volume. */
 export function volumeFader(playback: Playback): HTMLElement {
   const el = document.createElement('div');
@@ -30,14 +41,8 @@ export function volumeFader(playback: Playback): HTMLElement {
     input.value = String(Math.round(v * 100));
     input.parentElement!.style.setProperty('--hi', String(v));
   };
-  input.addEventListener('input', () => {
-    playback.volume = Number(input.value) / 100;
-    try {
-      localStorage.setItem(KEY, playback.volume.toFixed(2));
-    } catch {
-      // Storage blocked: the level is not kept.
-    }
-  });
+  input.addEventListener('input', () => setVolume(playback, Number(input.value) / 100));
+  wireFader(input.parentElement!);
   show();
   // Faders live for the page's lifetime: the subscription is never released.
   playback.subscribe(show);

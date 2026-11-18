@@ -28,6 +28,7 @@ import { Playback } from '../views/playback';
 import { mountPlayer } from '../views/player';
 import { mountDials, startBacklight } from '../views/backlight';
 import { restoreVolume } from '../views/volume';
+import { wireKeys } from '../views/keys';
 import { startRouter } from './router';
 import { Store, type ViewName } from './state';
 
@@ -101,9 +102,9 @@ function stepCard(direction: -1 | 1): void {
   playback.playFromStart(to, 'order');
   store.set({ openSlug: to.slug, cue: null });
 }
-/** Below 1100 px opening another track's card plays it at once (from its cue, else the top). */
+/** Opening another track's card plays it at once (from its cue, else the top). */
 function playOpened(song: Song, cue: number | null): void {
-  if (WIDE.matches || !song.audioSrc || playback.isCurrent(song)) return;
+  if (!song.audioSrc || playback.isCurrent(song)) return;
   if (cue === null) playback.playFromStart(song, 'order');
   else playback.seek(song, cue, true);
 }
@@ -131,6 +132,8 @@ store.subscribe((s, prev) => {
     if (song) playOpened(song, s.cue);
     if (song) card.show(song, s.cue);
     else card.hide();
+    // From 1100 px closing a card pauses its track; below, the bottom player keeps playing it.
+    if (!song && WIDE.matches && playback.song?.slug === prev.openSlug) playback.pause();
     random.refresh();
   }
   const match = (song: Song): boolean => matches(song, s.filters, years);
@@ -154,6 +157,16 @@ playback.subscribe(() => {
   if (slug && docked() && store.get().openSlug !== slug) store.set({ openSlug: slug, cue: null });
 });
 WIDE.addEventListener('change', () => random.refresh());
+// Space: the open card's track when it is not loaded yet, else the loaded one, else a random one.
+wireKeys(playback, () => {
+  const opened = bySlug(store.get().openSlug);
+  if (opened?.audioSrc && !playback.isCurrent(opened)) playback.playFromStart(opened, 'order');
+  else if (playback.song) playback.toggle(playback.song);
+  else {
+    const song = random.next();
+    if (song) playback.playFromStart(song, 'shuffle');
+  }
+});
 const router = startRouter(store, space, (slug) => songs.some((x) => x.slug === slug), fitView);
 PHONE.addEventListener('change', () => router.refit());
 if (!store.get().openSlug) startHints(slots);

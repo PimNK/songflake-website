@@ -1,16 +1,16 @@
 // The track card modal (CLAUDE.md §4.3), the console's player, wider: a display with the caption
 // and time, the title (one line; a ticker on narrow cards), the oscilloscope line with the pins,
 // the pin note and the turning snowflake at its right; under it previous · play / pause · next
-// and the volume fader (✕ at the top right); the four cells below. Swiping left / right on touch
-// steps tracks. Below 1100 px the card has no keys and no ✕: it ends above the bottom player, which
-// is its transport (CSS), and focus goes round the card, the filter sheet and that player (`dock`).
-// Focus is trapped while open and returned to the opener; page scroll is locked.
-// Closing (✕, Esc, backdrop) and prev/next go through the caller, which owns the state.
+// and the volume fader; the five cells below. There is no ✕: a click outside the card closes it.
+// Swiping left / right on touch steps tracks. Below 1100 px the card has no keys: it ends above the
+// bottom player, which is its transport (CSS), and focus goes round the card, the filter sheet and
+// that player (`dock`). Focus is trapped while open and returned to the opener; page scroll is
+// locked. Closing (Esc, backdrop) and prev/next go through the caller, which owns the state.
 import type { Content } from '../content/load';
 import type { Song } from '../content/parse';
 import { strings } from '../strings';
 import { renderCardBody } from './card-body';
-import { CLOSE_ICON, icon } from './html';
+import { icon } from './html';
 import { trapFocus } from './modal';
 import { WIDE } from './page';
 import type { Playback } from './playback';
@@ -94,18 +94,14 @@ export function mountTrackCard(
   };
 }
 
-/**
- * Shows the card and locks the page's scroll. A card that opens starts at the top with the focus
- * on ✕; below 1100 px (no ✕) on the sheet.
- */
+/** Shows the card and locks the page's scroll. A card that opens starts at the top, focus on it. */
 function present(modal: HTMLElement, sheet: HTMLElement): void {
   const opening = modal.hidden;
   modal.hidden = false;
   document.body.classList.add('locked');
   if (!opening) return;
   sheet.scrollTop = 0;
-  const x = modal.querySelector<HTMLElement>('[data-close]')!;
-  (x.offsetParent ? x : sheet).focus({ preventScroll: true });
+  sheet.focus({ preventScroll: true });
 }
 
 /** The card's frame, once for the page: the display, the keys with the volume, the cells. */
@@ -121,7 +117,6 @@ function createModal(playback: Playback): HTMLElement {
   modal.setAttribute('aria-labelledby', 'card-title');
   modal.innerHTML = `
     <article class="sheet panel" tabindex="-1">
-      <button class="btn s x" type="button" data-close aria-label="${c.close}">${CLOSE_ICON}</button>
       <section class="mtop" aria-label="${p.label}">
         <div class="vfd mscreen">
           <h2 class="mtitle" id="card-title"></h2>
@@ -179,7 +174,6 @@ function wireEvents(
   modal.addEventListener('click', (e) => {
     const t = e.target as HTMLElement;
     if (t === modal) hooks.close();
-    else if (t.closest('[data-close]')) hooks.close();
     else {
       const step = t.closest<HTMLElement>('[data-step]');
       if (step) hooks.step(Number(step.dataset.step) as -1 | 1);

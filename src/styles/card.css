@@ -1,9 +1,9 @@
 /* Track card: the console's player, wider — a display with the caption · time, the title, the
    oscilloscope line with pins, the pin note and the turning snowflake at its right; under it the
-   keys and the volume; ✕ at the top right. Then four cells. From 900 px the card fits the window
+   keys and the volume. No ✕: a click outside closes it. Then five cells. From 900 px the card fits the window
    at one fixed size whatever the song, so stepping tracks moves nothing; only a long story
-   scrolls, inside its cell. Below 1100 px the card has no keys and no ✕: it fills the screen
-   above the bottom player, which is its transport. Below 900 px a sheet that scrolls, one column.
+   scrolls, inside its cell. Below 1100 px the card has no keys and no screws: it fills the
+   screen above the bottom player, which is its transport. Below 900 px a sheet that scrolls, one column.
    The About window uses the same frame. */
 body.locked {
   overflow: hidden;
@@ -46,7 +46,6 @@ body.locked {
   flex-direction: column;
   gap: 14px;
   min-width: 0;
-  padding-right: 58px;
 }
 /* The display: the caption · time, the title and the line in one column, the snowflake at their
    right; the note under them all. */
@@ -118,11 +117,16 @@ body.locked {
 .mtransport .vol {
   margin-left: 22px;
 }
-/* Four cells: the upper row as high as it needs, the story and the radar get the rest. */
+/* Five cells: idea → recording, the style and the story on the left; the main instrument and the
+   complexity on the right. The upper rows as high as they need, the story gets the rest. */
 .mgrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-areas:
+    'time listen'
+    'style total'
+    'story total';
   gap: 22px 34px;
   min-height: 0;
   overflow: hidden;
@@ -148,17 +152,26 @@ body.locked {
     padding: 0;
     place-items: stretch;
   }
-  .sheet {
+  /* No screws in the corners: the full-screen sheet scrolls, and they would scroll with it. */
+  .sheet:not(.about-sheet) {
     width: 100%;
     height: 100%;
     border-radius: 14px 14px 0 0;
+    background-image:
+      radial-gradient(
+        420px 300px at 50% 150px,
+        rgb(var(--g) / calc(0.09 * var(--lum))),
+        transparent 70%
+      ),
+      repeating-linear-gradient(
+        0deg,
+        rgba(255, 230, 190, 0.016) 0 1px,
+        rgba(0, 0, 0, 0.12) 1px 2px
+      ),
+      linear-gradient(#14100d, #080605);
   }
-  .sheet > .btn.x,
   .mtransport {
     display: none;
-  }
-  .mtop {
-    padding-right: 0;
   }
 }
 @media (max-width: 899.98px) {
@@ -204,6 +217,7 @@ body.locked {
   .mgrid {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: none;
+    grid-template-areas: none;
     row-gap: 0;
     overflow: visible;
   }

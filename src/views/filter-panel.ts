@@ -19,6 +19,7 @@ import {
   type FilterState,
 } from '../domain/filters';
 import { strings } from '../strings';
+import { wireFader } from './fader';
 import { esc, info } from './html';
 
 export interface FilterPanel {
@@ -228,6 +229,7 @@ export function mountFilterPanel(
     if (end) onChange(setRange(current(), end, Number(input.value)));
     if (year) onChange(setYears(current(), year, Number(input.value), space.years));
   });
+  el.querySelectorAll<HTMLElement>('[data-dual]').forEach(wireFader);
   el.querySelector('[data-reset]')!.addEventListener('click', () => {
     onChange(defaultFilters(space));
   });

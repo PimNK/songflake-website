@@ -1,15 +1,15 @@
-// The track card's sections (CLAUDE.md §4.3): four cells — idea → recording (three indicator
-// lamps), the main instrument (lit pads), the story, total complexity with the radar — and the
-// turning snowflake, which sits in the player's display. DOM only; rules come from domain/.
+// The track card's sections (CLAUDE.md §4.3): five cells — idea → recording (three indicator
+// lamps), the main instrument (lit pads), the style (a lit pad), the story, total complexity (the
+// five axes as rows of lamps, and X/15) — and the turning snowflake, which sits in the player's
+// display. DOM only; rules come from domain/.
 import { AXES, type Song } from '../content/parse';
 import type { Taxonomy } from '../content/taxonomy';
 import { FROST_LINE } from '../domain/ray-colours';
 import { flakeOf } from '../domain/snowflake';
 import { timeline, type Gap, type Station } from '../domain/timeline';
-import { radarSvg } from '../render/radar';
 import { paintSnowflake } from '../render/snowflake';
 import { strings } from '../strings';
-import { esc, info, turnStyle } from './html';
+import { axisLamps, esc, info, turnStyle } from './html';
 import { renderMarkdown } from './markdown';
 
 const c = strings.card;
@@ -55,8 +55,17 @@ function stations(song: Song): string {
   return station(st[0]!) + link(gaps[0]!) + station(st[1]!) + link(gaps[1]!) + station(st[2]!);
 }
 
-const heading = (text: string, note = ''): string =>
-  `<div class="ch"><h3>${text}</h3>${note}</div>`;
+const heading = (text: string, note = '', right = ''): string =>
+  `<div class="ch"><h3>${text}</h3>${note}${right}</div>`;
+
+/** The five axes as rows of three lamps, as in the record's tooltip, with the total as X/15. */
+function complexity(song: Song): string {
+  const label = c.complexityLabel(
+    song.complexityTotal,
+    AXES.map((a) => [strings.axes[a], song.complexity[a]]),
+  );
+  return `<div class="tax cplx" role="img" aria-label="${esc(label)}">${axisLamps(song.complexity)}</div>`;
+}
 
 /** Fills the card's cells and its snowflake slot for one song. */
 export function renderCardBody(
@@ -69,13 +78,15 @@ export function renderCardBody(
   const story = song.story ? renderMarkdown(song.story) : `<p>${c.storyEmpty}</p>`;
   grid.style.setProperty('--lead', colour);
   grid.innerHTML = `
-    <section class="cell">${heading(c.timeline, info(timelineInfo()))}
+    <section class="cell time-cell">${heading(c.timeline, info(timelineInfo()))}
       <div class="stations">${stations(song)}</div></section>
-    <section class="cell">${heading(c.listen, info(c.listenInfo, true))}
+    <section class="cell listen-cell">${heading(c.listen, info(c.listenInfo, true))}
       <div class="lpads">${listenPads(song, taxonomy)}</div></section>
+    <section class="cell style-cell">${heading(c.style)}
+      <div class="lpads"><span class="pad lit"><i></i><span>${esc(song.style)}</span></span></div></section>
     <section class="cell story-cell">${heading(c.story)}<div class="story">${story}</div></section>
-    <section class="cell total-cell">${heading(c.total, info(totalInfo(), true))}
-      <div class="radar-box">${radarSvg(song.complexity, colour)}</div></section>`;
+    <section class="cell total-cell">${heading(c.total, info(totalInfo(), true), `<span class="chip ctotal" aria-hidden="true">${c.totalOf(song.complexityTotal)}</span>`)}
+      ${complexity(song)}</section>`;
   flakeSlot.innerHTML = `<canvas class="turn" style="${turnStyle(song)}"></canvas>`;
   const flake = flakeOf(song, taxonomy);
   paintSnowflake(

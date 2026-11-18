@@ -107,6 +107,7 @@ export const en = {
     listen: 'Main instrument',
     listenInfo:
       "What I'd like you to notice while listening — the parts this track is built around. They also colour the rays of the snowflake.",
+    style: 'Style',
     story: 'Story',
     storyEmpty: 'The story of this track is still to be written.',
     timeline: 'From idea to recording',
@@ -128,8 +129,9 @@ export const en = {
       structure: 'how the song is built: from verse–chorus to many sections and turns.',
     } satisfies Record<Axis, string>,
     totalInfoNote: 'Each axis is 1–3; the five together give the total, 5–15.',
-    radarLabel: (pairs: [string, number][]) =>
-      `Complexity radar: ${pairs.map(([n, v]) => `${n} ${v} of 3`).join(', ')}`,
+    complexityLabel: (total: number, pairs: [string, number][]) =>
+      `Total complexity ${total} of 15: ${pairs.map(([n, v]) => `${n} ${v} of 3`).join(', ')}`,
+    totalOf: (total: number) => `${total}/15`,
     notFound: 'Track not found',
   },
 

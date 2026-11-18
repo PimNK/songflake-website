@@ -1,6 +1,6 @@
 // Small HTML helpers. Song titles, stories and taxonomy names are the author's text: anything
 // interpolated into innerHTML goes through esc() and is never read as markup.
-import type { Song } from '../content/parse';
+import { AXES, type Complexity, type Song } from '../content/parse';
 import { turnTiming } from '../domain/snowflake';
 import { strings } from '../strings';
 
@@ -74,3 +74,12 @@ export function turnStyle(song: Pick<Song, 'slug' | 'complexity'>): string {
  */
 export const info = (bubble: string, end = false): string =>
   `<span class="qi${end ? ' end' : ''}" tabindex="0" aria-label="${strings.aboutBlock}">i<span class="bubble" role="tooltip">${bubble}</span></span>`;
+
+const LEVELS = [1, 2, 3];
+
+/** The five complexity axes as rows of three lamps (the record's tooltip and the card). */
+export const axisLamps = (complexity: Complexity): string =>
+  AXES.map(
+    (a) =>
+      `<div><span>${strings.axes[a]}</span>${LEVELS.map((v) => `<i${v <= complexity[a] ? ' class="on"' : ''}></i>`).join('')}</div>`,
+  ).join('');

@@ -1,7 +1,7 @@
 /* Track card cells (views/card-body.ts): each in a groove of the faceplate, a heading in the
    display's face, then its content — three indicator lamps from idea to recording, lit
-   instrument pads, the story, the radar as a round CRT. --lead (the first instrument's colour)
-   is set on the grid. */
+   instrument pads, the style's pad, the story, the complexity as rows of lamps. --lead (the first
+   instrument's colour) is set on the grid. */
 .cell {
   min-height: 0;
   min-width: 0;
@@ -147,54 +147,53 @@
 .story a {
   color: var(--amber);
 }
-/* The radar: a round CRT (render/radar.ts), its axis labels as small as the headings around. */
-.radar-box {
-  flex: 1;
-  min-height: 0;
-  position: relative;
+/* Where each cell sits in the 2-column grid (styles/card.css); one column below 900 px. */
+@media (min-width: 900px) {
+  .time-cell {
+    grid-area: time;
+  }
+  .listen-cell {
+    grid-area: listen;
+  }
+  .style-cell {
+    grid-area: style;
+  }
+  .story-cell {
+    grid-area: story;
+  }
+  .total-cell {
+    grid-area: total;
+  }
 }
-.radar-box svg {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 315px;
-  height: 230px;
+/* The style: one lit pad, as wide as its name. */
+.style-cell .pad {
+  flex: 0 0 auto;
+  min-width: 96px;
   max-width: 100%;
-  max-height: 100%;
-  overflow: visible;
 }
-.tube-in {
-  stop-color: rgb(var(--p));
-  stop-opacity: 0.55;
+/* Total complexity: X/15 at the right of the heading; the five axes as rows of three lamps, as in
+   the record's tooltip (styles/record.css), in the display's face. */
+.ctotal {
+  margin-left: auto;
 }
-.radar-rim {
-  fill: none;
-  stroke: rgba(255, 220, 170, 0.08);
-}
-.radar-grid {
-  fill: none;
-  stroke: rgb(var(--g) / 0.16);
-  stroke-width: 1;
-}
-polygon.radar-grid {
-  stroke: rgb(var(--g) / 0.28);
-}
-polygon.radar-grid.dash {
-  stroke: rgb(var(--g) / 0.14);
-  stroke-dasharray: 2 4;
-}
-.radar-dot {
-  fill: #fff;
-}
-.radar-axis {
-  font: 500 10px var(--mono);
-  letter-spacing: 0.1em;
+.cplx {
+  display: grid;
+  gap: 6px;
+  max-width: 380px;
+  color: var(--amber);
+  font-family: var(--vfd);
   text-transform: uppercase;
-  fill: var(--label);
+  letter-spacing: 0.05em;
+  text-shadow: var(--glow);
 }
-.radar-value {
-  fill: var(--hot);
-  font-weight: 600;
+.cplx div {
+  gap: 5px;
+  font-size: 18px;
+}
+.cplx i {
+  width: 26px;
+  height: 9px;
+  border-radius: 2px;
 }
 /* The ⓘ bubbles hang from their cell's heading row, so they stay over the card. */
 .cell .qi {
@@ -235,15 +234,5 @@ polygon.radar-grid.dash {
     flex: none;
     overflow: visible;
     padding-right: 0;
-  }
-  .radar-box {
-    flex: none;
-    width: min(100% - 24px, 440px);
-    margin-inline: auto;
-    aspect-ratio: 370 / 270;
-  }
-  .radar-box svg {
-    width: 100%;
-    height: 100%;
   }
 }

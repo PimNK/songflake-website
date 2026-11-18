@@ -125,6 +125,12 @@
 .franges .chip {
   flex: none;
   font-size: 17px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+/* The complexity window is as wide as «15 – 15», so the block does not jump at two digits. */
+.franges .chip[data-range-label] {
+  min-width: calc(7ch + 14px);
 }
 @media (min-width: 600px) {
   .franges {

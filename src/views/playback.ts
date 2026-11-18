@@ -1,8 +1,6 @@
 // The one shared <audio> element for the whole page, and each recording's duration, cached per
-// song in memory. Playback continues when a card closes;
-// opening another card does not stop the current track until its own play is pressed; when a
-// track ends, the next one follows (autoAdvance), picked the way the run was started: in the
-// card's order or by the random-track player.
+// song in memory. When a track ends, the next one follows (autoAdvance), picked the way the run
+// was started: in the card's order or by the random-track player.
 import type { Song } from '../content/parse';
 
 type Listener = () => void;
@@ -93,6 +91,10 @@ export class Playback {
     this.pending.delete(song.slug);
     if (this.isCurrent(song)) this.audio.currentTime = 0;
     this.play(song, mode);
+  }
+
+  pause(): void {
+    this.audio.pause();
   }
 
   toggle(song: Song): void {
