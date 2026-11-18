@@ -1,9 +1,11 @@
 // The first-visit hints on wide screens (CLAUDE.md §4.1): three steps, each a glowing ring round
 // a part of the page and a note beside it — the snowflakes, the random-track player, the
-// filter block. Nothing moves on by itself: Next goes to the next step, Got it and Skip end them.
+// filter block. Nothing moves on by itself: Next (or Enter, Space, →) goes to the next step, Got
+// it and Skip end them.
 // While they show, the layer takes every click: only the note's two keys can be pressed. Shown
 // once per browser on their own (localStorage, best effort), and again whenever About closes.
 import { strings } from '../strings';
+import { isNextKey } from './modal';
 import type { PageSlots } from './page';
 
 const KEY = 'songflake.hints';
@@ -121,15 +123,27 @@ export function startHints(slots: PageSlots, again = false): void {
   };
   const forward = (): void => (step < targets.length - 1 ? show(step + 1) : end());
 
+  // In the capture phase, so the page's keys never see the press. Enter / Space on a focused key
+  // of the note (Skip, say) press that key itself.
+  const onKey = (e: KeyboardEvent): void => {
+    if (!isNextKey(e)) return;
+    if (e.key !== 'ArrowRight' && (e.target as Element).closest?.('.hint-keys button')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    forward();
+  };
+
   function end(): void {
     markSeen();
     layer.remove();
     window.removeEventListener('resize', replace);
+    document.removeEventListener('keydown', onKey, true);
   }
 
   layer.querySelector('[data-next]')!.addEventListener('click', forward);
   layer.querySelector('[data-skip]')!.addEventListener('click', end);
   window.addEventListener('resize', replace);
+  document.addEventListener('keydown', onKey, true);
   // The layer covers the page: the wheel would otherwise reach the record under it.
   layer.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
   show(0);

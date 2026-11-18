@@ -65,15 +65,6 @@
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
-.hint-keys {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-.hint-next {
-  color: var(--hot);
-  text-shadow: var(--glow);
-}
 @media (prefers-reduced-motion: reduce) {
   .hint-ring,
   .hint-note.in {

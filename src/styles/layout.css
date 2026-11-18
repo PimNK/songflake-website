@@ -105,8 +105,9 @@
     0 1px 0 rgba(255, 220, 170, 0.1);
 }
 .slot button {
-  font: 300 calc(9px * var(--ts))/1.2 var(--sans);
-  letter-spacing: 0.2em;
+  /* the size of the filter pads' labels (styles/base.css `.pad`) */
+  font: 300 9px/1.2 var(--sans);
+  letter-spacing: 0.14em;
   position: relative;
   z-index: 1;
   text-transform: uppercase;
@@ -319,6 +320,9 @@
   }
   .ctl .slot {
     width: auto;
+  }
+  .slot button {
+    font-size: 10.5px;
   }
   .ctl .dials {
     margin-left: auto;

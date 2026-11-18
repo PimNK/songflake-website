@@ -35,9 +35,10 @@ const timelineInfo = (): string =>
     .join('');
 
 const totalInfo = (): string =>
+  `<small>${c.totalInfoNote}</small>` +
   AXES.map((a) => `<span class="term"><b>${strings.axes[a]}</b> — ${c.totalInfo[a]}</span>`).join(
     '',
-  ) + `<small>${c.totalInfoNote}</small>`;
+  );
 
 /**
  * A scale with the three stations hanging from it as icicles (idea, concept in the middle, ready),

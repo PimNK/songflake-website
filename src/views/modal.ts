@@ -1,6 +1,15 @@
-// What the page's modal windows share (the track card and About): keeping Tab inside the window.
+// What the page's modal windows share (the track card, About and the hints): keeping Tab inside
+// the window, and the keys that press a window's Next.
 
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+/** Enter, Space or → with no modifier and no auto-repeat: what presses Next (About, the hints). */
+export const isNextKey = (e: KeyboardEvent): boolean =>
+  !e.altKey &&
+  !e.ctrlKey &&
+  !e.metaKey &&
+  !e.repeat &&
+  (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight');
 
 /**
  * On Tab, moves focus round the window's visible, enabled controls, wrapping. With several roots

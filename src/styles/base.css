@@ -208,10 +208,6 @@ button {
 .btn.play:active:not(:disabled) {
   transform: translateY(3px);
 }
-.btn.s.x svg {
-  width: 16px;
-  height: 16px;
-}
 /* A text key, like Reset: the hints' Skip / Next, the dev overlay's Close. */
 .tbtn,
 .freset {
@@ -229,6 +225,16 @@ button {
     0 2px 0 #050403,
     0 3px 5px rgba(0, 0, 0, 0.6),
     inset 0 1px 0 rgba(255, 220, 170, 0.1);
+}
+/* The row of text keys at the foot of a note or window (the hints, About), and its lit Next. */
+.hint-keys {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.hint-next {
+  color: var(--hot);
+  text-shadow: var(--glow);
 }
 .tbtn:hover,
 .freset:hover {
@@ -489,8 +495,10 @@ button {
   margin-bottom: 5px;
 }
 .bubble small {
-  margin: 0;
   font-size: inherit;
+}
+.bubble > :last-child {
+  margin-bottom: 0;
 }
 .qi:hover .bubble,
 .qi:focus-visible .bubble {

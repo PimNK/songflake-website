@@ -27,19 +27,14 @@ body.locked {
   grid-template-rows: auto minmax(0, 1fr);
   gap: 16px;
   padding: 22px 28px 20px;
-  overflow: hidden;
+  /* visible, so the ⓘ bubbles may reach past the card (styles/card-body.css) */
+  overflow: visible;
   /* horizontal swipes step tracks (views/track-card.ts), never the browser's back gesture */
   touch-action: pan-y pinch-zoom;
   overscroll-behavior-x: none;
 }
 .sheet:focus {
   outline: none;
-}
-.btn.x {
-  position: absolute;
-  top: 22px;
-  right: 24px;
-  z-index: 2;
 }
 .mtop {
   display: flex;
@@ -142,7 +137,6 @@ body.locked {
     'time time total';
   gap: 22px 34px;
   min-height: 0;
-  overflow: hidden;
 }
 
 /* The About window: the card's frame at a reading width. */
@@ -232,7 +226,6 @@ body.locked {
     grid-template-rows: none;
     grid-template-areas: none;
     row-gap: 0;
-    overflow: visible;
   }
   .about-sheet {
     padding-top: calc(env(safe-area-inset-top, 0px) + 28px);

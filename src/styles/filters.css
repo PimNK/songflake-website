@@ -112,18 +112,24 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   grid-template-rows: auto auto;
-  gap: 9px 20px;
+  gap: 9px 30px;
 }
 .franges .fgroup {
   grid-row: span 2;
   grid-template-rows: subgrid;
+  min-width: 0;
 }
+/* A heading too wide for its half puts the value window on a line of its own, at the right, so
+   the two faders keep their gap. */
 .franges .flabel {
   align-items: flex-end;
+  flex-wrap: wrap;
+  row-gap: 6px;
   min-height: 32px;
 }
 .franges .chip {
   flex: none;
+  margin-left: auto;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
@@ -133,12 +139,12 @@
 }
 @media (min-width: 600px) {
   .franges {
-    column-gap: 28px;
+    column-gap: 40px;
   }
 }
 @media (min-width: 1100px) {
   .franges {
-    column-gap: 26px;
+    column-gap: 38px;
   }
   .franges .flabel {
     min-height: 22px;

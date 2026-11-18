@@ -221,9 +221,17 @@
   height: 9px;
   border-radius: 2px;
 }
-/* The ⓘ bubbles hang from their cell's heading row, so they stay over the card. */
+/* The ⓘ bubbles hang from their cell's heading row and may reach past the card; in the bottom
+   row (Years, Complexity) they open upwards, so the whole text stays on the screen. */
 .cell .qi {
   position: static;
+}
+@media (min-width: 900px) {
+  .time-cell .bubble,
+  .total-cell .bubble {
+    top: auto;
+    bottom: calc(100% + 8px);
+  }
 }
 
 @media (max-width: 899.98px) {

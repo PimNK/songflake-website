@@ -26,10 +26,6 @@ const PATHS = {
 export const icon = (name: keyof typeof PATHS): string =>
   `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${PATHS[name]}"/></svg>`;
 
-/** The close key's ✕. */
-export const CLOSE_ICON =
-  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
-
 /**
  * The intro (strings.hero.intro) as markup: a blank line starts a paragraph, a line opening with
  * «_» is a list line, other lines break.
