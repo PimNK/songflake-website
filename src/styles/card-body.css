@@ -1,7 +1,7 @@
 /* Track card cells (views/card-body.ts): each in a groove of the faceplate, a heading in the
-   display's face, then its content — three indicator lamps from idea to recording, lit
-   instrument pads, the style's pad, the story, the complexity as rows of lamps. --lead (the first
-   instrument's colour) is set on the grid. */
+   display's face, then its content — the story, the years as a scale with icicles, the style's
+   pad, lit instrument pads, the complexity as rows of lamps. --lead (the first instrument's
+   colour) is set on the grid. */
 .cell {
   min-height: 0;
   min-width: 0;
@@ -20,98 +20,122 @@
   height: 20px;
 }
 .ch h3 {
-  font: 500 17px/1 var(--vfd);
-  letter-spacing: 0.08em;
+  font: 300 calc(11px * var(--ts))/1 var(--sans);
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--label);
   text-shadow: 0 0 8px rgb(var(--g) / calc(0.38 * var(--lum)));
 }
-/* Years (idea → recording): three lamps — hollow, half, full — with the years in windows; the lines
-   between them as long as the years (dashed for the same year, dim when one is unknown). */
-.stations {
-  display: flex;
-  align-items: flex-start;
-  height: 66px;
-  padding: 2px 4px 0;
+/* Years (idea → recording): a plain scale with the three stations hanging from it as icicles,
+   like the pins on the player's line — idea at the left end, concept in the middle, ready at the
+   right end; the part reached is lit. Under each icicle its name and year. --at (each station)
+   and --lit come from the view. */
+.years {
+  display: grid;
+  gap: 10px;
+  padding: 0 1px;
 }
-.st {
-  flex: none;
-  width: 74px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 7px;
+.ytrack {
+  position: relative;
+  height: 30px;
 }
-.lamp {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #0b0907;
+.ytrack::before,
+.ytrack::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  border-radius: 2px;
+}
+.ytrack::before {
+  right: 0;
+  background: #050403;
   box-shadow:
     inset 0 1px 2px #000,
-    0 0 0 2px #050403,
-    0 1px 0 2px rgba(255, 220, 170, 0.06);
+    0 1px 0 rgba(255, 220, 170, 0.08);
 }
-.lamp.hollow {
-  background: radial-gradient(circle, #0b0907 0 4.5px, var(--lead) 5px 7px, #0b0907 7.5px);
-  box-shadow:
-    0 0 0 2px #050403,
-    0 0 calc(10px * var(--lum)) color-mix(in srgb, var(--lead) 45%, transparent);
+.ytrack::after {
+  width: var(--lit);
+  height: 2px;
+  bottom: 0.5px;
+  background: var(--amber);
+  box-shadow: 0 0 calc(8px * var(--lum)) rgb(var(--g) / 0.8);
 }
-.lamp.half {
-  background: linear-gradient(90deg, var(--lead) 50%, #0b0907 50%);
-  box-shadow:
-    0 0 0 2px #050403,
-    inset 0 0 0 2px var(--lead),
-    0 0 calc(12px * var(--lum)) color-mix(in srgb, var(--lead) 55%, transparent);
+.yic {
+  position: absolute;
+  top: 0;
+  left: var(--at);
+  width: 10px;
+  height: 100%;
+  margin-left: -5px;
 }
-.lamp.full {
-  background: radial-gradient(circle at 40% 35%, #fff, var(--lead) 55%);
-  box-shadow:
-    0 0 0 2px #050403,
-    0 0 calc(16px * var(--lum)) var(--lead),
-    0 0 4px var(--lead);
+.yic::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 10px;
+  height: 14px;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  background: var(--hot);
+  filter: drop-shadow(0 0 calc(4px * var(--lum)) rgb(var(--g) / 0.95));
 }
-.lamp.off {
-  opacity: 0.5;
+.yic::after {
+  content: '';
+  position: absolute;
+  left: 4.5px;
+  top: 14px;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(rgb(var(--g) / 0.7), rgb(var(--g) / 0.1));
 }
-.st .chip {
-  font-size: 17px;
+.yic.off::before {
+  background: var(--off);
+  filter: none;
 }
-.st.missing .chip {
+.yic.off::after {
+  background: rgb(var(--g) / 0.12);
+}
+/* The end icicles sit at the scale's ends, wholly inside it. */
+.yic:first-child {
+  margin-left: 0;
+}
+.yic:last-child {
+  margin-left: -10px;
+}
+.ymarks {
+  position: relative;
+  height: 36px;
+}
+.ymk {
+  position: absolute;
+  top: 0;
+  display: grid;
+  gap: 6px;
+  white-space: nowrap;
+}
+.ymk.idea {
+  left: 0;
+}
+.ymk.ready {
+  right: 0;
+  justify-items: end;
+}
+.ymk.concept {
+  left: 50%;
+  transform: translateX(-50%);
+  justify-items: center;
+}
+.ymk .yr {
+  font: 300 calc(13px * var(--ts))/1.15 var(--sans);
+  letter-spacing: 0.08em;
+  color: var(--hot);
+  text-shadow: var(--glow);
+}
+.ymk.missing .yr {
   color: var(--off);
   text-shadow: none;
-}
-.link {
-  flex: 1 1 0;
-  min-width: 44px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 9px;
-}
-.link i {
-  align-self: stretch;
-  height: 2px;
-  border-radius: 1px;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--lead) 70%, transparent),
-    color-mix(in srgb, var(--lead) 30%, transparent)
-  );
-  box-shadow: 0 0 calc(6px * var(--lum)) color-mix(in srgb, var(--lead) 50%, transparent);
-}
-.link.zero i {
-  background: repeating-linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--lead) 60%, transparent) 0 3px,
-    transparent 3px 7px
-  );
-  box-shadow: none;
-}
-.link.none i {
-  background: repeating-linear-gradient(90deg, #3a322a 0 3px, transparent 3px 7px);
-  box-shadow: none;
 }
 /* The main instrument: lit pads, as on the console, but they do not toggle. */
 .lpads {
@@ -129,15 +153,15 @@
   min-height: 0;
 }
 .story {
+  font: 300 calc(15px * var(--ts))/1.7 var(--read);
+  letter-spacing: 0.015em;
+  text-transform: none;
+  color: color-mix(in srgb, var(--cream) 78%, var(--label));
   flex: 1;
   min-height: 0;
   overflow: auto;
   overscroll-behavior: contain;
   padding-right: 10px;
-  font: 500 10px/1.85 var(--mono);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--label);
   text-shadow: 0 0 8px rgb(var(--g) / calc(0.38 * var(--lum)));
   scrollbar-color: #3a322a transparent;
 }
@@ -149,13 +173,6 @@
 }
 /* Where each cell sits in the 3-column grid (styles/card.css); one column below 900 px. */
 @media (min-width: 900px) {
-  /* a third of the card: the lamps and links a little tighter */
-  .st {
-    width: 62px;
-  }
-  .link {
-    min-width: 14px;
-  }
   .time-cell {
     grid-area: time;
   }
@@ -179,24 +196,25 @@
   max-width: 100%;
 }
 /* Complexity: the five axes as rows of three lamps, as in the record's tooltip
-   (styles/record.css), in the display's face; X/15 right above the lamps. */
+   (styles/record.css), in the display's face; X/15 under them, at the lamps' right end. */
 .ctotal {
   justify-self: end;
-  margin-bottom: 2px;
+  margin-top: 4px;
 }
 .cplx {
   display: grid;
   gap: 6px;
   max-width: 380px;
   color: var(--amber);
-  font-family: var(--vfd);
+  font-family: var(--sans);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   text-shadow: var(--glow);
 }
 .cplx div {
+  font-size: calc(11px * var(--ts));
+  letter-spacing: 0.22em;
   gap: 5px;
-  font-size: 18px;
 }
 .cplx i {
   width: 26px;
@@ -218,16 +236,6 @@
     left: 0;
     right: 0;
     width: auto;
-  }
-  .stations {
-    height: auto;
-    padding-bottom: 4px;
-  }
-  .st {
-    width: 66px;
-  }
-  .link {
-    min-width: 28px;
   }
   .lpads {
     display: grid;

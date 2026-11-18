@@ -1,11 +1,13 @@
 /* The random-track player, a console with a display (views/random-player.ts): the caption and
-   time, the title with the phosphor snowflake, the oscilloscope line; then the keys and the volume.
+   time, the title with the phosphor snowflake, the level bars; then the keys and the volume.
    From 1100 px it sits on the faceplate: one display, the keys under it. Narrower it is frozen
    at the bottom of the screen, full width: the display on top (caption · time, the title, the
    snowflake at its right, a thin progress line under the title; the whole display opens the
    card), then one centred row: the Filters toggle · the keys · the card key («i», or back to the
-   tracks while a card is open); from 900 px the volume at the right. No oscilloscope there. */
+   tracks while a card is open); from 900 px the volume at the right. No level bars there. */
 .rp-title {
+  font: 300 calc(26px * var(--ts))/1 var(--sans);
+  letter-spacing: 0.14em;
   display: block;
   min-width: 0;
   max-width: 100%;
@@ -13,8 +15,6 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   text-align: left;
-  font: 500 40px/1 var(--vfd);
-  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--hot);
   text-shadow: var(--glow);
@@ -43,7 +43,7 @@
 .rp-flake.empty {
   visibility: hidden;
 }
-/* The progress line: an oscilloscope trace (render/scope.ts) that seeks. */
+/* The progress line: level bars (render/levels.ts) that seek. */
 .pline {
   position: relative;
   display: block;
@@ -82,7 +82,7 @@
   height: 17px;
 }
 .rp-card span {
-  font: 500 22px/1 var(--vfd);
+  font: 300 calc(17px * var(--ts))/1 var(--sans);
   text-shadow: var(--glow);
 }
 .ftoggle svg {
@@ -248,7 +248,7 @@
     min-width: 0;
   }
   .rp-title {
-    font-size: 26px;
+    font-size: 18px;
     margin-top: 1px;
   }
   .rp-title:empty::before {

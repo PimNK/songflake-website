@@ -1,6 +1,6 @@
 // The backlight knobs (brightness, tone) and the light they set (CLAUDE.md §4.1): CSS custom
 // properties on :root for the page, and the current light for the canvases (record, the
-// oscilloscope traces, the player's phosphor snowflake), which subscribe to redraw. The knobs
+// level bars, the player's phosphor snowflake), which subscribe to redraw. The knobs
 // remember their position in this browser (best effort). Colour maths is in domain/backlight.ts.
 import {
   backlight,

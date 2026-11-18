@@ -1,14 +1,12 @@
 // The first-visit hints on wide screens (CLAUDE.md §4.1): three steps, each a glowing ring round
 // a part of the page and a note beside it — the snowflakes, the random-track player, the
-// filter block. They move on by themselves (not while the pointer is on the note), by Next, and
-// end with Got it, Skip or Esc. While they show, the layer takes every click: only the note's two
-// keys can be pressed. Shown once per browser on their own
-// (localStorage, best effort), and again whenever the About window closes.
+// filter block. Nothing moves on by itself: Next goes to the next step, Got it and Skip end them.
+// While they show, the layer takes every click: only the note's two keys can be pressed. Shown
+// once per browser on their own (localStorage, best effort), and again whenever About closes.
 import { strings } from '../strings';
 import type { PageSlots } from './page';
 
 const KEY = 'songflake.hints';
-const STEP_MS = 6000;
 const GAP = 16;
 const h = strings.hints;
 
@@ -114,42 +112,24 @@ export function startHints(slots: PageSlots, again = false): void {
   const ring = layer.querySelector<HTMLElement>('.hint-ring')!;
   const note = layer.querySelector<HTMLElement>('.hint-note')!;
   let step = 0;
-  let timer = 0;
-  let hovered = false;
   const replace = (): void => place(ring, note, targets[step]!);
 
   const show = (i: number): void => {
     step = i;
     fill(note, i, targets.length);
     replace();
-    window.clearTimeout(timer);
-    timer = window.setTimeout(tick, STEP_MS);
   };
   const forward = (): void => (step < targets.length - 1 ? show(step + 1) : end());
 
-  function tick(): void {
-    if (hovered) timer = window.setTimeout(tick, STEP_MS / 2);
-    else forward();
-  }
-
   function end(): void {
-    window.clearTimeout(timer);
     markSeen();
     layer.remove();
     window.removeEventListener('resize', replace);
-    document.removeEventListener('keydown', onKey);
   }
-
-  const onKey = (e: KeyboardEvent): void => {
-    if (e.key === 'Escape') end();
-  };
 
   layer.querySelector('[data-next]')!.addEventListener('click', forward);
   layer.querySelector('[data-skip]')!.addEventListener('click', end);
-  note.addEventListener('pointerenter', () => (hovered = true));
-  note.addEventListener('pointerleave', () => (hovered = false));
   window.addEventListener('resize', replace);
-  document.addEventListener('keydown', onKey);
   // The layer covers the page: the wheel would otherwise reach the record under it.
   layer.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
   show(0);

@@ -2,7 +2,7 @@
 // record view; the playing track's lamp and the titles' colours from the backlight.
 import type { Light } from '../domain/backlight';
 import { visibleTitles } from '../domain/record-layout';
-import { letterSpacing, MONO } from './record';
+import { DISPLAY, letterSpacing } from './record';
 import type { Sprite } from './snowflake';
 
 type Ctx = CanvasRenderingContext2D;
@@ -23,8 +23,8 @@ export interface FlakeNode {
 }
 
 /** The titles: small, uppercase, the same face as the list's tiles. */
-export const TITLE_FONT = `500 8.5px ${MONO}`;
-const TITLE_SPACING = '0.6px';
+export const TITLE_FONT = `300 11.5px ${DISPLAY}`;
+const TITLE_SPACING = '2.4px';
 
 /** A title as it is drawn (uppercase), for measuring and drawing alike. */
 export const titleText = (title: string): string => title.toUpperCase();

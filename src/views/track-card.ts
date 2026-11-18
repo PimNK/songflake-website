@@ -1,5 +1,5 @@
 // The track card modal (CLAUDE.md §4.3), the console's player, wider: a display with the caption
-// and time, the title (one line; a ticker on narrow cards), the oscilloscope line with the pins,
+// and time, the title (one line; a ticker on narrow cards), the level bars with the pins,
 // the pin note and the turning snowflake at its right; under it previous · play / pause · next
 // and the volume fader; the five cells below. There is no ✕: a click outside the card closes it.
 // Swiping left / right on touch steps tracks. Below 1100 px the card has no keys: it ends above the
@@ -29,7 +29,7 @@ export interface CardHooks {
 export interface PlayerSlots {
   /** Between the previous and next buttons: the round play / pause button goes here. */
   play: HTMLElement;
-  /** In the display: the caption and time, the oscilloscope line with pins, the pin note. */
+  /** In the display: the caption and time, the level bars with pins, the pin note. */
   body: HTMLElement;
 }
 

@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SONGFLAKE — шрифты 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@100..900&family=Handjet:wght@100..900&family=Martian+Mono:wdth,wght@75..112.5,100..800&family=IBM+Plex+Mono:wght@200;300;400&family=Jost:wght@200..500&family=Exo+2:wght@200..500&family=Manrope:wght@200..500&display=swap" rel="stylesheet">
+<style>
+/* Throwaway type study 2 (not app code): each variant sets ONE face for all six places (the logo
+   keeps Geologica). Every face here has Cyrillic. Colours: the default cold light. */
+:root {
+  --night: #020202;
+  --hot: #eaf5ff;
+  --amber: #a9d4ff;
+  --cream: #d7e6f3;
+  --label: #7f9fbd;
+  --off: #3b4652;
+  --g: 120 185 255;
+  --p: 20 46 80;
+  --glass: #06101a;
+  --mono: 'Martian Mono', ui-monospace, monospace;
+  --vfd: 'Handjet', 'Martian Mono', monospace;
+  --sans: 'Geologica', system-ui, sans-serif;
+}
+:root[data-tone="warm"] {
+  --hot: #fff1dc;
+  --amber: #ffb35c;
+  --cream: #f4e4cc;
+  --label: #b39472;
+  --off: #4a3c2e;
+  --g: 255 160 70;
+  --p: 70 34 6;
+  --glass: #140b04;
+}
+* { box-sizing: border-box; margin: 0; }
+body {
+  background: radial-gradient(60% 50% at 10% 0, rgb(var(--g) / .06), transparent), var(--night);
+  color: var(--cream);
+  font: 400 13px/1.5 var(--sans);
+  padding: 32px 28px 80px;
+}
+header { max-width: 1240px; margin: 0 auto 28px; display: flex; gap: 24px; align-items: end; flex-wrap: wrap; }
+header h1 { font: 500 28px/1 var(--sans); letter-spacing: .3em; color: var(--hot); }
+header p { flex: 1 1 420px; color: var(--label); font-size: 12px; }
+header button {
+  font: 400 10px var(--mono); letter-spacing: .14em; text-transform: uppercase;
+  color: var(--amber); background: #0d0b09; border: 1px solid rgb(var(--g) / .3);
+  border-radius: 20px; padding: 7px 14px; cursor: pointer;
+}
+.legend { max-width: 1240px; margin: 0 auto 30px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.legend div { padding: 12px 14px; border-radius: 10px; background: #0b0a09; box-shadow: inset 0 0 0 1px #1c1915; }
+.legend b { display: block; font: 600 12px var(--mono); letter-spacing: .1em; color: var(--hot); margin-bottom: 4px; }
+.legend span { color: var(--label); font-size: 11.5px; }
+section { max-width: 1240px; margin: 0 auto 34px; }
+section > h2 {
+  font: 500 13px var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--label);
+  padding-bottom: 10px; margin-bottom: 14px; border-bottom: 1px solid #1a1714;
+}
+.row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.cell {
+  position: relative; padding: 30px 16px 18px; border-radius: 12px; min-height: 120px;
+  background: linear-gradient(#14100d, #080605);
+  box-shadow: inset 0 1px 0 rgba(255, 220, 170, .1), 0 6px 20px #000;
+}
+.cell::before {
+  content: attr(data-v); position: absolute; top: 9px; left: 12px;
+  font: 600 10px var(--mono); letter-spacing: .1em; color: var(--off);
+}
+
+/* ---------- variants: one face each for every place ---------- */
+.cell { --wdth: 100; }
+/* A — now: Martian Mono + Handjet */
+.A { --pad: 400 8.5px var(--mono); --pad-ls: .05em;
+     --hint: 400 10px/1.7 var(--mono); --hint-ls: .07em; --hint-case: uppercase;
+     --ttl: 500 8.5px/1.3 var(--mono); --ttl-ls: .6px; --sub: 400 8px var(--mono); --sub-ls: .05em;
+     --pin: 500 16px/1.12 var(--vfd); --pin-ls: .04em; --pin-case: uppercase;
+     --story: 500 10px/1.85 var(--mono); --story-ls: .1em; --story-case: uppercase;
+     --ax: 500 18px/1.15 var(--vfd); --ax-ls: .05em; --tot: 500 17px/1 var(--vfd); }
+/* E — Geologica, the SONGFLAKE face: wide-tracked light capitals for labels, light lower case to read */
+.E { --f: 'Geologica', sans-serif;
+     --pad: 300 9px var(--f); --pad-ls: .2em;
+     --hint: 300 13px/1.6 var(--f); --hint-ls: .02em; --hint-case: none;
+     --ttl: 300 9.5px/1.35 var(--f); --ttl-ls: .22em; --sub: 300 8.5px var(--f); --sub-ls: .2em;
+     --pin: 300 15px/1.45 var(--f); --pin-ls: .02em; --pin-case: none;
+     --story: 300 13.5px/1.75 var(--f); --story-ls: .015em; --story-case: none;
+     --ax: 300 11px/1.9 var(--f); --ax-ls: .22em; --tot: 300 16px/1 var(--f); }
+/* F — IBM Plex Mono Light: a calm, readable monospace; capitals for labels, lower case to read */
+.F { --f: 'IBM Plex Mono', monospace;
+     --pad: 400 9px var(--f); --pad-ls: .12em;
+     --hint: 300 12px/1.65 var(--f); --hint-ls: 0; --hint-case: none;
+     --ttl: 400 9.5px/1.35 var(--f); --ttl-ls: .14em; --sub: 300 9px var(--f); --sub-ls: .12em;
+     --pin: 300 14px/1.5 var(--f); --pin-ls: 0; --pin-case: none;
+     --story: 300 12.5px/1.75 var(--f); --story-ls: 0; --story-case: none;
+     --ax: 300 11px/1.9 var(--f); --ax-ls: .16em; --tot: 400 15px/1 var(--f); }
+/* G — Jost: geometric, close to Futura; thin wide capitals, light text */
+.G { --f: 'Jost', sans-serif;
+     --pad: 400 9.5px var(--f); --pad-ls: .24em;
+     --hint: 300 14px/1.55 var(--f); --hint-ls: .02em; --hint-case: none;
+     --ttl: 400 10px/1.35 var(--f); --ttl-ls: .26em; --sub: 300 9.5px var(--f); --sub-ls: .22em;
+     --pin: 300 16px/1.45 var(--f); --pin-ls: .02em; --pin-case: none;
+     --story: 300 14.5px/1.7 var(--f); --story-ls: .01em; --story-case: none;
+     --ax: 300 12px/1.8 var(--f); --ax-ls: .24em; --tot: 300 17px/1 var(--f); }
+/* H — Exo 2: technical, a little squared — closest to the console's instruments */
+.H { --f: 'Exo 2', sans-serif;
+     --pad: 400 9.5px var(--f); --pad-ls: .18em;
+     --hint: 300 13.5px/1.55 var(--f); --hint-ls: .02em; --hint-case: none;
+     --ttl: 400 10px/1.35 var(--f); --ttl-ls: .2em; --sub: 300 9.5px var(--f); --sub-ls: .18em;
+     --pin: 300 16px/1.4 var(--f); --pin-ls: .03em; --pin-case: none;
+     --story: 300 14px/1.7 var(--f); --story-ls: .015em; --story-case: none;
+     --ax: 300 12px/1.8 var(--f); --ax-ls: .2em; --tot: 300 17px/1 var(--f); }
+/* I — Manrope: neutral modern sans; the quietest option */
+.I { --f: 'Manrope', sans-serif;
+     --pad: 500 9px var(--f); --pad-ls: .2em;
+     --hint: 300 13px/1.6 var(--f); --hint-ls: .01em; --hint-case: none;
+     --ttl: 500 9.5px/1.35 var(--f); --ttl-ls: .2em; --sub: 400 8.5px var(--f); --sub-ls: .18em;
+     --pin: 300 15px/1.5 var(--f); --pin-ls: .01em; --pin-case: none;
+     --story: 300 13.5px/1.75 var(--f); --story-ls: .01em; --story-case: none;
+     --ax: 400 11px/1.9 var(--f); --ax-ls: .2em; --tot: 300 16px/1 var(--f); }
+/* E caps: the same Geologica Light, the reading text in capitals — tighter size, open tracking */
+.Ec { --f: 'Geologica', sans-serif;
+      --pad: 300 9px var(--f); --pad-ls: .2em; --sub: 300 8.5px var(--f); --sub-ls: .2em;
+      --hint: 300 11px/1.85 var(--f); --hint-ls: .1em; --hint-case: uppercase;
+      --story: 300 11.5px/1.95 var(--f); --story-ls: .1em; --story-case: uppercase; }
+.Ew { --f: 'Geologica', sans-serif;
+      --pad: 300 9px var(--f); --pad-ls: .2em; --sub: 300 8.5px var(--f); --sub-ls: .2em;
+      --hint: 300 10.5px/2 var(--f); --hint-ls: .18em; --hint-case: uppercase;
+      --story: 300 10.5px/2.1 var(--f); --story-ls: .18em; --story-case: uppercase; }
+.cell:not(.A) .story { color: color-mix(in srgb, var(--cream) 75%, var(--label)); }
+.cell:not(.A) .note small { font: var(--sub); letter-spacing: var(--sub-ls); }
+.cplx .tot { font: var(--tot) !important; }
+/* 1 — pads */
+.pads { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pad {
+  --led: var(--amber); height: 50px; padding: 8px 8px 7px; display: flex; flex-direction: column;
+  justify-content: space-between; border-radius: 7px; background: linear-gradient(#1f1a16, #0d0a08);
+  color: var(--off); font: var(--pad); letter-spacing: var(--pad-ls); text-transform: uppercase;
+  box-shadow: 0 3px 0 #050403, 0 5px 7px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,220,170,.08);
+  overflow: hidden; white-space: nowrap;
+}
+.pad i { width: 16px; height: 5px; border-radius: 2px; background: #0b0907; box-shadow: inset 0 1px 1px #000; }
+.pad.lit { color: color-mix(in srgb, var(--cream) 62%, var(--label)); text-shadow: 0 0 6px rgb(var(--g) / .22);
+  box-shadow: 0 3px 0 #050403, 0 5px 7px rgba(0,0,0,.6), inset 0 14px 16px -14px var(--led), 0 9px 17px -9px var(--led); }
+.pad.lit i { background: var(--led); box-shadow: 0 0 10px var(--led); }
+.pad span { overflow: hidden; text-overflow: ellipsis; }
+
+/* 2 — hint note */
+.note {
+  padding: 14px 16px; border-radius: 14px; background: #0c0805; color: var(--cream);
+  box-shadow: inset 0 0 0 1px rgb(var(--g) / .3), 0 0 26px rgb(var(--g) / .14);
+}
+.note small { font: 400 9px var(--mono); letter-spacing: .14em; color: var(--label); }
+.note p { margin: 8px 0 12px; font: var(--hint); letter-spacing: var(--hint-ls); text-transform: var(--hint-case); }
+.note .keys { display: flex; justify-content: flex-end; gap: 14px; font: var(--pad); letter-spacing: var(--pad-ls); text-transform: uppercase; color: var(--label); }
+.note .keys b { font-weight: inherit; color: var(--hot); }
+
+/* 3 — tiles and record titles */
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tile { display: grid; justify-items: center; gap: 5px; text-align: center; }
+.tile svg { width: 58px; height: 58px; }
+.tile b { font: var(--ttl); letter-spacing: var(--ttl-ls); text-transform: uppercase; color: var(--hot); font-weight: inherit; }
+.tile small { font: var(--sub); letter-spacing: var(--sub-ls); text-transform: uppercase; color: var(--label); }
+.tile .leds { display: flex; gap: 3px; }
+.tile .leds i { width: 12px; height: 4px; background: var(--led); box-shadow: 0 0 6px var(--led); }
+.disc { margin-top: 14px; padding-top: 12px; border-top: 1px solid #1a1714; display: flex; justify-content: space-around; }
+.disc span { font: var(--ttl); letter-spacing: var(--ttl-ls); text-transform: uppercase; color: rgb(from var(--cream) r g b / .58); }
+.disc span.on { color: var(--hot); }
+
+/* 4 — pin note in the display */
+.vfd {
+  padding: 14px 16px; border-radius: 8px; color: var(--amber); text-shadow: 0 0 8px rgb(var(--g) / .45);
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 140% at 50% 0, rgb(var(--p)), #060301 72%);
+  box-shadow: inset 0 0 0 1px rgb(var(--g) / .2);
+}
+.vfd .line { height: 1px; background: rgb(var(--g) / .35); margin-bottom: 12px; position: relative; }
+.vfd .line::after { content: ''; position: absolute; left: 30%; top: -5px; width: 7px; height: 7px; background: #fff; transform: rotate(45deg); }
+.vfd p { font: var(--pin); letter-spacing: var(--pin-ls); text-transform: var(--pin-case); }
+
+/* 5 — story */
+.story { font: var(--story); letter-spacing: var(--story-ls); text-transform: var(--story-case); color: var(--label); }
+
+/* 6 — complexity rows */
+.cplx { display: grid; gap: 6px; color: var(--amber); text-shadow: 0 0 8px rgb(var(--g) / .45); }
+.cplx .tot { justify-self: end; font: 500 17px/1 var(--vfd); letter-spacing: .06em; padding: 2px 7px 1px; border-radius: 3px; background: var(--glass); }
+.cplx div { display: flex; align-items: center; gap: 5px; font: var(--ax); letter-spacing: var(--ax-ls); text-transform: uppercase; }
+.cplx span { flex: 1; }
+.cplx i { width: 24px; height: 8px; border-radius: 2px; background: rgb(var(--g) / .13); }
+.cplx i.on { background: var(--amber); box-shadow: 0 0 7px rgb(var(--g) / .8); }
+
+@media (max-width: 900px) { .row, .legend { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .row, .legend { grid-template-columns: 1fr; } body { padding: 20px 16px 60px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>SONGFLAKE</h1>
+  <p>Вариант E (Geologica): текст подсказок и истории строчными и заглавными — рядом для сравнения. Переключите язык и свет.</p>
+  <span><button type="button" id="lang">RU</button> <button type="button" id="tone">Тёплый свет</button></span>
+</header>
+
+<div class="legend">
+  <div><b>E · обычный</b><span>Geologica Light строчными, как во второй серии.</span></div>
+  <div><b>E · капс</b><span>Тот же шрифт заглавными: 11–11.5 px, разрядка 0.1em.</span></div>
+  <div><b>E · капс широкий</b><span>Заглавными мельче и разреженнее: 10.5 px, разрядка 0.18em — ближе к подписям на кнопках.</span></div>
+</div>
+
+<main id="main"></main>
+
+<template id="t1">
+  <div class="pads">
+    <span class="pad lit"><i></i><span>Alternative</span></span>
+    <span class="pad"><i></i><span>Progressive</span></span>
+    <span class="pad"><i></i><span>Ambient</span></span>
+    <span class="pad lit" style="--led:#2979ff"><i></i><span data-ru="Синтезатор">Synthesizer</span></span>
+    <span class="pad lit" style="--led:#ff1744"><i></i><span data-ru="Барабаны">Drums</span></span>
+    <span class="pad" style="--led:#00e676"><i></i><span data-ru="Бас">Bass</span></span>
+  </div>
+</template>
+<template id="t2">
+  <div class="note"><small>1 / 3</small>
+    <p data-ru="Выберите снежинку, чтобы открыть трек: историю, пины и запись.">Select a snowflake to open its track: the story, the pins and the recording.</p>
+    <div class="keys"><span data-ru="Пропустить">Skip</span><b data-ru="Далее">Next</b></div></div>
+</template>
+<template id="t3">
+  <div class="tiles">
+    <div class="tile"><svg viewBox="-30 -30 60 60"><g stroke="#6aa8ff" stroke-width="1.2" fill="none"><path d="M0-24V24M-21-12 21 12M-21 12 21-12"/><path d="M0-17l-5-5M0-17l5-5M0 17l-5 5M0 17l5 5"/></g></svg>
+      <b data-ru="На луну">Cornered</b><small>Ambient · 2026</small><span class="leds"><i style="--led:#2979ff"></i><i style="--led:#ff1744"></i></span></div>
+    <div class="tile"><svg viewBox="-30 -30 60 60"><g stroke="#ff9100" stroke-width="1.2" fill="none"><path d="M0-24V24M-24 0H24M-17-17 17 17M-17 17 17-17"/><circle r="9"/></g></svg>
+      <b>Roll across the sphere</b><small>Ambient · 2016</small><span class="leds"><i style="--led:#ff9100"></i></span></div>
+  </div>
+  <div class="disc"><span class="on">Grustno</span><span>Crazy king</span></div>
+</template>
+<template id="t4">
+  <div class="vfd"><div class="line"></div>
+    <p data-ru="Трек в размере 7/8. Этот размер создаёт ощущение спешки и суеты.">The track is in 7/8. I use this metre to create a feeling of rush and bustle.</p></div>
+</template>
+<template id="t5">
+  <p class="story" data-ru="Трек вырос из сильного детского переживания: паника и суета оттого, что не успеваешь за другими детьми в саду и в школе, и чувство, что за опоздание обязательно последует страшное наказание.">The track grew out of memories of a strong childhood experience: the panic and bustle of not keeping up with the other kids at nursery and at school, and the feeling that a terrible punishment was bound to follow if I didn't hurry.</p>
+</template>
+<template id="t6">
+  <div class="cplx"><span class="tot">12/15</span>
+    <div><span data-ru="Ритм">Rhythm</span><i class="on"></i><i class="on"></i><i class="on"></i></div>
+    <div><span data-ru="Мелодия">Melody</span><i class="on"></i><i class="on"></i><i></i></div>
+    <div><span data-ru="Техника">Technique</span><i class="on"></i><i class="on"></i><i></i></div>
+    <div><span data-ru="Инструменты">Instruments</span><i class="on"></i><i class="on"></i><i class="on"></i></div>
+    <div><span data-ru="Структура">Structure</span><i class="on"></i><i class="on"></i><i></i></div></div>
+</template>
+
+<script>
+const parts = [
+  ['Текст подсказок', 't2'],
+  ['Текст истории', 't5'],
+];
+const main = document.getElementById('main');
+for (const [title, id] of parts) {
+  const s = document.createElement('section');
+  s.innerHTML = `<h2>${title}</h2><div class="row"></div>`;
+  for (const v of ['E', 'Ec', 'Ew']) {
+    const c = document.createElement('div');
+    c.className = `cell ${v}`;
+    c.dataset.v = { E: 'E · обычный', Ec: 'E · капс', Ew: 'E · капс широкий' }[v];
+    c.append(document.getElementById(id).content.cloneNode(true));
+    s.querySelector('.row').append(c);
+  }
+  main.append(s);
+}
+let ru = false;
+const langBtn = document.getElementById('lang');
+langBtn.addEventListener('click', () => {
+  ru = !ru;
+  langBtn.textContent = ru ? 'EN' : 'RU';
+  for (const el of document.querySelectorAll('[data-ru]')) {
+    el.dataset.en ??= el.textContent;
+    el.textContent = ru ? el.dataset.ru : el.dataset.en;
+  }
+});
+const btn = document.getElementById('tone');
+btn.addEventListener('click', () => {
+  const warm = document.documentElement.dataset.tone !== 'warm';
+  document.documentElement.dataset.tone = warm ? 'warm' : '';
+  btn.textContent = warm ? 'Холодный свет' : 'Тёплый свет';
+});
+</script>
+</body>
+</html>

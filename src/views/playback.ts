@@ -1,7 +1,9 @@
-// The one shared <audio> element for the whole page, and each recording's duration, cached per
-// song in memory. When a track ends, the next one follows (autoAdvance), picked the way the run
-// was started: in the card's order or by the random-track player.
+// The one shared <audio> element for the whole page, and each recording's duration and loudness
+// (decoded once for the level bars), cached per song in memory. When a track ends, the next one
+// follows (autoAdvance), picked the way the run was started: in the card's order or by the
+// random-track player.
 import type { Song } from '../content/parse';
+import { levelsOf } from '../domain/levels';
 
 type Listener = () => void;
 
@@ -16,6 +18,7 @@ export class Playback {
   /** Positions chosen for songs that are not loaded yet (a cue or a seek before play). */
   private pending = new Map<string, number>();
   private durations = new Map<string, Promise<number>>();
+  private loudness = new Map<string, Promise<number[]>>();
   private listeners = new Set<Listener>();
 
   constructor() {
@@ -133,6 +136,20 @@ export class Playback {
     return d;
   }
 
+  /**
+   * The recording's loudness along its length (domain/levels.ts), decoded once and cached for the
+   * page's lifetime; empty when it cannot be read (e.g. an `audio_url` host without CORS). A
+   * failure is cached too, so a recording that cannot be read is not downloaded again.
+   */
+  levels(song: Song): Promise<number[]> {
+    let l = this.loudness.get(song.slug);
+    if (!l) {
+      l = decodeLevels(song.audioSrc!);
+      this.loudness.set(song.slug, l);
+    }
+    return l;
+  }
+
   /** Playback volume, 0–1. */
   get volume(): number {
     return this.audio.volume;
@@ -153,4 +170,18 @@ function probeDuration(src: string): Promise<number> {
     probe.addEventListener('error', done, { once: true });
     probe.src = src;
   });
+}
+
+/** Fetches and decodes a recording (an offline context needs no user gesture) into its levels. */
+async function decodeLevels(src: string): Promise<number[]> {
+  try {
+    const data = await (await fetch(src)).arrayBuffer();
+    const audio = await new OfflineAudioContext(1, 1, 44100).decodeAudioData(data);
+    const channels = Array.from({ length: audio.numberOfChannels }, (_, i) =>
+      audio.getChannelData(i),
+    );
+    return levelsOf(channels);
+  } catch {
+    return [];
+  }
 }

@@ -1,6 +1,6 @@
 // The card's player (CLAUDE.md §4.6), the console's display, wider: the caption (playing /
 // paused / press play; on narrow cards playing / paused) and m:ss / m:ss at the top, the
-// oscilloscope line with pin markers that seeks (on narrow cards the time follows the line), and
+// level bars with pin markers that seeks (on narrow cards the time follows the line), and
 // the note of the active pin under it (pins have no list of their own: a marker shows its text on
 // hover and once reached). The note's box holds hidden copies of every pin note, so on narrow
 // cards it is as high as the song's longest one; wide cards keep three lines. The round play /
@@ -12,7 +12,7 @@ import { strings } from '../strings';
 import { esc, icon } from './html';
 import type { Playback } from './playback';
 import { NARROW, renderMarkers } from './pin-markers';
-import { mountScope, type Scope } from './scope';
+import { mountLevels, type Levels } from './levels';
 import { wireSeek } from './seek';
 import type { PlayerSlots } from './track-card';
 
@@ -69,7 +69,7 @@ class CardPlayer {
   private alive = true;
   private unsubscribe: () => void;
   private resize: ResizeObserver;
-  private scope: Scope;
+  private line: Levels;
   /** Last values written to the DOM, so unchanged ones are not rewritten every frame. */
   private shown: Record<string, string> = {};
 
@@ -88,11 +88,11 @@ class CardPlayer {
     slots.play.replaceChildren(this.play);
     this.wire();
     this.unsubscribe = playback.subscribe(() => this.update());
-    this.scope = mountScope(this.q('canvas'), {
+    this.line = mountLevels(this.q('canvas'), playback, {
       at: () => this.progress(),
       playing: () => playback.isPlaying(song),
+      song: () => song,
       loaded: () => playback.isCurrent(song),
-      volume: () => playback.volume,
     });
     // The markers are laid out by pixel distance: again when the line changes width.
     this.resize = new ResizeObserver(() => this.markers());
@@ -112,7 +112,7 @@ class CardPlayer {
     cancelAnimationFrame(this.raf);
     this.unsubscribe();
     this.resize.disconnect();
-    this.scope.dispose();
+    this.line.dispose();
   }
 
   private q<T extends HTMLElement>(selector: string): T {
@@ -160,7 +160,7 @@ class CardPlayer {
     for (const m of this.slot.querySelectorAll<HTMLElement>('.pin')) {
       m.classList.toggle('past', current && Number(m.dataset.at) <= t);
     }
-    this.scope.wake();
+    this.line.wake();
     // timeupdate is coarse: follow the time and the pins every frame while playing
     if (playing && !this.raf) {
       this.raf = requestAnimationFrame(() => {

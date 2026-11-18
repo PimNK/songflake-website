@@ -1,5 +1,5 @@
 /* Track card: the console's player, wider — a display with the caption · time, the title, the
-   oscilloscope line with pins, the pin note and the turning snowflake at its right; under it the
+   level bars with pins, the pin note and the turning snowflake at its right; under it the
    keys and the volume. No ✕: a click outside closes it. Then five cells. From 900 px the card fits the window
    at one fixed size whatever the song, so stepping tracks moves nothing; only a long story
    scrolls, inside its cell. Below 1100 px the card has no keys and no screws: it fills the
@@ -66,11 +66,11 @@ body.locked {
   grid-row: 1;
 }
 .mtitle {
+  font: 300 calc(26px * var(--ts))/56px var(--sans);
+  letter-spacing: 0.14em;
   grid-row: 2;
   min-width: 0;
   height: 56px;
-  font: 500 40px/56px var(--vfd);
-  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--hot);
   white-space: nowrap;
@@ -106,27 +106,40 @@ body.locked {
   display: grid;
   place-items: center;
 }
+/* The keys in the middle of the card, the volume at its right. */
 .mtransport {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(3, auto) minmax(0, 1fr);
   align-items: center;
-  gap: 16px;
+  column-gap: 16px;
 }
 .play-slot {
   display: contents;
 }
-.mtransport .vol {
-  margin-left: 22px;
+.mtransport > [data-step='-1'] {
+  grid-column: 2;
 }
-/* Five cells in thirds: years, style and main instrument in one row; the story under the first
-   two, the complexity under the main instrument. The upper row as high as it needs, the lower
-   row gets the rest. */
+.mtransport .play {
+  grid-column: 3;
+}
+.mtransport > [data-step='1'] {
+  grid-column: 4;
+}
+.mtransport .vol {
+  grid-column: 5;
+  justify-self: end;
+}
+/* Five cells in thirds: the story over two thirds beside the style and, under it, the main
+   instrument; the years over two thirds under the story, the complexity under the main
+   instrument. The story takes the room left and scrolls. */
 .mgrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   grid-template-areas:
-    'time style listen'
-    'story story total';
+    'story story style'
+    'story story listen'
+    'time time total';
   gap: 22px 34px;
   min-height: 0;
   overflow: hidden;
@@ -201,7 +214,7 @@ body.locked {
   .mtitle {
     align-self: start;
     height: auto;
-    font-size: 26px;
+    font-size: 18px;
     line-height: 1.1;
   }
   .mscreen .wline,

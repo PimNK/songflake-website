@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SONGFLAKE — Years</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* Throwaway study of the card's Years cell (not app code). Type as in the E trial: Geologica
+   Light, wide-tracked capitals. Each variant is shown at the wide cell (two thirds of the card)
+   and at phone width, for a finished track and one still in progress. */
+:root {
+  --hot: #eaf5ff; --amber: #a9d4ff; --cream: #d7e6f3; --label: #7f9fbd; --off: #34404c;
+  --g: 120 185 255; --p: 20 46 80; --glass: #06101a; --lead: #2979ff;
+  --f: 'Geologica', system-ui, sans-serif;
+}
+:root[data-tone="warm"] {
+  --hot: #fff1dc; --amber: #ffb35c; --cream: #f4e4cc; --label: #b39472; --off: #4a3c2e;
+  --g: 255 160 70; --p: 70 34 6; --glass: #140b04; --lead: #ff9100;
+}
+* { box-sizing: border-box; margin: 0; }
+body { background: #020202; color: var(--cream); font: 300 13px/1.5 var(--f); padding: 32px 28px 80px; }
+header { max-width: 1180px; margin: 0 auto 26px; display: flex; gap: 24px; align-items: end; flex-wrap: wrap; }
+header h1 { font: 500 28px/1 var(--f); letter-spacing: .3em; color: var(--hot); }
+header p { flex: 1 1 420px; color: var(--label); font-size: 12px; }
+header button { font: 300 10px var(--f); letter-spacing: .2em; text-transform: uppercase; color: var(--amber);
+  background: #0d0b09; border: 1px solid rgb(var(--g) / .3); border-radius: 20px; padding: 7px 14px; cursor: pointer; }
+section { max-width: 1180px; margin: 0 auto 30px; }
+section > h2 { font: 400 12px var(--f); letter-spacing: .2em; text-transform: uppercase; color: var(--hot);
+  padding-bottom: 6px; }
+section > p { color: var(--label); font-size: 12px; margin-bottom: 12px; border-bottom: 1px solid #1a1714; padding-bottom: 10px; }
+.row { display: grid; grid-template-columns: 680px 343px; gap: 20px; justify-content: start; }
+.card { padding: 18px 20px 22px; border-radius: 12px; background: linear-gradient(#14100d, #080605);
+  box-shadow: inset 0 1px 0 rgba(255,220,170,.1), 0 6px 20px #000; display: grid; gap: 26px; }
+.cell { display: grid; gap: 12px; border-top: 1px solid #000; box-shadow: inset 0 1px 0 rgba(255,200,140,.08); padding-top: 13px; }
+.ch { font: 300 13px/1 var(--f); letter-spacing: .22em; text-transform: uppercase; color: var(--label); }
+.lbl { font: 300 9.5px/1 var(--f); letter-spacing: .2em; text-transform: uppercase; color: var(--label); }
+.chip { font: 300 15px/1.15 var(--f); letter-spacing: .08em; color: var(--amber); background: var(--glass);
+  padding: 3px 8px 2px; border-radius: 3px; box-shadow: inset 0 1px 3px #000; text-shadow: 0 0 8px rgb(var(--g) / .5); }
+.dim { color: var(--off) !important; text-shadow: none !important; }
+
+/* A — now */
+.a { display: flex; align-items: flex-start; }
+.a .st { flex: none; width: 74px; display: grid; justify-items: center; gap: 7px; }
+.a .lamp { width: 20px; height: 20px; border-radius: 50%; background: #0b0907; box-shadow: 0 0 0 2px #050403; }
+.a .lamp.h { background: radial-gradient(circle, #0b0907 0 4.5px, var(--lead) 5px 7px, #0b0907 7.5px); }
+.a .lamp.f2 { background: linear-gradient(90deg, var(--lead) 50%, #0b0907 50%); box-shadow: 0 0 0 2px #050403, inset 0 0 0 2px var(--lead); }
+.a .lamp.f { background: radial-gradient(circle at 40% 35%, #fff, var(--lead) 55%); box-shadow: 0 0 0 2px #050403, 0 0 14px var(--lead); }
+.a .ln { flex: 1; height: 2px; margin-top: 9px; background: repeating-linear-gradient(90deg, var(--lead) 0 3px, transparent 3px 7px); opacity: .7; }
+.a .ln.solid { background: var(--lead); }
+.a .ln.none { background: repeating-linear-gradient(90deg, #3a322a 0 3px, transparent 3px 7px); }
+
+/* B — three pads, as in Style and Main instrument */
+.b { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pad { --led: var(--amber); height: 54px; padding: 8px 9px 8px; display: flex; flex-direction: column; justify-content: space-between;
+  border-radius: 7px; background: linear-gradient(#1f1a16, #0d0a08); color: var(--off);
+  box-shadow: 0 3px 0 #050403, 0 5px 7px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,220,170,.08); }
+.pad .top { display: flex; justify-content: space-between; align-items: center; }
+.pad i { width: 16px; height: 5px; border-radius: 2px; background: #0b0907; box-shadow: inset 0 1px 1px #000; }
+.pad .y { font: 300 15px/1 var(--f); letter-spacing: .08em; }
+.pad .lbl { color: inherit; }
+.pad.lit { color: color-mix(in srgb, var(--cream) 70%, var(--label));
+  box-shadow: 0 3px 0 #050403, 0 5px 7px rgba(0,0,0,.6), inset 0 14px 16px -14px var(--led), 0 9px 17px -9px var(--led); }
+.pad.lit i { background: var(--led); box-shadow: 0 0 10px var(--led); }
+.pad.lit .y { color: var(--hot); text-shadow: 0 0 8px rgb(var(--g) / .5); }
+
+/* C — a scale with icicles, like the player's pins and the faders */
+.c { position: relative; padding-top: 18px; }
+.c .scale { position: relative; height: 26px;
+  background: repeating-linear-gradient(90deg, rgb(var(--g) / .35) 0 1px, transparent 1px 10%) 0 100% / 100% 6px no-repeat; }
+.c .scale::before { content: ''; position: absolute; left: 0; right: 0; bottom: 8px; height: 3px; border-radius: 2px; background: #050403; box-shadow: inset 0 1px 2px #000; }
+.c .lit { position: absolute; bottom: 8.5px; height: 2px; background: var(--amber); box-shadow: 0 0 8px rgb(var(--g) / .8); }
+.c .ic { position: absolute; top: -18px; width: 0; }
+.c .ic::before { content: ''; position: absolute; left: -5px; top: 0; width: 10px; height: 14px; clip-path: polygon(0 0, 100% 0, 50% 100%);
+  background: var(--hot); filter: drop-shadow(0 0 4px rgb(var(--g))); }
+.c .ic::after { content: ''; position: absolute; left: 0; top: 14px; width: 1px; height: 22px; background: linear-gradient(rgb(var(--g) / .7), rgb(var(--g) / .1)); }
+.c .ic.off::before { background: var(--off); filter: none; }
+.c .marks { position: relative; height: 34px; margin-top: 8px; }
+.c .mk { position: absolute; transform: translateX(-50%); display: grid; justify-items: center; gap: 5px; white-space: nowrap; }
+.c .mk.l { transform: none; justify-items: start; }
+.c .mk.r { transform: translateX(-100%); justify-items: end; }
+.c .yr { font: 300 15px/1 var(--f); letter-spacing: .08em; color: var(--hot); text-shadow: 0 0 8px rgb(var(--g) / .5); }
+
+/* D — a display: three columns, years in phosphor */
+.d { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: end; padding: 12px 16px 13px; border-radius: 8px;
+  color: var(--amber); text-shadow: 0 0 8px rgb(var(--g) / .45);
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px), radial-gradient(120% 140% at 50% 0, rgb(var(--p)), #060301 72%);
+  box-shadow: inset 0 0 0 1px rgb(var(--g) / .2); }
+.d .col { display: grid; gap: 7px; }
+.d .col:nth-child(3) { justify-items: center; }
+.d .col:nth-child(5) { justify-items: end; }
+.d .lbl { color: var(--amber); opacity: .7; }
+.d .yr { font: 300 24px/1 var(--f); letter-spacing: .1em; color: var(--hot); }
+.d .arr { font: 300 16px/1 var(--f); color: var(--label); padding: 0 6px 4px; }
+
+/* E — stage lamps, as in Complexity: one bar of three segments, labels and years under it */
+.e { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 6px; }
+.e i { height: 9px; border-radius: 2px; background: rgb(var(--g) / .13); }
+.e i.on { background: var(--amber); box-shadow: 0 0 8px rgb(var(--g) / .8); }
+.e .t { display: grid; gap: 6px; padding-top: 6px; }
+.e .yr { font: 300 14px/1 var(--f); letter-spacing: .08em; color: var(--hot); }
+
+/* F — just the years, thin and large; a hairline with three points under them */
+.f { display: grid; gap: 10px; }
+.f .yrs { display: flex; justify-content: space-between; align-items: baseline; }
+.f .it { display: grid; gap: 6px; }
+.f .it:nth-child(3) { justify-items: center; }
+.f .it:nth-child(5) { justify-items: end; }
+.f .big { font: 300 30px/1 var(--f); letter-spacing: .12em; color: var(--hot); text-shadow: 0 0 10px rgb(var(--g) / .35); }
+.f .sep { font: 300 18px/1 var(--f); color: var(--off); }
+.f .line { position: relative; height: 1px; background: rgb(var(--g) / .3); margin: 2px 6px 0; }
+.f .line b { position: absolute; top: -3px; width: 7px; height: 7px; border-radius: 50%; margin-left: -3.5px; background: var(--amber); box-shadow: 0 0 8px rgb(var(--g)); }
+.f .line b.off { background: #0b0907; box-shadow: inset 0 0 0 1px var(--off); }
+
+.phone .d .yr { font-size: 18px; }
+.phone .f .big { font-size: 22px; }
+.phone .pad .y { font-size: 13px; }
+.phone .a .st { width: 62px; }
+@media (max-width: 1100px) { .row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>SONGFLAKE</h1>
+  <p>Ячейка «Период» в шести вариантах: в ширину карточки (2/3) и на телефоне, для готового трека и для трека в работе. Шрифт — как в пробе E.</p>
+  <button type="button" id="tone">Тёплый свет</button>
+</header>
+<main id="main"></main>
+
+<script>
+const tracks = [
+  { idea: 2019, concept: 2021, ready: 2024 },
+  { idea: 2022, concept: 2023, ready: null },
+];
+const L = { idea: 'Idea', concept: 'Concept', ready: 'Ready' };
+const keys = ['idea', 'concept', 'ready'];
+const y = (t, k) => t[k] ?? null;
+const reached = (t) => keys.filter((k) => y(t, k) !== null).length;
+
+const variants = {
+  A: ['A · сейчас', 'Лампы — пустая, половина, полная — и пунктирные связи.', (t) => {
+    const fill = ['h', 'f2', 'f'];
+    const st = (k, i) => `<div class="st"><span class="lamp ${y(t, k) === null ? '' : fill[i]}"></span><span class="lbl">${L[k]}</span><span class="chip ${y(t, k) === null ? 'dim' : ''}">${y(t, k) ?? '—'}</span></div>`;
+    const ln = (a, b) => `<span class="ln ${y(t, b) === null ? 'none' : ''}"></span>`;
+    return `<div class="a">${st('idea', 0)}${ln('idea', 'concept')}${st('concept', 1)}${ln('concept', 'ready')}${st('ready', 2)}</div>`;
+  }],
+  B: ['B · плашки', 'Три плашки как у Стиля и Основного инструмента: лампа горит на пройденных этапах, год справа вверху.', (t) =>
+    `<div class="b">${keys.map((k) => `<span class="pad ${y(t, k) === null ? '' : 'lit'}"><span class="top"><i></i><span class="y">${y(t, k) ?? '—'}</span></span><span class="lbl">${L[k]}</span></span>`).join('')}</div>`],
+  C: ['C · шкала с сосульками', 'Линейка как у фейдеров, этапы — сосульки, как пины в плеере; расстояния по годам, подсвечен пройденный отрезок.', (t) => {
+    const first = t.idea, last = (t.ready ?? t.concept ?? t.idea) + (t.ready ? 0 : 1);
+    const pos = (v) => (last > first ? (v - first) / (last - first) : 0) * 100;
+    const ks = keys.map((k) => ({ k, v: y(t, k), at: y(t, k) === null ? 100 : pos(y(t, k)) }));
+    const litTo = pos(t.ready ?? t.concept ?? t.idea);
+    const ic = ks.map((s) => `<span class="ic ${s.v === null ? 'off' : ''}" style="left:${s.at}%"></span>`).join('');
+    const mk = ks.map((s, i) => `<span class="mk ${i === 0 ? 'l' : i === 2 ? 'r' : ''}" style="left:${s.at}%"><span class="lbl">${L[s.k]}</span><span class="yr ${s.v === null ? 'dim' : ''}">${s.v ?? '—'}</span></span>`).join('');
+    return `<div class="c"><div class="scale">${ic}<span class="lit" style="left:0;width:${litTo}%"></span></div><div class="marks">${mk}</div></div>`;
+  }],
+  D: ['D · табло', 'Маленький дисплей как у плеера: три колонки, годы светятся, этапы через «›».', (t) =>
+    `<div class="d">${keys.map((k) => `<div class="col"><span class="lbl">${L[k]}</span><span class="yr ${y(t, k) === null ? 'dim' : ''}">${y(t, k) ?? '— —'}</span></div>`).join('<span class="arr">›</span>')}</div>`],
+  E: ['E · лампы этапов', 'Одна полоса из трёх сегментов, как шкалы Сложности: горит столько, сколько этапов пройдено; под ней этап и год.', (t) => {
+    const n = reached(t);
+    return `<div class="e">${keys.map((_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}${keys.map((k) => `<span class="t"><span class="lbl">${L[k]}</span><span class="yr ${y(t, k) === null ? 'dim' : ''}">${y(t, k) ?? '—'}</span></span>`).join('')}</div>`;
+  }],
+  F: ['F · только годы', 'Самый тихий: три года крупно и тонко, под ними волосяная линия с тремя точками.', (t) =>
+    `<div class="f"><div class="yrs">${keys.map((k) => `<span class="it"><span class="lbl">${L[k]}</span><span class="big ${y(t, k) === null ? 'dim' : ''}">${y(t, k) ?? '—'}</span></span>`).join('<span class="sep">/</span>')}</div>
+     <div class="line">${keys.map((k, i) => `<b class="${y(t, k) === null ? 'off' : ''}" style="left:${i * 50}%"></b>`).join('')}</div></div>`],
+};
+
+const main = document.getElementById('main');
+for (const [, [title, note, html]] of Object.entries(variants)) {
+  const s = document.createElement('section');
+  const card = (cls) => `<div class="card ${cls}">${tracks.map((t) => `<div class="cell"><span class="ch">Years</span>${html(t)}</div>`).join('')}</div>`;
+  s.innerHTML = `<h2>${title}</h2><p>${note}</p><div class="row">${card('wide')}${card('phone')}</div>`;
+  main.append(s);
+}
+const btn = document.getElementById('tone');
+btn.addEventListener('click', () => {
+  const warm = document.documentElement.dataset.tone !== 'warm';
+  document.documentElement.dataset.tone = warm ? 'warm' : '';
+  btn.textContent = warm ? 'Холодный свет' : 'Тёплый свет';
+});
+</script>
+</body>
+</html>

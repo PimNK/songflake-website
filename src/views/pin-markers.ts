@@ -1,4 +1,4 @@
-// Pin markers above the oscilloscope line: a small diamond with a hairline, popover on hover/focus,
+// Pin markers over the level bars: icicles (a tip and a hairline, styles/player.css), popover on hover/focus,
 // click seeks and plays. On touch the first tap shows the popover, the second seeks.
 // Markers closer than ~12 px merge into one whose popover lists both (grouping: domain/pins.ts).
 import { formatTime, groupMarkers, type Pin } from '../domain/pins';

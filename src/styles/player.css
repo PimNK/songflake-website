@@ -1,6 +1,7 @@
 /* The card's player in the display (views/player.ts): the caption and time on top, the
-   oscilloscope line (render/scope.ts) with the pin markers — a lamp diamond with a hairline down
-   through the trace — and their popovers, then the note of the active pin under a dashed line.
+   level bars (render/levels.ts) in a narrow band at the bottom of the line, with the pin markers
+   hanging over them like icicles — a lamp tip pointing down and a hairline into the bars — and
+   their popovers, then the note of the active pin under a dashed line.
    Wide cards keep three lines for the note; narrow ones are as high as the song's longest note,
    show the time at the end of the line, and the markers only mark. */
 .wline {
@@ -16,15 +17,16 @@
 .wave {
   position: relative;
   height: 46px;
-  margin: 0 -2px;
   cursor: pointer;
   touch-action: none;
 }
 .wave canvas {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
-  height: 100%;
+  height: 22px;
 }
 .wave:focus-visible {
   outline-offset: 4px;
@@ -49,25 +51,27 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: -8px;
+  top: 0;
   height: 0;
 }
+/* An icicle: a lamp tip hanging from the top of the line, a hairline down into the bars. */
 .pin {
   position: absolute;
   top: 0;
   width: 18px;
-  height: 18px;
+  height: 20px;
   margin-left: -9px;
   display: grid;
-  place-items: center;
+  justify-items: center;
+  align-items: start;
 }
 .pin::before {
   content: '';
-  width: 7px;
-  height: 7px;
-  transform: rotate(45deg);
+  width: 9px;
+  height: 13px;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
   background: var(--hot);
-  box-shadow: 0 0 calc(8px * var(--lum)) rgb(var(--g) / 0.95);
+  filter: drop-shadow(0 0 calc(5px * var(--lum)) rgb(var(--g) / 0.95));
 }
 .pin::after {
   content: '';
@@ -75,14 +79,17 @@
   top: 13px;
   left: 8.5px;
   width: 1px;
-  height: 42px;
-  background: linear-gradient(rgb(var(--g) / 0.5), rgb(var(--g) / 0.06));
+  height: 33px;
+  background: linear-gradient(rgb(var(--g) / 0.6), rgb(var(--g) / 0.08));
   pointer-events: none;
 }
 .pin.past::before {
   background: #fff8ec;
 }
 .pin .pop {
+  font: 300 calc(15px * var(--ts))/1.45 var(--read);
+  letter-spacing: 0.02em;
+  text-transform: none;
   position: absolute;
   top: 22px;
   left: 50%;
@@ -97,9 +104,6 @@
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.12s;
-  font: 500 17px/1.12 var(--vfd);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   text-align: left;
   color: var(--amber);
   text-shadow: var(--glow);
@@ -110,10 +114,10 @@
     0 8px 20px #000;
 }
 .pin .pop b {
+  font: 300 calc(9px * var(--ts))/1.2 var(--sans);
+  letter-spacing: 0.2em;
   display: block;
   margin-bottom: 4px;
-  font: 500 8.5px/1.2 var(--mono);
-  letter-spacing: 0.14em;
   color: var(--label);
 }
 .pin.start .pop {
@@ -132,16 +136,16 @@
 }
 /* The note and the hidden copies of every pin note share one cell. */
 .pnote {
+  height: calc(3 * 1.45em + 8px);
+  font: 300 calc(15px * var(--ts))/1.45 var(--read);
+  letter-spacing: 0.02em;
+  text-transform: none;
   display: grid;
   align-content: start;
   margin-top: 6px;
   padding-top: 8px;
   border-top: 1px dashed rgb(var(--g) / 0.22);
-  height: calc(3 * 1.12em + 8px);
   overflow: hidden;
-  font: 500 16px/1.12 var(--vfd);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--amber);
   text-shadow: var(--glow);
 }
@@ -168,18 +172,16 @@
     margin-top: 12px;
   }
   .wtime {
+    font: 300 10px/1.4 var(--sans);
+    letter-spacing: 0.2em;
     display: block;
     flex: none;
-    font: 500 17px/1 var(--vfd);
-    letter-spacing: 0.06em;
     white-space: nowrap;
     opacity: 0.82;
   }
   .pnote {
     height: auto;
-    min-height: calc(3 * 1.12em + 8px);
-    font-size: 17px;
-    letter-spacing: 0.08em;
+    min-height: calc(3 * 1.45em + 8px);
   }
   .pnote.none {
     display: none;

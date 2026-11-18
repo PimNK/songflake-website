@@ -32,7 +32,7 @@
   border-radius: 6px;
   pointer-events: none;
   color: var(--amber);
-  font-family: var(--vfd);
+  font-family: var(--sans);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   text-shadow: var(--glow);
@@ -45,24 +45,27 @@
     0 8px 22px #000;
 }
 .tip b {
+  font: 300 calc(17px * var(--ts))/1.1 var(--sans);
+  letter-spacing: 0.12em;
   display: block;
-  font: 600 26px/1 var(--vfd);
   color: var(--hot);
 }
 .tip small {
+  font-size: calc(8.5px * var(--ts));
+  letter-spacing: 0.2em;
   display: block;
-  font-size: 15px;
   line-height: 1.1;
   margin: 2px 0 7px;
   opacity: 0.8;
 }
 /* The five axes as rows of three lamps. */
 .tax div {
+  font-size: calc(9.5px * var(--ts));
+  line-height: 1.9;
+  letter-spacing: 0.2em;
   display: flex;
   align-items: center;
   gap: 3px;
-  font-size: 16px;
-  line-height: 1.15;
 }
 .tax span {
   flex: 1;
@@ -78,13 +81,14 @@
 }
 /* The instruments, each with its light. */
 .tacc {
+  font-size: calc(8.5px * var(--ts));
+  letter-spacing: 0.2em;
   display: flex;
   flex-wrap: wrap;
   gap: 2px 10px;
   margin-top: 7px;
   padding-top: 6px;
   border-top: 1px solid rgb(var(--g) / 0.25);
-  font-size: 15px;
 }
 .tacc span {
   display: flex;

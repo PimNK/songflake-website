@@ -158,14 +158,20 @@ playback.subscribe(() => {
 });
 WIDE.addEventListener('change', () => random.refresh());
 // Space: the open card's track when it is not loaded yet, else the loaded one, else a random one.
-wireKeys(playback, () => {
-  const opened = bySlug(store.get().openSlug);
-  if (opened?.audioSrc && !playback.isCurrent(opened)) playback.playFromStart(opened, 'order');
-  else if (playback.song) playback.toggle(playback.song);
-  else {
-    const song = random.next();
-    if (song) playback.playFromStart(song, 'shuffle');
-  }
+// ← / →: an open card steps itself (views/track-card.ts); without one, as the player's ⏮ / ⏭.
+wireKeys(playback, {
+  playPause() {
+    const opened = bySlug(store.get().openSlug);
+    if (opened?.audioSrc && !playback.isCurrent(opened)) playback.playFromStart(opened, 'order');
+    else if (playback.song) playback.toggle(playback.song);
+    else {
+      const song = random.next();
+      if (song) playback.playFromStart(song, 'shuffle');
+    }
+  },
+  skip(direction) {
+    if (!store.get().openSlug) random.skip(direction);
+  },
 });
 const router = startRouter(store, space, (slug) => songs.some((x) => x.slug === slug), fitView);
 PHONE.addEventListener('change', () => router.refit());

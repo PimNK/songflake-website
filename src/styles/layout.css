@@ -47,9 +47,9 @@
 }
 /* The intro (views/html.ts introHtml): paragraphs and list lines with a lamp for a bullet. */
 .lead {
+  font: 300 calc(11px * var(--ts))/1.85 var(--sans);
+  letter-spacing: 0.1em;
   max-width: 62ch;
-  font: 300 10.5px/1.8 var(--mono);
-  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--cream);
 }
@@ -81,7 +81,7 @@
 /* A tablet has room: the intro reads bigger. */
 @media (min-width: 600px) {
   .intro-sec .lead {
-    font-size: 15px;
+    font-size: 13px;
     line-height: 1.75;
   }
 }
@@ -105,10 +105,10 @@
     0 1px 0 rgba(255, 220, 170, 0.1);
 }
 .slot button {
+  font: 300 calc(9px * var(--ts))/1.2 var(--sans);
+  letter-spacing: 0.2em;
   position: relative;
   z-index: 1;
-  font: 500 8.5px var(--mono);
-  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--off);
   transition: color 0.2s;
@@ -139,13 +139,13 @@
   min-width: 0;
 }
 .notice {
+  font: 300 calc(11px * var(--ts))/1.3 var(--sans);
+  letter-spacing: 0.2em;
   position: relative;
   z-index: 2;
   margin-bottom: 10px;
   padding: 8px 12px;
   border-radius: 6px;
-  font: 500 17px/1 var(--vfd);
-  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--amber);
   text-shadow: var(--glow);

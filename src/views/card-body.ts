@@ -1,12 +1,12 @@
-// The track card's sections (CLAUDE.md §4.3): five cells — idea → recording (three indicator
-// lamps), the main instrument (lit pads), the style (a lit pad), the story, total complexity (the
-// five axes as rows of lamps, and X/15) — and the turning snowflake, which sits in the player's
-// display. DOM only; rules come from domain/.
+// The track card's sections (CLAUDE.md §4.3): five cells, in this order (the phone's; wide cards
+// place them by grid areas) — the story, the years (a scale with icicles), the style (a lit pad),
+// the main instrument (lit pads), complexity (the five axes as rows of lamps, and X/15) — and the
+// turning snowflake, which sits in the player's display. DOM only; rules come from domain/.
 import { AXES, type Song } from '../content/parse';
 import type { Taxonomy } from '../content/taxonomy';
 import { FROST_LINE } from '../domain/ray-colours';
 import { flakeOf } from '../domain/snowflake';
-import { timeline, type Gap, type Station } from '../domain/timeline';
+import { timeline, type Station } from '../domain/timeline';
 import { paintSnowflake } from '../render/snowflake';
 import { strings } from '../strings';
 import { axisLamps, esc, info, turnStyle } from './html';
@@ -39,32 +39,36 @@ const totalInfo = (): string =>
     '',
   ) + `<small>${c.totalInfoNote}</small>`;
 
-/** Three lamps — hollow, half, full — with the years; the lines between them as long as the years. */
+/**
+ * A scale with the three stations hanging from it as icicles (idea, concept in the middle, ready),
+ * the part reached lit; under each its name and year.
+ */
 function stations(song: Song): string {
-  const { stations: st, gaps } = timeline(song.years);
+  const { stations: st, lit } = timeline(song.years);
   const label = { idea: c.idea, concept: c.concept, ready: c.ready };
-  const station = (s: Station): string => {
-    const missing = s.year === null;
-    const year = s.year ?? (s.key === 'ready' ? c.notYet : '—');
-    return `<div class="st${missing ? ' missing' : ''}"><i class="lamp ${missing ? 'off' : s.fill}"></i><span class="label">${label[s.key]}</span><span class="chip">${year}</span></div>`;
-  };
-  const link = (g: Gap): string => {
-    const kind = g.years === null ? ' none' : g.years === 0 ? ' zero' : '';
-    return `<div class="link${kind}" style="flex-grow:${g.grow}"><i></i></div>`;
-  };
-  return station(st[0]!) + link(gaps[0]!) + station(st[1]!) + link(gaps[1]!) + station(st[2]!);
+  const pos = (s: Station): string => `--at:${(s.at * 100).toFixed(2)}%`;
+  const icicles = st
+    .map((s) => `<i class="yic${s.year === null ? ' off' : ''}" style="${pos(s)}"></i>`)
+    .join('');
+  const marks = st
+    .map((s) => {
+      const year = s.year ?? (s.key === 'ready' ? c.notYet : '—');
+      return `<div class="ymk ${s.key}${s.year === null ? ' missing' : ''}" style="${pos(s)}"><span class="label">${label[s.key]}</span><span class="yr">${year}</span></div>`;
+    })
+    .join('');
+  return `<div class="ytrack" style="--lit:${(lit * 100).toFixed(2)}%">${icicles}</div><div class="ymarks">${marks}</div>`;
 }
 
 const heading = (text: string, note = ''): string =>
   `<div class="ch"><h3>${text}</h3>${note}</div>`;
 
-/** The five axes as rows of three lamps, as in the record's tooltip, with X/15 right above them. */
+/** The five axes as rows of three lamps, as in the record's tooltip, with X/15 under them. */
 function complexity(song: Song): string {
   const label = c.complexityLabel(
     song.complexityTotal,
     AXES.map((a) => [strings.axes[a], song.complexity[a]]),
   );
-  return `<div class="tax cplx" role="img" aria-label="${esc(label)}"><span class="chip ctotal">${c.totalOf(song.complexityTotal)}</span>${axisLamps(song.complexity)}</div>`;
+  return `<div class="tax cplx" role="img" aria-label="${esc(label)}">${axisLamps(song.complexity)}<span class="chip ctotal">${c.totalOf(song.complexityTotal)}</span></div>`;
 }
 
 /** Fills the card's cells and its snowflake slot for one song. */
@@ -78,13 +82,13 @@ export function renderCardBody(
   const story = song.story ? renderMarkdown(song.story) : `<p>${c.storyEmpty}</p>`;
   grid.style.setProperty('--lead', colour);
   grid.innerHTML = `
+    <section class="cell story-cell">${heading(c.story)}<div class="story">${story}</div></section>
     <section class="cell time-cell">${heading(c.timeline, info(timelineInfo()))}
-      <div class="stations">${stations(song)}</div></section>
-    <section class="cell listen-cell">${heading(c.listen, info(c.listenInfo, true))}
-      <div class="lpads">${listenPads(song, taxonomy)}</div></section>
+      <div class="years">${stations(song)}</div></section>
     <section class="cell style-cell">${heading(c.style)}
       <div class="lpads"><span class="pad lit"><i></i><span>${esc(song.style)}</span></span></div></section>
-    <section class="cell story-cell">${heading(c.story)}<div class="story">${story}</div></section>
+    <section class="cell listen-cell">${heading(c.listen, info(c.listenInfo, true))}
+      <div class="lpads">${listenPads(song, taxonomy)}</div></section>
     <section class="cell total-cell">${heading(c.total, info(totalInfo(), true))}
       ${complexity(song)}</section>`;
   flakeSlot.innerHTML = `<canvas class="turn" style="${turnStyle(song)}"></canvas>`;

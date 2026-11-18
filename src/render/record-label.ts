@@ -4,7 +4,7 @@
 import type { Light } from '../domain/backlight';
 import { labelLineSize, R_LABEL, type Transform, type YearRange } from '../domain/record-layout';
 import { strings } from '../strings';
-import { DISPLAY, letterSpacing, MONO } from './record';
+import { DISPLAY, letterSpacing } from './record';
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -39,7 +39,7 @@ function labelText(ctx: Ctx, LR: number, range: YearRange, trackCount: number, l
   ctx.fillStyle = hot;
   fittedLine(ctx, r.labelName, -LR * 0.2, fs * 1.4, LR, (px) => `500 ${px}px ${DISPLAY}`, 0.1);
   ctx.fillStyle = `rgba(${sheen.join(',')},.85)`;
-  const small = (px: number): string => `500 ${px}px ${MONO}`;
+  const small = (px: number): string => `500 ${px}px ${DISPLAY}`;
   const side = fittedLine(
     ctx,
     r.labelSide(range.first, range.last),

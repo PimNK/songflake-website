@@ -2,10 +2,10 @@
 // the caption (it plays a random track; then now playing / paused) and the time, the title of
 // what is playing (it opens its card; a caption or title too long for its line runs as a ticker),
 // the playing track's snowflake in the display's phosphor (it opens the card too), and the
-// progress line as an oscilloscope trace that seeks (click, drag, keys). Under the display:
+// progress line as level bars that seek (click, drag, keys). Under the display:
 // previous · play / pause · next and, on wide screens, the volume fader.
 // Below 1100 px it is the bottom player and the track card's transport: a thin progress line under
-// the title instead of the oscilloscope, the whole display opens the card, a key beside ⏭ opens the
+// the title instead of the level bars, the whole display opens the card, a key beside ⏭ opens the
 // playing track's card or, while a card is open, goes back to the tracks; with the card open ⏮ / ⏭
 // step the card (`step`) and play keeps the card's order.
 // Picks come from domain/shuffle.ts (a shuffle bag).
@@ -20,7 +20,7 @@ import { light, onLight } from './backlight';
 import { icon, turnStyle } from './html';
 import { WIDE } from './page';
 import type { Playback } from './playback';
-import { mountScope, type Scope } from './scope';
+import { mountLevels, type Levels } from './levels';
 import { wireSeek } from './seek';
 import { refitOnResize, setRun } from './ticker';
 import { volumeFader } from './volume';
@@ -41,6 +41,8 @@ export interface RandomPlayerHooks {
 export interface RandomPlayer {
   /** Moves on to the next random track (auto-advance of a random run); null when none. */
   next(): Song | null;
+  /** What ⏭ (1) or ⏮ (-1) do with no card open: the page's ← / → keys. */
+  skip(direction: -1 | 1): void;
   /** Shows whether a card is open (the card key, the skip keys' labels); call when that changes. */
   refresh(): void;
 }
@@ -199,13 +201,13 @@ function wireDisplay(el: HTMLElement, playback: Playback, h: RandomPlayerHooks):
   });
 }
 
-/** The progress line's oscilloscope trace. */
-const lineScope = (el: HTMLElement, playback: Playback): Scope =>
-  mountScope(el.querySelector<HTMLCanvasElement>('.rp-bar canvas')!, {
+/** The progress line's level bars. */
+const lineLevels = (el: HTMLElement, playback: Playback): Levels =>
+  mountLevels(el.querySelector<HTMLCanvasElement>('.rp-bar canvas')!, playback, {
     at: () => fraction(playback),
     playing: () => playback.isPlaying(),
+    song: () => playback.song,
     loaded: () => playback.song !== null,
-    volume: () => playback.volume,
   });
 
 export function mountRandomPlayer(
@@ -227,22 +229,18 @@ export function mountRandomPlayer(
     return slug ? (h.song(slug) ?? null) : null;
   };
 
-  wireKeys(
-    el,
-    playback,
-    h,
-    () => start(forward()),
-    () => {
-      const slug = history.back();
-      if (slug) start(h.song(slug));
-      else if (playback.song) playback.seek(playback.song, 0, playback.isPlaying());
-    },
-  );
+  const next = (): void => start(forward());
+  const back = (): void => {
+    const slug = history.back();
+    if (slug) start(h.song(slug));
+    else if (playback.song) playback.seek(playback.song, 0, playback.isPlaying());
+  };
+  wireKeys(el, playback, h, next, back);
   const flake = el.querySelector<HTMLElement>('.rp-flake')!;
   wireDisplay(el, playback, h);
   wireLine(el, playback);
   for (const line of el.querySelectorAll<HTMLElement>('.rp-cap, .rp-title')) refitOnResize(line);
-  const scope = lineScope(el, playback);
+  const line = lineLevels(el, playback);
   let painted: Song | null | undefined;
   onLight(() => paintFlake(flake, playback.song, taxonomy));
   const update = (): void => {
@@ -250,10 +248,10 @@ export function mountRandomPlayer(
     if (playback.song && playback.isPlaying()) history.push(playback.song.slug);
     if (playback.song !== painted) paintFlake(flake, (painted = playback.song), taxonomy);
     render(el, playback, h.pool().length > 0, h.cardOpen());
-    scope.wake();
+    line.wake();
   };
   playback.subscribe(update);
   update();
 
-  return { next: forward, refresh: update };
+  return { next: forward, skip: (d) => (d > 0 ? next() : back()), refresh: update };
 }

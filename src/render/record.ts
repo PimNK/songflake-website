@@ -8,7 +8,6 @@ import { rng } from '../domain/seed';
 
 type Ctx = CanvasRenderingContext2D;
 
-export const MONO = '"Martian Mono", ui-monospace, monospace';
 export const DISPLAY = 'Geologica, system-ui, sans-serif';
 
 /** The body fades out by this radius (world units). */
@@ -156,7 +155,7 @@ export function drawYearRings(
   const [lc, ls] = [Math.cos(angle), Math.sin(angle)];
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = `500 9px ${MONO}`;
+  ctx.font = `300 11px ${DISPLAY}`;
   for (const y of years) {
     const r = yearRadius(y, range) * t.scale;
     ctx.beginPath();
@@ -167,12 +166,8 @@ export function drawYearRings(
     const lx = t.cx + lc * r;
     const ly = t.cy + ls * r;
     if (lx < -20 || lx > width + 20 || ly < 14 || ly > height - 6) continue;
-    const label = String(y);
-    const tw = ctx.measureText(label).width + 10;
-    ctx.fillStyle = 'rgba(8,6,5,.9)';
-    ctx.fillRect(lx - tw / 2, ly - 8, tw, 16);
     ctx.fillStyle = rgba(light.colours.sheen, 0.72);
-    ctx.fillText(label, lx, ly + 0.5);
+    ctx.fillText(String(y), lx, ly + 0.5);
   }
   ctx.textBaseline = 'alphabetic';
 }

@@ -124,7 +124,6 @@
 }
 .franges .chip {
   flex: none;
-  font-size: 17px;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }

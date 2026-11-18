@@ -1,32 +1,26 @@
 import { describe, expect, it } from 'vitest';
-import { MIN_GAP, timeline } from '../src/domain/timeline';
+import { timeline } from '../src/domain/timeline';
 
 describe('timeline', () => {
-  it('stations with fills and proportional gaps', () => {
-    const t = timeline({ idea: 2014, concept: 2019, ready: 2021 });
-    expect(t.stations.map((s) => [s.year, s.fill])).toEqual([
-      [2014, 'hollow'],
-      [2019, 'half'],
-      [2021, 'full'],
+  it('idea at the start, concept in the middle, ready at the end, whatever the years', () => {
+    const t = timeline({ idea: 2014, concept: 2015, ready: 2021 });
+    expect(t.stations.map((s) => [s.key, s.year, s.at])).toEqual([
+      ['idea', 2014, 0],
+      ['concept', 2015, 0.5],
+      ['ready', 2021, 1],
     ]);
-    expect(t.gaps).toEqual([
-      { years: 5, grow: 5 },
-      { years: 2, grow: 2 },
-    ]);
+    expect(t.lit).toBe(1);
   });
 
-  it('zero gaps get a minimum length', () => {
-    const t = timeline({ idea: 2020, concept: 2020, ready: 2020 });
-    expect(t.gaps.map((g) => g.grow)).toEqual([MIN_GAP, MIN_GAP]);
-    expect(t.gaps[0]!.years).toBe(0);
+  it('lights the scale up to the last station reached', () => {
+    expect(timeline({ idea: 2022, concept: 2023 }).lit).toBe(0.5);
+    expect(timeline({ idea: 2024 }).lit).toBe(0);
+    expect(timeline({ idea: 2010, ready: 2012 }).lit).toBe(1);
   });
 
-  it('missing years: in progress, and no concept', () => {
+  it('missing years stay empty', () => {
     const wip = timeline({ idea: 2024 });
+    expect(wip.stations[1]!.year).toBeNull();
     expect(wip.stations[2]!.year).toBeNull();
-    expect(wip.gaps[1]!.years).toBeNull();
-    const noConcept = timeline({ idea: 2010, ready: 2012 });
-    expect(noConcept.gaps[0]!.years).toBeNull();
-    expect(noConcept.gaps[1]!.years).toBe(2);
   });
 });
