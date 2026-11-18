@@ -1,4 +1,5 @@
-// "From idea to recording": three stations and the gaps between them (CLAUDE.md §4.3). Pure.
+// The card's Years cell (idea → recording): three stations and the gaps between them
+// (CLAUDE.md §4.3). Pure.
 import type { Song } from '../content/parse';
 
 export type StationFill = 'hollow' | 'half' | 'full';

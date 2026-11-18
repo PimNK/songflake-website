@@ -117,16 +117,16 @@ body.locked {
 .mtransport .vol {
   margin-left: 22px;
 }
-/* Five cells: idea → recording, the style and the story on the left; the main instrument and the
-   complexity on the right. The upper rows as high as they need, the story gets the rest. */
+/* Five cells in thirds: years, style and main instrument in one row; the story under the first
+   two, the complexity under the main instrument. The upper row as high as it needs, the lower
+   row gets the rest. */
 .mgrid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto minmax(0, 1fr);
   grid-template-areas:
-    'time listen'
-    'style total'
-    'story total';
+    'time style listen'
+    'story story total';
   gap: 22px 34px;
   min-height: 0;
   overflow: hidden;

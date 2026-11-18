@@ -67,7 +67,7 @@ export const ru: Strings = {
     toggleLabel: (n: number, total: number) =>
       `Фильтры: показано ${n} из ${total} ${forms(total, 'трека', 'треков', 'треков')}`,
     style: 'Стиль',
-    complexity: 'Общая сложность',
+    complexity: 'Сложность',
     range: en.filters.range,
     min: 'мин.',
     max: 'макс.',
@@ -117,7 +117,7 @@ export const ru: Strings = {
     style: 'Стиль',
     story: 'История',
     storyEmpty: 'История этого трека ещё не написана.',
-    timeline: 'От идеи до записи',
+    timeline: 'Период',
     timelineInfo: {
       idea: 'появляется основная мелодия или идея песни.',
       concept: 'у песни есть структура для основных инструментов.',
@@ -127,7 +127,7 @@ export const ru: Strings = {
     concept: 'Концепция',
     ready: 'Готово',
     notYet: 'ещё нет',
-    total: 'Общая сложность',
+    total: 'Сложность',
     totalInfo: {
       rhythm: 'насколько сложен ритм: размер, синкопы, смены грува.',
       melody: 'как далеко уходят мелодии: диапазон, скачки, сколько линий звучит сразу.',
@@ -137,7 +137,7 @@ export const ru: Strings = {
     } satisfies Record<Axis, string>,
     totalInfoNote: 'Каждая ось — от 1 до 3; вместе они дают общую сложность, 5–15.',
     complexityLabel: (total: number, pairs: [string, number][]) =>
-      `Общая сложность ${total} из 15: ${pairs.map(([n, v]) => `${n} ${v} из 3`).join(', ')}`,
+      `Сложность ${total} из 15: ${pairs.map(([n, v]) => `${n} ${v} из 3`).join(', ')}`,
     totalOf: (total: number) => `${total}/15`,
     notFound: 'Трек не найден',
   },

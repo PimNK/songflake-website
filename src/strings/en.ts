@@ -62,7 +62,7 @@ export const en = {
   filters: {
     toggleLabel: (n: number, total: number) => `Filters: ${n} of ${total} tracks shown`,
     style: 'Style',
-    complexity: 'Total complexity',
+    complexity: 'Complexity',
     range: (min: number, max: number) => `${min} – ${max}`,
     min: 'min',
     max: 'max',
@@ -110,7 +110,7 @@ export const en = {
     style: 'Style',
     story: 'Story',
     storyEmpty: 'The story of this track is still to be written.',
-    timeline: 'From idea to recording',
+    timeline: 'Years',
     timelineInfo: {
       idea: 'the main melody or the idea of the song appears.',
       concept: 'the song has a structure for the main instruments.',
@@ -120,7 +120,7 @@ export const en = {
     concept: 'Concept',
     ready: 'Ready',
     notYet: 'not yet',
-    total: 'Total complexity',
+    total: 'Complexity',
     totalInfo: {
       rhythm: 'how intricate the beat is: meter, syncopation, changes of groove.',
       melody: 'how far the tunes travel: range, leaps, how many lines move at once.',
@@ -130,7 +130,7 @@ export const en = {
     } satisfies Record<Axis, string>,
     totalInfoNote: 'Each axis is 1–3; the five together give the total, 5–15.',
     complexityLabel: (total: number, pairs: [string, number][]) =>
-      `Total complexity ${total} of 15: ${pairs.map(([n, v]) => `${n} ${v} of 3`).join(', ')}`,
+      `Complexity ${total} of 15: ${pairs.map(([n, v]) => `${n} ${v} of 3`).join(', ')}`,
     totalOf: (total: number) => `${total}/15`,
     notFound: 'Track not found',
   },

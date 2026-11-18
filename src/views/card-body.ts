@@ -55,16 +55,16 @@ function stations(song: Song): string {
   return station(st[0]!) + link(gaps[0]!) + station(st[1]!) + link(gaps[1]!) + station(st[2]!);
 }
 
-const heading = (text: string, note = '', right = ''): string =>
-  `<div class="ch"><h3>${text}</h3>${note}${right}</div>`;
+const heading = (text: string, note = ''): string =>
+  `<div class="ch"><h3>${text}</h3>${note}</div>`;
 
-/** The five axes as rows of three lamps, as in the record's tooltip, with the total as X/15. */
+/** The five axes as rows of three lamps, as in the record's tooltip, with X/15 right above them. */
 function complexity(song: Song): string {
   const label = c.complexityLabel(
     song.complexityTotal,
     AXES.map((a) => [strings.axes[a], song.complexity[a]]),
   );
-  return `<div class="tax cplx" role="img" aria-label="${esc(label)}">${axisLamps(song.complexity)}</div>`;
+  return `<div class="tax cplx" role="img" aria-label="${esc(label)}"><span class="chip ctotal">${c.totalOf(song.complexityTotal)}</span>${axisLamps(song.complexity)}</div>`;
 }
 
 /** Fills the card's cells and its snowflake slot for one song. */
@@ -85,7 +85,7 @@ export function renderCardBody(
     <section class="cell style-cell">${heading(c.style)}
       <div class="lpads"><span class="pad lit"><i></i><span>${esc(song.style)}</span></span></div></section>
     <section class="cell story-cell">${heading(c.story)}<div class="story">${story}</div></section>
-    <section class="cell total-cell">${heading(c.total, info(totalInfo(), true), `<span class="chip ctotal" aria-hidden="true">${c.totalOf(song.complexityTotal)}</span>`)}
+    <section class="cell total-cell">${heading(c.total, info(totalInfo(), true))}
       ${complexity(song)}</section>`;
   flakeSlot.innerHTML = `<canvas class="turn" style="${turnStyle(song)}"></canvas>`;
   const flake = flakeOf(song, taxonomy);
