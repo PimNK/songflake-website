@@ -108,6 +108,8 @@ export const ru: Strings = {
     listen: 'Основной инструмент',
     listenInfo: 'Партии инструментов, составляющие основу. Они определяют цвета снежинки.',
     style: 'Стиль',
+    filterStyle: (style: string) => `Фильтр по стилю: ${style}`,
+    filterAccent: (name: string) => `Фильтр по основному инструменту: ${name}`,
     story: 'История',
     storyEmpty: 'История этого трека ещё не написана.',
     timeline: 'Период',

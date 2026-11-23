@@ -3,18 +3,23 @@
 // has an ⓘ note. Style and instrument are a choice of one: a «Select all» pad in the last column of
 // each (two rows high for instruments) and lights every pad of its group when on. From 1100 px the panel is
 // always open under the player; narrower, it is a sheet above the bottom player, opened by the
-// player's funnel toggle (closed by default).
+// player's funnel toggle (closed by default). Presses in the player's transport row keep it
+// open, and closing it with the funnel after filter changes calls the caller back: the card
+// waiting behind it goes to the filtered tracks. The backlight dials are no filter change.
 // No filtering logic: every change goes through domain/filters.ts and back to the store.
 import type { Content } from '../content/load';
+import type { Taxonomy } from '../content/taxonomy';
 import {
   COMPLEXITY_MAX,
   COMPLEXITY_MIN,
+  choiceOptions,
   countOptions,
   defaultFilters,
   isDefault,
-  choose,
+  pickOption,
   setRange,
   setYears,
+  type ChoiceKind,
   type FilterSpace,
   type FilterState,
 } from '../domain/filters';
@@ -114,12 +119,6 @@ function template(content: Content, space: FilterSpace): string {
       </div>`;
 }
 
-/** Every option of a choice-of-one group, in taxonomy order. */
-interface Choices {
-  style: readonly string[];
-  accent: readonly string[];
-}
-
 const chosen = (filters: FilterState, kind: string): ReadonlySet<string> =>
   kind === 'style' ? filters.styles : filters.accents;
 
@@ -131,14 +130,14 @@ function padState(
   filters: FilterState,
   kind: string,
   id: string,
-  all: Choices,
+  taxonomy: Taxonomy,
 ): [boolean, boolean] {
   if (kind === 'status') {
     const on = id === 'ready' ? filters.ready : filters.inProgress;
     return [on, on];
   }
   const set = chosen(filters, kind);
-  const every = set.size === all[kind as keyof Choices].length;
+  const every = set.size === choiceOptions(taxonomy, kind as ChoiceKind).length;
   return [every || set.has(id), every ? id === '' : set.has(id)];
 }
 
@@ -146,31 +145,57 @@ function withOption(
   filters: FilterState,
   kind: string,
   id: string,
-  all: Choices,
+  taxonomy: Taxonomy,
   on: boolean,
 ): FilterState {
-  if (kind === 'style') return { ...filters, styles: choose(all.style, id || null) };
-  if (kind === 'accent') return { ...filters, accents: choose(all.accent, id || null) };
-  return { ...filters, [id === 'ready' ? 'ready' : 'inProgress']: on };
+  if (kind === 'status') return { ...filters, [id === 'ready' ? 'ready' : 'inProgress']: on };
+  return pickOption(filters, taxonomy, kind as ChoiceKind, id);
 }
 
 /** From this width the panel is always open and the toggle is not shown (CSS). */
 const WIDE = window.matchMedia('(min-width: 1100px)');
 
+/** What the sheet needs around it: the row that must not close it, and the way back to the tracks. */
+export interface SheetDock {
+  /** The player's transport (previous · play / pause · next, and the volume): its keys play and
+   *  step, they do not close the sheet — the card docked to the player keeps waiting behind it. */
+  transport: HTMLElement;
+  /** The funnel closed the sheet after filter changes; an open card follows them to the tracks.
+   *  The backlight dials are no filter change: without one the funnel closes just the sheet. */
+  applied(): void;
+}
+
 /**
  * Narrow screens: the toggle (in the bottom player) is a funnel that opens the sheet; a dot on it
  * says the filters are set. Esc or a click outside closes it (Esc returns focus to the toggle
- * when it was inside).
+ * when it was inside) — a press in the transport row does not. Closing it with the funnel after
+ * filter changes also calls `applied`: like the player's card key, the funnel then leads back to
+ * the filtered tracks, not to the card waiting behind the sheet.
  */
-function wireToggle(toggle: HTMLButtonElement, el: HTMLElement): void {
+function wireToggle(
+  toggle: HTMLButtonElement,
+  el: HTMLElement,
+  dock: SheetDock,
+): { markChanged(): void } {
   const isOpen = (): boolean => toggle.getAttribute('aria-expanded') === 'true';
+  // A filter changed while the sheet has been open; forgotten the moment it closes.
+  let changed = false;
   const setOpen = (open: boolean): void => {
     el.hidden = !open;
     toggle.setAttribute('aria-expanded', String(open));
+    if (!open) changed = false;
   };
   setOpen(WIDE.matches);
   WIDE.addEventListener('change', () => setOpen(WIDE.matches));
-  toggle.addEventListener('click', () => setOpen(!isOpen()));
+  toggle.addEventListener('click', () => {
+    if (!isOpen()) {
+      setOpen(true);
+      return;
+    }
+    const withChange = changed;
+    setOpen(false);
+    if (withChange) dock.applied();
+  });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || WIDE.matches || !isOpen()) return;
     if (document.body.classList.contains('locked')) return;
@@ -180,8 +205,16 @@ function wireToggle(toggle: HTMLButtonElement, el: HTMLElement): void {
   });
   document.addEventListener('pointerdown', (e) => {
     const t = e.target as Node;
-    if (isOpen() && !WIDE.matches && !el.contains(t) && !toggle.contains(t)) setOpen(false);
+    if (
+      isOpen() &&
+      !WIDE.matches &&
+      !el.contains(t) &&
+      !toggle.contains(t) &&
+      !dock.transport.contains(t)
+    )
+      setOpen(false);
   });
+  return { markChanged: () => (changed = true) };
 }
 
 /** Sets a two-thumb line's values, the lit part between them, and which thumb is on top. */
@@ -206,33 +239,14 @@ export function mountFilterPanel(
   space: FilterSpace,
   current: () => FilterState,
   onChange: (filters: FilterState) => void,
+  dock: SheetDock,
 ): FilterPanel {
   el.innerHTML = template(content, space);
   toggle.innerHTML = `${FUNNEL}<span class="fdot" hidden></span>`;
-  wireToggle(toggle, el);
+  const { markChanged } = wireToggle(toggle, el, dock);
   const total = content.songs.length;
-  const all: Choices = {
-    style: content.taxonomy.styles,
-    accent: content.taxonomy.accents.map((a) => a.id),
-  };
-
-  el.addEventListener('change', (e) => {
-    const input = e.target as HTMLInputElement;
-    if (input.dataset.kind) {
-      onChange(withOption(current(), input.dataset.kind, input.dataset.id!, all, input.checked));
-    }
-  });
-  el.addEventListener('input', (e) => {
-    const input = e.target as HTMLInputElement;
-    const end = input.dataset.range as 'min' | 'max' | undefined;
-    const year = input.dataset.years as 'from' | 'to' | undefined;
-    if (end) onChange(setRange(current(), end, Number(input.value)));
-    if (year) onChange(setYears(current(), year, Number(input.value), space.years));
-  });
-  el.querySelectorAll<HTMLElement>('[data-dual]').forEach(wireFader);
-  el.querySelector('[data-reset]')!.addEventListener('click', () => {
-    onChange(defaultFilters(space));
-  });
+  const taxonomy = content.taxonomy;
+  wireOptions(el, space, taxonomy, current, onChange, markChanged);
 
   return {
     update(filters, matching) {
@@ -241,11 +255,53 @@ export function mountFilterPanel(
       el.querySelector('[data-range-label]')!.textContent = f.range(filters.min, filters.max);
       el.querySelector('[data-years-label]')!.textContent = f.range(filters.from, filters.to);
       el.querySelectorAll<HTMLInputElement>('input[data-kind]').forEach((input) => {
-        const [lit, checked] = padState(filters, input.dataset.kind!, input.dataset.id!, all);
+        const [lit, checked] = padState(filters, input.dataset.kind!, input.dataset.id!, taxonomy);
         input.checked = checked;
         input.parentElement!.classList.toggle('lit', lit);
       });
       el.querySelectorAll<HTMLElement>('[data-dual]').forEach((dual) => showDual(dual, filters));
     },
   };
+}
+
+/**
+ * Wires the panel's controls: every change goes through `onChange` and marks the sheet as
+ * changed, so the funnel closing it takes an open card back to the filtered tracks. Only the
+ * filters' own inputs mark a change — the backlight dials never reach these handlers.
+ */
+function wireOptions(
+  el: HTMLElement,
+  space: FilterSpace,
+  taxonomy: Taxonomy,
+  current: () => FilterState,
+  onChange: (filters: FilterState) => void,
+  markChanged: () => void,
+): void {
+  el.addEventListener('change', (e) => {
+    const input = e.target as HTMLInputElement;
+    if (input.dataset.kind) {
+      onChange(
+        withOption(current(), input.dataset.kind, input.dataset.id!, taxonomy, input.checked),
+      );
+      markChanged();
+    }
+  });
+  el.addEventListener('input', (e) => {
+    const input = e.target as HTMLInputElement;
+    const end = input.dataset.range as 'min' | 'max' | undefined;
+    const year = input.dataset.years as 'from' | 'to' | undefined;
+    if (end) {
+      onChange(setRange(current(), end, Number(input.value)));
+      markChanged();
+    }
+    if (year) {
+      onChange(setYears(current(), year, Number(input.value), space.years));
+      markChanged();
+    }
+  });
+  el.querySelectorAll<HTMLElement>('[data-dual]').forEach(wireFader);
+  el.querySelector('[data-reset]')!.addEventListener('click', () => {
+    onChange(defaultFilters(space));
+    markChanged();
+  });
 }

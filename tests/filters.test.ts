@@ -6,6 +6,8 @@ import {
   isDefault,
   matches,
   neighbour,
+  onlyOption,
+  pickOption,
   playableNeighbour,
   setRange,
   setYears,
@@ -38,6 +40,36 @@ describe('filters (§4.2)', () => {
     const wip = song({ status: 'in-progress', years: { idea: 2020 } });
     expect(matches(wip, { ...d, inProgress: false }, years)).toBe(false);
     expect(matches(wip, { ...d, ready: false }, years)).toBe(true);
+  });
+  it('picking one option keeps only it; the other filters stay', () => {
+    const f = { ...d, min: 8, accents: new Set(['Vox']) };
+    expect(pickOption(f, taxonomy, 'style', 'Ambient')).toMatchObject({
+      styles: new Set(['Ambient']),
+      min: 8,
+      accents: new Set(['Vox']),
+    });
+    expect(pickOption(f, taxonomy, 'accent', 'Guitar')).toMatchObject({
+      styles: d.styles,
+      accents: new Set(['Guitar']),
+      min: 8,
+    });
+  });
+  it('an empty id puts a choice-of-one group back to every option', () => {
+    const f = pickOption({ ...d, accents: new Set(['Vox']) }, taxonomy, 'accent', '');
+    expect(f.accents).toEqual(new Set(taxonomy.accents.map((a) => a.id)));
+  });
+  it('the card pads: the picked option is the whole filter, nothing sums up', () => {
+    expect(onlyOption(space, 'style', 'Ambient')).toEqual({ ...d, styles: new Set(['Ambient']) });
+    expect(onlyOption(space, 'accent', 'Guitar')).toEqual({
+      ...d,
+      accents: new Set(['Guitar']),
+    });
+    // the years of the space, not of whatever was set before, and no other filter survives:
+    const other = { taxonomy, years: { first: 2014, last: 2018 } };
+    expect(onlyOption(other, 'style', 'Ambient')).toEqual({
+      ...defaultFilters(other),
+      styles: new Set(['Ambient']),
+    });
   });
   it('min can never exceed max', () => {
     expect(setRange({ ...d, max: 8 }, 'min', 12)).toMatchObject({ min: 12, max: 12 });

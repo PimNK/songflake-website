@@ -1,12 +1,15 @@
 // The track card modal (CLAUDE.md §4.3), the console's player, wider: a display with the caption
 // and time, the title (one line; a ticker on narrow cards), the level bars with the pins,
 // the pin note and the turning snowflake at its right; under it previous · play / pause · next
-// and the volume fader; the five cells below. There is no ✕: a click outside the card closes it.
+// and the volume fader; the five cells below — the style and main-instrument pads of which are
+// buttons that make their one option the whole filter and leave for the list (`pick`). There is
+// no ✕: a click outside the card closes it.
 // Swiping left / right on touch steps tracks. Below 1100 px the card has no keys: it ends above the
 // bottom player, which is its transport (CSS), and focus goes round the card, the filter sheet and
 // that player (`dock`). Focus is trapped while open and returned to the opener; page scroll is
 // locked. Closing (Esc, backdrop) and prev/next go through the caller, which owns the state.
 import type { Content } from '../content/load';
+import type { ChoiceKind } from '../domain/filters';
 import type { Song } from '../content/parse';
 import { strings } from '../strings';
 import { renderCardBody } from './card-body';
@@ -22,6 +25,9 @@ import { volumeFader } from './volume';
 export interface CardHooks {
   close(): void;
   step(direction: -1 | 1): void;
+  /** A press on the card's style or main-instrument pad: that option becomes the whole filter
+   *  and the card leaves for the list at its beginning. */
+  pick(kind: ChoiceKind, id: string): void;
   /** Fills the play slot and the player body for a song with audio; returns a cleanup. */
   player(slots: PlayerSlots, song: Song, cue: number | null): () => void;
 }
@@ -140,7 +146,8 @@ function createModal(playback: Playback): HTMLElement {
 
 /**
  * Touch: a mostly horizontal swipe of at least SWIPE_PX steps tracks — left for the next one,
- * right for the previous, as in a music player. Swipes that start on the waveform seek instead.
+ * right for the previous, as in a music player. Swipes that start on the waveform (it seeks), a
+ * pin or a style / instrument pad (a tap picks) are not steps.
  */
 function wireSwipe(sheet: HTMLElement, hooks: CardHooks): void {
   let start: { x: number; y: number } | null = null;
@@ -148,8 +155,8 @@ function wireSwipe(sheet: HTMLElement, hooks: CardHooks): void {
     'touchstart',
     (e) => {
       const t = e.touches[0];
-      const onSeek = (e.target as HTMLElement).closest('.wave, .pin, input');
-      start = t && e.touches.length === 1 && !onSeek ? { x: t.clientX, y: t.clientY } : null;
+      const onControl = (e.target as HTMLElement).closest('.wave, .pin, input, [data-pick]');
+      start = t && e.touches.length === 1 && !onControl ? { x: t.clientX, y: t.clientY } : null;
     },
     { passive: true },
   );
@@ -175,8 +182,12 @@ function wireEvents(
     const t = e.target as HTMLElement;
     if (t === modal) hooks.close();
     else {
-      const step = t.closest<HTMLElement>('[data-step]');
-      if (step) hooks.step(Number(step.dataset.step) as -1 | 1);
+      const pick = t.closest<HTMLElement>('[data-pick]');
+      if (pick) hooks.pick(pick.dataset.pick as ChoiceKind, pick.dataset.id!);
+      else {
+        const step = t.closest<HTMLElement>('[data-step]');
+        if (step) hooks.step(Number(step.dataset.step) as -1 | 1);
+      }
     }
   });
   document.addEventListener('keydown', (e) => {

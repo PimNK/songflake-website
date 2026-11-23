@@ -80,17 +80,11 @@
     height: var(--pad-h);
   }
 }
-/* An option is a pad (styles/base.css); here only what makes it a control. */
+/* An option is a pad (styles/base.css); here only what makes it a control — the press look is
+   the shared `.pad:active` (base.css). */
 .fopt {
   cursor: pointer;
   user-select: none;
-}
-.fopt:active {
-  transform: translateY(2px);
-  box-shadow:
-    0 1px 0 #050403,
-    0 2px 3px #000,
-    inset 0 1px 0 rgba(255, 220, 170, 0.1);
 }
 .fopt.zero {
   opacity: 0.45;

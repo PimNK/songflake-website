@@ -85,6 +85,36 @@ export function choose(all: readonly string[], id: string | null): Set<string> {
   return new Set(id === null ? all : [id]);
 }
 
+/** The two choice-of-one groups: the styles and the main instruments. */
+export type ChoiceKind = 'style' | 'accent';
+
+/** A choice-of-one group's options in taxonomy order (styles, instrument ids). */
+export const choiceOptions = (taxonomy: Taxonomy, kind: ChoiceKind): readonly string[] =>
+  kind === 'style' ? taxonomy.styles : taxonomy.accents.map((a) => a.id);
+
+/**
+ * One option of a choice-of-one group picked: only it stays on (an empty id puts them all back,
+ * the «Select all» pad); every other filter stays as set. The panel's pads work this way;
+ * the card's pads use `onlyOption` on top of it.
+ */
+export function pickOption(
+  f: FilterState,
+  taxonomy: Taxonomy,
+  kind: ChoiceKind,
+  id: string,
+): FilterState {
+  const picked = choose(choiceOptions(taxonomy, kind), id || null);
+  return kind === 'style' ? { ...f, styles: picked } : { ...f, accents: picked };
+}
+
+/**
+ * The card's style / instrument pad: the picked option is the whole filter — everything else
+ * back to the default, nothing sums up with what was set before. The panel's pads compose
+ * (`pickOption`); this one resets.
+ */
+export const onlyOption = (space: FilterSpace, kind: ChoiceKind, id: string): FilterState =>
+  pickOption(defaultFilters(space), space.taxonomy, kind, id);
+
 export interface FilterCounts {
   styles: Record<string, number>;
   accents: Record<string, number>;

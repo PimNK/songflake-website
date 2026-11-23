@@ -13,7 +13,13 @@ import '../styles/hints.css';
 import '../styles/overlay.css';
 import { loadContent } from '../content/load';
 import type { Song } from '../content/parse';
-import { countMatching, defaultFilters, matches, playableNeighbour } from '../domain/filters';
+import {
+  countMatching,
+  defaultFilters,
+  matches,
+  onlyOption,
+  playableNeighbour,
+} from '../domain/filters';
 import { yearRange } from '../domain/record-layout';
 import { showContentOverlay } from '../views/content-overlay';
 import { mountFilterPanel } from '../views/filter-panel';
@@ -56,15 +62,7 @@ startBacklight();
 const slots = renderPage(document.querySelector<HTMLElement>('#app')!);
 const record = mountRecord(slots.stage, content, open);
 const list = mountList(slots.listView, content, open);
-const panel = mountFilterPanel(
-  slots.filters,
-  slots.filterToggle,
-  content,
-  space,
-  () => store.get().filters,
-  (filters) => store.set({ filters }),
-);
-placeDials(slots, mountDials());
+// The player mounts before the filter panel: the panel's dock needs its transport row.
 const playback = new Playback();
 restoreVolume(playback);
 const bySlug = (slug: string | null): Song | undefined => songs.find((x) => x.slug === slug);
@@ -83,6 +81,27 @@ const random = mountRandomPlayer(slots.player, playback, taxonomy, {
   close: () => store.set({ openSlug: null, cue: null }),
   step: (direction) => stepCard(direction),
 });
+// The player mounts before the filter panel: the panel's dock needs its transport row. If the
+// row is missing the sheet's pointer handler would crash on every press — fail loudly instead.
+const transport = slots.player.querySelector<HTMLElement>('.rp-keys');
+if (!transport) throw new Error('the player transport row (.rp-keys) is missing');
+const panel = mountFilterPanel(
+  slots.filters,
+  slots.filterToggle,
+  content,
+  space,
+  () => store.get().filters,
+  (filters) => store.set({ filters }),
+  {
+    // The transport plays and steps without closing the sheet; the funnel closing it after
+    // filter changes takes the card waiting behind it back to the filtered tracks.
+    transport,
+    applied: () => {
+      if (store.get().openSlug) store.set({ openSlug: null, cue: null });
+    },
+  },
+);
+placeDials(slots, mountDials());
 /** The previous / next track with a recording in the card's order (filtered, wrapping). */
 const playableStep = (slug: string, direction: -1 | 1): Song | null =>
   bySlug(
@@ -114,6 +133,16 @@ const card = mountTrackCard(
   {
     close: () => store.set({ openSlug: null, cue: null }),
     step: stepCard,
+    // A style or main-instrument pad: that option becomes the whole filter (domain/filters.ts
+    // `onlyOption` — every other filter switches off, nothing sums up), and the card leaves
+    // onto the filtered list at its beginning, focus on its first tile (from the record the
+    // view switches; on phones the list is the only view).
+    pick: (kind, id) => {
+      const filters = onlyOption(space, kind, id);
+      store.set({ filters, view: 'list', openSlug: null, cue: null, notice: null });
+      list.toTop();
+      list.focusFirst();
+    },
     player: (slot, song, cue) =>
       mountPlayer(slot, song, cue, playback, {
         warn: (message) => {

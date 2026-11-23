@@ -102,6 +102,8 @@ export const en = {
     listen: 'Main instrument',
     listenInfo: 'The instrument parts that form the core. They set the colours of the snowflake.',
     style: 'Style',
+    filterStyle: (style: string) => `Filter by style: ${style}`,
+    filterAccent: (name: string) => `Filter by main instrument: ${name}`,
     story: 'Story',
     storyEmpty: 'The story of this track is still to be written.',
     timeline: 'Years',

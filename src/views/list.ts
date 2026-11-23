@@ -11,6 +11,10 @@ import { esc, turnStyle } from './html';
 export interface ListView {
   update(match: (song: Song) => boolean): void;
   setPlaying(slug: string | null): void;
+  /** The list at its beginning — the card's pads land there after filtering (web scroll only). */
+  toTop(): void;
+  /** Focus to the first tile of the filtered list: where a pick lands the user. */
+  focusFirst(): void;
 }
 
 const TILE_RADIUS = 36;
@@ -76,6 +80,14 @@ export function mountList(
     },
     setPlaying(slug) {
       for (const t of tiles) t.classList.toggle('playing', t.dataset.slug === slug);
+    },
+    // Below 1100 px the page scroller owns the rolling; the view itself has no overflow then.
+    toTop() {
+      el.scrollTop = 0;
+    },
+    // No scroll along: the web list is already at its top; narrower the page stays as it was.
+    focusFirst() {
+      tiles.find((t) => !t.hidden)?.focus({ preventScroll: true });
     },
   };
 }

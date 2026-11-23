@@ -137,7 +137,8 @@
   color: var(--off);
   text-shadow: none;
 }
-/* The main instrument: lit pads, as on the console, but they do not toggle. */
+/* The main instrument: lit pads, as on the console — a press makes that instrument the whole
+   filter and leaves the card for the list (views/track-card.ts wires the buttons). */
 .lpads {
   display: flex;
   flex-wrap: wrap;
@@ -146,7 +147,11 @@
 .lpads .pad {
   flex: 0 0 96px;
   height: 46px;
-  cursor: default;
+  /* a button now: its label keeps to the left (buttons centre their text); it presses like a
+     filter pad (the shared `.pad:active` in styles/base.css) */
+  text-align: start;
+  cursor: pointer;
+  user-select: none;
 }
 /* The story: small capitals in the label colour; it scrolls inside its cell. */
 .story-cell {
@@ -189,7 +194,7 @@
     grid-area: total;
   }
 }
-/* The style: one lit pad, as wide as its name. */
+/* The style: one lit pad, as wide as its name; a press makes the style the whole filter. */
 .style-cell .pad {
   flex: 0 0 auto;
   min-width: 96px;

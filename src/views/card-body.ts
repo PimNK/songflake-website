@@ -1,7 +1,9 @@
 // The track card's sections (CLAUDE.md §4.3): five cells, in this order (the phone's; wide cards
 // place them by grid areas) — the story, the years (a scale with icicles), the style (a lit pad),
 // the main instrument (lit pads), complexity (the five axes as rows of lamps, and X/15) — and the
-// turning snowflake, which sits in the player's display. DOM only; rules come from domain/.
+// turning snowflake, which sits in the player's display. The style and instrument pads are
+// buttons: a press makes that option the whole filter and leaves the card for the list
+// (views/track-card.ts wires them). DOM only; rules come from domain/.
 import { AXES, type Song } from '../content/parse';
 import type { Taxonomy } from '../content/taxonomy';
 import { FROST_LINE } from '../domain/ray-colours';
@@ -18,13 +20,14 @@ const CARD_FLAKE_RADIUS = 80;
 export const leadColour = (song: Song, taxonomy: Taxonomy): string =>
   taxonomy.accents.find((a) => a.id === song.accents[0])?.colour ?? FROST_LINE;
 
-/** One lit pad per instrument, as in the filter panel, its light in the instrument's colour. */
+/** One lit pad per instrument, as in the filter panel, its light in the instrument's colour; a
+ *  press makes that instrument the whole filter and leaves the card for the list. */
 function listenPads(song: Song, taxonomy: Taxonomy): string {
   return song.accents
     .map((id) => {
       const a = taxonomy.accents.find((x) => x.id === id);
       if (!a) return '';
-      return `<span class="pad lit" style="--led:${esc(a.colour)}"><i></i><span>${esc(a.name)}</span></span>`;
+      return `<button type="button" class="pad lit" data-pick="accent" data-id="${esc(id)}" aria-label="${esc(c.filterAccent(a.name))}" style="--led:${esc(a.colour)}"><i></i><span>${esc(a.name)}</span></button>`;
     })
     .join('');
 }
@@ -87,7 +90,7 @@ export function renderCardBody(
     <section class="cell time-cell">${heading(c.timeline, info(timelineInfo()))}
       <div class="years">${stations(song)}</div></section>
     <section class="cell style-cell">${heading(c.style)}
-      <div class="lpads"><span class="pad lit"><i></i><span>${esc(song.style)}</span></span></div></section>
+      <div class="lpads"><button type="button" class="pad lit" data-pick="style" data-id="${esc(song.style)}" aria-label="${esc(c.filterStyle(song.style))}"><i></i><span>${esc(song.style)}</span></button></div></section>
     <section class="cell listen-cell">${heading(c.listen, info(c.listenInfo, true))}
       <div class="lpads">${listenPads(song, taxonomy)}</div></section>
     <section class="cell total-cell">${heading(c.total, info(totalInfo(), true))}

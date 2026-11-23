@@ -397,6 +397,15 @@ button {
     0 0 10px var(--led),
     0 0 3px var(--led);
 }
+/* Pressed, a pad sinks 2 px — the one press look for every pad (the filter options and the
+   card's style / instrument pads). After the .lit rules, so it replaces the glow while held. */
+.pad:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 1px 0 #050403,
+    0 2px 3px #000,
+    inset 0 1px 0 rgba(255, 220, 170, 0.1);
+}
 
 /* A snowflake's own slow turn outside the record (list tiles, the card, the player). Timing is
    inline. */
