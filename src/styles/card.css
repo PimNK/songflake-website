@@ -1,4 +1,4 @@
-/* Track card: the console's player, wider — a display with the caption · time, the title, the
+/* Track card: the console's player, wider — a display with the time's readout, the title, the
    level bars with pins, the pin note and the turning snowflake at its right; under it the
    keys and the volume. No ✕: a click outside closes it. Then five cells. From 900 px the card fits the window
    at one fixed size whatever the song, so stepping tracks moves nothing; only a long story
@@ -42,7 +42,7 @@ body.locked {
   gap: 14px;
   min-width: 0;
 }
-/* The display: the caption · time, the title and the line in one column, the snowflake at their
+/* The display: the readout, the title and the line in one column, the snowflake at their
    right; the note under them all. */
 .mscreen {
   overflow: visible;
@@ -81,7 +81,7 @@ body.locked {
   grid-row: 4;
   grid-column: 1 / -1;
 }
-/* The snowflake beside the caption, title and line; it reaches a little into the display's
+/* The snowflake beside the readout, title and line; it reaches a little into the display's
    padding above and the note's gap below, so it does not make those rows taller. */
 .mflake {
   grid-column: 2;
@@ -193,7 +193,7 @@ body.locked {
     padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px
       calc(env(safe-area-inset-bottom, 0px) + 28px);
   }
-  /* the caption over the title, the snowflake at their right; then the line across the
+  /* the readout over the title, the snowflake at their right; then the line across the
      display, and the note */
   .mscreen {
     grid-template-columns: minmax(0, 1fr) 96px;

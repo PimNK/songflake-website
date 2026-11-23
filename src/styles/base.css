@@ -208,7 +208,7 @@ button {
 .btn.play:active:not(:disabled) {
   transform: translateY(3px);
 }
-/* A text key, like Reset: the hints' Skip / Next, the dev overlay's Close. */
+/* A text key, like the panel's reset key: the hints' Skip / Next, the dev overlay's Close. */
 .tbtn,
 .freset {
   font: 300 calc(9px * var(--ts))/1.2 var(--sans);
@@ -294,16 +294,16 @@ button {
   border-radius: inherit;
   background: linear-gradient(155deg, rgba(255, 255, 255, 0.07), transparent 32%);
 }
-/* The display's top line: a caption at the left, the time at the right. The font shorthand
-   resets font-variant-numeric, so the body's tabular digits are set again here: the time's
-   digits all take the same width and the ticking readout never changes width. */
+/* The display's top line: its one readout at the left — the time mm:ss / mm:ss, or a call to
+   play while nothing is loaded (the state captions it once showed are gone: the keys' faces
+   say the state). The font shorthand resets font-variant-numeric, so the body's tabular digits
+   are set again here: the time's digits all take the same width and the ticking readout never
+   changes width. */
 .vfd-top {
   font: 300 calc(10px * var(--ts))/1.4 var(--sans);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.2em;
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
   text-transform: uppercase;
   opacity: 0.82;
 }
@@ -312,10 +312,6 @@ button {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-.vfd-top > :last-child:not(:first-child) {
-  flex: none;
-  white-space: nowrap;
 }
 /* A value window, like the range readings. */
 .chip {

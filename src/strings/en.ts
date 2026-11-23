@@ -71,7 +71,7 @@ export const en = {
     status: 'Status',
     ready: 'Ready',
     inProgress: 'In progress',
-    reset: 'Reset filters',
+    reset: 'Show all tracks',
     info: {
       style: 'The genre a track leans to.',
       listen: 'The instruments that carry the main parts of a track.',
@@ -93,7 +93,7 @@ export const en = {
   list: {
     year: (style: string, year: string) => `${style} · ${year}`,
     inProgress: 'in progress',
-    empty: 'No tracks match these filters. Use “Reset filters” on the panel.',
+    empty: 'No tracks match these filters. Use “Show all tracks” on the panel.',
   },
 
   card: {
@@ -136,7 +136,6 @@ export const en = {
     play: 'Play',
     pause: 'Pause',
     noAudio: 'Recording coming soon',
-    ready: 'Press play to listen',
     pinAt: (time: string, text: string) => `Pin at ${time}: ${text}`,
     seek: 'Seek',
     volume: 'Volume',
@@ -147,8 +146,6 @@ export const en = {
   random: {
     label: 'Random track player',
     idle: '⤮ Plays a random track',
-    nowPlaying: 'Now playing',
-    paused: 'Paused',
     play: 'Play a random track',
     prev: 'Previous track',
     next: 'Next random track',

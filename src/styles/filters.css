@@ -1,8 +1,8 @@
 /* Filter panel. Options are drum-machine pads (the look is .pad in base.css): one size, one grid,
    a lamp that glows in the instrument's colour (the backlight for the rest) when the pad is on.
    Ranges are faders with two caps. Wide screens: sections on the faceplate under the player,
-   always open. Narrower: a sheet above the bottom player, its foot holding Reset and the
-   backlight knobs. Instrument colours are set inline from the taxonomy. */
+   always open, the reset key last. Narrower: a sheet above the bottom player, its first row
+   holding the reset key and the backlight knobs. Instrument colours are set inline from the taxonomy. */
 :root {
   --pad-cols: 3;
   --pad-h: clamp(44px, 7svh, 50px);
@@ -144,7 +144,8 @@
     min-height: 22px;
   }
 }
-/* Reset: a key with a red lamp; on narrow screens the backlight knobs share its row. */
+/* «Show all tracks»: a key with a red lamp; on narrow screens it heads the sheet with the
+   backlight knobs beside it, on wide screens it closes the panel. */
 .foot {
   display: flex;
   align-items: center;
@@ -202,7 +203,9 @@
     visibility: hidden;
     pointer-events: none;
   }
-  .fbody > .fgroup:first-child {
+  /* the sheet's first row — the foot, the reset key and the dials — carries no groove: the
+     sheet's top edge serves as it */
+  .fbody > :first-child {
     border-top: 0;
     box-shadow: none;
     padding-top: 0;

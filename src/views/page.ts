@@ -144,8 +144,8 @@ function wireScrollCue(root: HTMLElement): void {
 export const WIDE = window.matchMedia('(min-width: 1100px)');
 
 /**
- * The backlight knobs sit beside the Record / List switch on wide screens and at the foot of the
- * filter sheet, beside Reset, narrower. Call once the filter panel is mounted.
+ * The backlight knobs sit beside the Record / List switch on wide screens and at the top of
+ * the filter sheet, beside the reset key, narrower. Call once the filter panel is mounted.
  */
 export function placeDials(slots: PageSlots, dials: HTMLElement): void {
   const put = (): void => {

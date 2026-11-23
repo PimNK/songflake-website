@@ -2,7 +2,7 @@
 // place them by grid areas) — the story, the years (a scale with icicles), the style (a lit pad),
 // the main instrument (lit pads), complexity (the five axes as rows of lamps, and X/15) — and the
 // turning snowflake, which sits in the player's display. The style and instrument pads are
-// buttons: a press makes that option the whole filter and leaves the card for the list
+// buttons: a press makes that option the whole filter and closes the card onto the view
 // (views/track-card.ts wires them). DOM only; rules come from domain/.
 import { AXES, type Song } from '../content/parse';
 import type { Taxonomy } from '../content/taxonomy';
@@ -21,7 +21,7 @@ export const leadColour = (song: Song, taxonomy: Taxonomy): string =>
   taxonomy.accents.find((a) => a.id === song.accents[0])?.colour ?? FROST_LINE;
 
 /** One lit pad per instrument, as in the filter panel, its light in the instrument's colour; a
- *  press makes that instrument the whole filter and leaves the card for the list. */
+ *  press makes that instrument the whole filter and closes the card onto the view behind it. */
 function listenPads(song: Song, taxonomy: Taxonomy): string {
   return song.accents
     .map((id) => {

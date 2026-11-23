@@ -1,9 +1,9 @@
-/* The card's player in the display (views/player.ts): the caption and time on top, the
-   level bars (render/levels.ts) in a narrow band at the bottom of the line, with the pin markers
-   hanging over them like icicles — a lamp tip pointing down and a hairline into the bars — and
-   their popovers, then the note of the active pin under a dashed line.
-   Wide cards keep three lines for the note; narrow ones are as high as the song's longest note;
-   the time sits opposite the caption at every width, so below 900 px the line runs the
+/* The card's player in the display (views/player.ts): the time's readout on top (it took the
+   caption's place), the level bars (render/levels.ts) in a narrow band at the bottom of the
+   line, with the pin markers hanging over them like icicles — a lamp tip pointing down and a
+   hairline into the bars — and their popovers, then the note of the active pin under a dashed
+   line. Wide cards keep three lines for the note; narrow ones are as high as the song's
+   longest note; the readout is at the top at every width, so below 900 px the line runs the
    display's full width (from 900 px it stops at the snowflake). */
 /* The line's one wrapper: it fills the row (the time lives on the caption row, never after
    the line), and is the containing block for the absolutely placed canvas and pin markers. */
@@ -153,8 +153,8 @@
   content: '· · ·';
   opacity: 0.35;
 }
-/* Narrow cards: the counter stays opposite the caption on the display (the line keeps the
-   display's full width), the note is as high as the longest, and the pin markers only
+/* Narrow cards: the readout keeps its place on the display (the line keeps the display's full
+   width), the note is as high as the longest, and the pin markers only
    mark — no popovers; a tap on them seeks like the rest of the line. */
 @media (max-width: 899.98px) {
   .no-audio {

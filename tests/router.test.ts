@@ -62,11 +62,4 @@ describe('router robustness and history', () => {
     expect(historyAction(rec, { view: 'list', openSlug: null }, false)).toBe('push');
     expect(historyAction(rec, rec, false)).toBe('replace'); // filters
   });
-
-  it('a card closing onto another view (the card pads) is a navigation, not a back', () => {
-    const card = { view: 'record' as const, openSlug: 'dd' };
-    const list = { view: 'list' as const, openSlug: null };
-    expect(historyAction(card, list, true)).toBe('push'); // Back returns to the card
-    expect(historyAction(card, list, false)).toBe('push'); // a view change pushes as ever
-  });
 });

@@ -1,9 +1,9 @@
 // The random-track player in the page's controls (CLAUDE.md §4.6), a console with a display:
-// the caption (it plays a random track; then now playing / paused) and the time, the title of
-// what is playing (it opens its card; a caption or title too long for its line runs as a ticker),
-// the playing track's snowflake in the display's phosphor (it opens the card too), and the
-// progress line as level bars that seek (click, drag, keys). Under the display:
-// previous · play / pause · next and, on wide screens, the volume fader.
+// the readout (a call to play while nothing is loaded; the time mm:ss / mm:ss once something
+// is), the title of what is playing (it opens its card; the idle call or the title runs as a
+// ticker when too long), the playing track's snowflake in the display's phosphor (it opens
+// the card too), and the progress line as level bars that seek (click, drag, keys). Under the
+// display: previous · play / pause · next and, on wide screens, the volume fader.
 // Below 1100 px it is the bottom player and the track card's transport: a thin progress line under
 // the title instead of the level bars, the whole display opens the card, a key beside ⏭ opens the
 // playing track's card or, while a card is open, goes back to the tracks; with the card open ⏮ / ⏭
@@ -53,7 +53,7 @@ const r = strings.random;
 const TEMPLATE = `
   <div class="rp-vfd">
     <div class="vfd rp-scr">
-      <div class="vfd-top"><small class="rp-cap"></small><small class="rp-time"></small></div>
+      <div class="vfd-top"><small class="rp-cap"></small></div>
       <button type="button" class="rp-title" disabled></button>
       <button type="button" class="rp-flake" tabindex="-1" aria-hidden="true"><canvas class="turn"></canvas></button>
       <span class="rp-hair" aria-hidden="true"><i></i></span>
@@ -77,7 +77,7 @@ const fraction = (playback: Playback): number => {
   return playback.song && d ? playback.audio.currentTime / d : 0;
 };
 
-/** Shows what the player is doing: the key, the caption, the title, the time and the slider. */
+/** Shows what the player is doing: the key, the readout, the title and the slider. */
 function render(el: HTMLElement, playback: Playback, canStart: boolean, card: boolean): void {
   const q = <T extends HTMLElement>(s: string): T => el.querySelector<T>(s)!;
   const song = playback.song;
@@ -86,7 +86,6 @@ function render(el: HTMLElement, playback: Playback, canStart: boolean, card: bo
   play.toggleAttribute('data-on', playing);
   play.setAttribute('aria-label', playing ? p.pause : song ? p.play : r.play);
   play.disabled = !song && !canStart;
-  setRun(q('.rp-cap'), song ? (playing ? r.nowPlaying : r.paused) : r.idle);
   const title = q<HTMLButtonElement>('.rp-title');
   title.disabled = !song;
   // Nothing loaded: an empty display line, and the next title is fitted afresh.
@@ -102,6 +101,16 @@ function render(el: HTMLElement, playback: Playback, canStart: boolean, card: bo
   const d = playback.audio.duration || 0;
   const t = song ? playback.audio.currentTime : 0;
   const time = song ? formatSpan(t, d) : '';
+  // The display's readout: a call to play while nothing is loaded, the time once something
+  // is. The time is plain text, never the ticker — a constant-length readout.
+  const cap = q<HTMLElement>('.rp-cap');
+  if (song) {
+    if (cap.dataset.text !== undefined) {
+      delete cap.dataset.text;
+      cap.classList.remove('run');
+    }
+    if (cap.textContent !== time) cap.textContent = time;
+  } else setRun(cap, r.idle);
   const bar = q('.rp-bar');
   // Nothing loaded: the line is not a control yet.
   bar.tabIndex = song ? 0 : -1;
@@ -109,7 +118,6 @@ function render(el: HTMLElement, playback: Playback, canStart: boolean, card: bo
   bar.setAttribute('aria-valuemax', String(Math.round(d)));
   bar.setAttribute('aria-valuenow', String(Math.round(t)));
   bar.setAttribute('aria-valuetext', time);
-  q('.rp-time').textContent = time;
   q('.rp-hair').style.setProperty('--at', String(fraction(playback)));
   renderCardKeys(q, !!song, card);
 }

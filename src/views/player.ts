@@ -1,7 +1,7 @@
-// The card's player (CLAUDE.md §4.6), the console's display: the caption (playing / paused /
-// press play; on narrow cards playing / paused) and the counter mm:ss / mm:ss opposite it at
-// the top, at every width (one constant length, domain/pins.ts `formatSpan` — the time never
-// changes width as it ticks), then the level bars with pin markers that seek — the line
+// The card's player (CLAUDE.md §4.6), the console's display: the counter mm:ss / mm:ss at
+// the top, at every width, in the caption's old place (one constant length, domain/pins.ts
+// `formatSpan` — the time never changes width as it ticks; the play key's face says the
+// state), then the level bars with pin markers that seek — the line
 // spans the display's full width below 900 px, nothing after it, and stops at the snowflake
 // from 900 px — and the note of the active pin under it
 // (pins have no list of their own: a marker shows its text on hover and once reached). The
@@ -14,7 +14,7 @@ import { activePin, formatSpan, formatTime, type Pin } from '../domain/pins';
 import { strings } from '../strings';
 import { esc, icon } from './html';
 import type { Playback } from './playback';
-import { NARROW, renderMarkers } from './pin-markers';
+import { renderMarkers } from './pin-markers';
 import { mountLevels, type Levels } from './levels';
 import { wireSeek } from './seek';
 import type { PlayerSlots } from './track-card';
@@ -25,13 +25,12 @@ export interface PlayerHooks {
 }
 
 const p = strings.player;
-const r = strings.random;
 
 /** The note under the line says what to listen for; the marker's popover has the time. */
 const noteHtml = (pin: Pin): string => esc(pin.text);
 
 const template = (song: Song): string => `
-  <div class="vfd-top"><span class="pstate"></span><span class="ptime"></span></div>
+  <div class="vfd-top"><span class="ptime"></span></div>
   <div class="wline">
     <div class="wave-wrap">
       <div class="wave" role="slider" tabindex="0" aria-label="${p.seek}" aria-valuemin="0"><canvas></canvas></div>
@@ -45,7 +44,7 @@ const template = (song: Song): string => `
 
 /** A card with no recording: the same rows as the player's, so the card keeps its shape. */
 export const emptyPlayer = (): string => `
-  <div class="vfd-top"><span class="pstate no-audio">${p.noAudio}</span></div>
+  <div class="vfd-top"><span class="no-audio">${p.noAudio}</span></div>
   <div class="wline"><div class="wave-wrap"><div class="wave off"></div></div></div>
   <div class="pnote none"></div>`;
 
@@ -143,9 +142,6 @@ class CardPlayer {
     const playing = this.playback.isPlaying(this.song);
     const pin = activePin(this.song.pins, t);
     const current = this.playback.isCurrent(this.song);
-    // Narrow cards have no «press play»: the key says it.
-    const caption = playing ? r.nowPlaying : current || NARROW.matches ? r.paused : p.ready;
-    this.write('.pstate', 'text', caption);
     const time = formatSpan(t, d);
     this.write('.ptime', 'text', time);
     if (this.play.dataset.playing !== String(playing)) {

@@ -1,8 +1,8 @@
-// The track card modal (CLAUDE.md §4.3), the console's player, wider: a display with the caption
-// and time, the title (one line; a ticker on narrow cards), the level bars with the pins,
+// The track card modal (CLAUDE.md §4.3), the console's player, wider: a display with the time's
+// readout, the title (one line; a ticker on narrow cards), the level bars with the pins,
 // the pin note and the turning snowflake at its right; under it previous · play / pause · next
 // and the volume fader; the five cells below — the style and main-instrument pads of which are
-// buttons that make their one option the whole filter and leave for the list (`pick`). There is
+// buttons that make their one option the whole filter and close the card (`pick`). There is
 // no ✕: a click outside the card closes it.
 // Swiping left / right on touch steps tracks. Below 1100 px the card has no keys: it ends above the
 // bottom player, which is its transport (CSS), and focus goes round the card, the filter sheet and
@@ -26,7 +26,7 @@ export interface CardHooks {
   close(): void;
   step(direction: -1 | 1): void;
   /** A press on the card's style or main-instrument pad: that option becomes the whole filter
-   *  and the card leaves for the list at its beginning. */
+   *  and the card closes onto the view behind it, which keeps its place. */
   pick(kind: ChoiceKind, id: string): void;
   /** Fills the play slot and the player body for a song with audio; returns a cleanup. */
   player(slots: PlayerSlots, song: Song, cue: number | null): () => void;
@@ -35,7 +35,7 @@ export interface CardHooks {
 export interface PlayerSlots {
   /** Between the previous and next buttons: the round play / pause button goes here. */
   play: HTMLElement;
-  /** In the display: the caption and time, the level bars with pins, the pin note. */
+  /** In the display: the time's readout, the level bars with pins, the pin note. */
   body: HTMLElement;
 }
 

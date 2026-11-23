@@ -3,7 +3,8 @@
 // has an ⓘ note. Style and instrument are a choice of one: a «Select all» pad in the last column of
 // each (two rows high for instruments) and lights every pad of its group when on. From 1100 px the panel is
 // always open under the player; narrower, it is a sheet above the bottom player, opened by the
-// player's funnel toggle (closed by default). Presses in the player's transport row keep it
+// player's funnel toggle (closed by default), its foot — the reset key and the backlight
+// dials — the sheet's first row (`placeFoot`). Presses in the player's transport row keep it
 // open, and closing it with the funnel after filter changes calls the caller back: the card
 // waiting behind it goes to the filtered tracks. The backlight dials are no filter change.
 // No filtering logic: every change goes through domain/filters.ts and back to the store.
@@ -26,6 +27,7 @@ import {
 import { strings } from '../strings';
 import { wireFader } from './fader';
 import { esc, info } from './html';
+import { WIDE } from './page';
 
 export interface FilterPanel {
   update(filters: FilterState, matching: number): void;
@@ -152,8 +154,22 @@ function withOption(
   return pickOption(filters, taxonomy, kind as ChoiceKind, id);
 }
 
-/** From this width the panel is always open and the toggle is not shown (CSS). */
-const WIDE = window.matchMedia('(min-width: 1100px)');
+/**
+ * The foot — the reset key with the backlight dials beside it — is the sheet's first row on
+ * narrow screens and the panel's last row from 1100 px. The DOM follows the look, so focus
+ * and reading order match the visuals at every width (the `placeDials` idiom, views/page.ts;
+ * both listen on the one `WIDE` from views/page.ts).
+ */
+function placeFoot(el: HTMLElement): void {
+  const foot = el.querySelector<HTMLElement>('.foot')!;
+  const body = el.querySelector<HTMLElement>('.fbody')!;
+  const put = (): void => {
+    if (WIDE.matches) body.append(foot);
+    else body.prepend(foot);
+  };
+  put();
+  WIDE.addEventListener('change', put);
+}
 
 /** What the sheet needs around it: the row that must not close it, and the way back to the tracks. */
 export interface SheetDock {
@@ -242,6 +258,7 @@ export function mountFilterPanel(
   dock: SheetDock,
 ): FilterPanel {
   el.innerHTML = template(content, space);
+  placeFoot(el);
   toggle.innerHTML = `${FUNNEL}<span class="fdot" hidden></span>`;
   const { markChanged } = wireToggle(toggle, el, dock);
   const total = content.songs.length;

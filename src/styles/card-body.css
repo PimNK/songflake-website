@@ -138,7 +138,7 @@
   text-shadow: none;
 }
 /* The main instrument: lit pads, as on the console — a press makes that instrument the whole
-   filter and leaves the card for the list (views/track-card.ts wires the buttons). */
+   filter and closes the card onto the view behind it (views/track-card.ts wires the buttons). */
 .lpads {
   display: flex;
   flex-wrap: wrap;

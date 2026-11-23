@@ -134,14 +134,18 @@ const card = mountTrackCard(
     close: () => store.set({ openSlug: null, cue: null }),
     step: stepCard,
     // A style or main-instrument pad: that option becomes the whole filter (domain/filters.ts
-    // `onlyOption` — every other filter switches off, nothing sums up), and the card leaves
-    // onto the filtered list at its beginning, focus on its first tile (from the record the
-    // view switches; on phones the list is the only view).
+    // `onlyOption` — every other filter switches off, nothing sums up) and the card closes
+    // onto the view behind it, which keeps its place: the record stays the record with its
+    // tracks filtered; the list stays the list, landed at its beginning with focus on its
+    // first tile (on phones the list is the only view).
     pick: (kind, id) => {
       const filters = onlyOption(space, kind, id);
-      store.set({ filters, view: 'list', openSlug: null, cue: null, notice: null });
-      list.toTop();
-      list.focusFirst();
+      const onList = store.get().view === 'list';
+      store.set({ filters, openSlug: null, cue: null, notice: null });
+      if (onList) {
+        list.toTop();
+        list.focusFirst();
+      }
     },
     player: (slot, song, cue) =>
       mountPlayer(slot, song, cue, playback, {

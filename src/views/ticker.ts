@@ -1,6 +1,6 @@
 // A line of text that runs as a ticker when it is too long for its width (the random player's
-// caption and title, the card's title on narrow screens): a second, aria-hidden copy closes the
-// loop. The line is re-fitted whenever it changes width. CSS: `.run` / `.tick` in base.css.
+// idle call and title, the card's title on narrow screens): a second, aria-hidden copy closes
+// the loop. The line is re-fitted whenever it changes width. CSS: `.run` / `.tick` in base.css.
 import { esc } from './html';
 
 /** Ticker speed in px per second. */

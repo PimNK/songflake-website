@@ -28,16 +28,14 @@ export type HistoryAction = 'push' | 'replace' | 'back';
 
 /**
  * How a state change touches history. Opening a card or switching views pushes; closing a card
- * that has its own entry goes back (so Back never reopens it); everything else replaces. One
- * exception: a card closing onto another view — the card's pads navigating to the filtered
- * list — pushes, a navigation rather than a close, so Back returns to the card.
+ * that has its own entry goes back (so Back never reopens it); everything else replaces.
  */
 export function historyAction(
   prev: Pick<AppState, 'view' | 'openSlug'>,
   next: Pick<AppState, 'view' | 'openSlug'>,
   cardEntry: boolean,
 ): HistoryAction {
-  if (prev.openSlug && !next.openSlug && cardEntry && next.view === prev.view) return 'back';
+  if (prev.openSlug && !next.openSlug && cardEntry) return 'back';
   if (!prev.openSlug && next.openSlug) return 'push';
   return next.view !== prev.view ? 'push' : 'replace';
 }
