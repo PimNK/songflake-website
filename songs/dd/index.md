@@ -20,10 +20,10 @@ pins:
     text: "A brief switch to 4/4 for one bar, then back to 9/8."
     text_ru: "Временная смена размера в одном такте на 4/4 и снова возврат к 9/8."
   - at: "0:21"
-    text: "The main theme, in 9/8. From here on the time signature keeps shifting, yet the overall pulse of the song seems to hold."
+    text: "The main theme has 9/8 time signature. Starting from this moment the time signature keeps shifting. However, the overall pulse of the song seems to hold."
     text_ru: "Основная тема. Размер 9/8. Здесь и далее будет постоянно происходить переход от одного размера к другому. Но, кажется, общая пульсация песни сохраняется."
   - at: "0:41"
-    text: "The slow part. The melody rocks between a triple and a duple feel (counting in threes and in twos)."
+    text: "The slow part. We groove the melody between a triple and a duple feel (counting in 3s and in 2s)."
     text_ru: "Медленная часть. Качаем мелодию между трехдольным и двухдольным рисунками (счет на 3 и на 2)."
   - at: "1:12"
     text: "A cool slap at the peak of the song."
@@ -37,4 +37,4 @@ A song I wrote on acoustic guitar in Turkey. One of the most difficult songs I h
 
 <!-- ru -->
 
-Песня, которую я написал на акустической гитаре в Турции. Одна из самых сложных моих песен — и технически, и по структуре: в ней много тэппинга как для правой, так и для левой руки. Нужно внимательно следить за гитарной партией, поэтому я решил записать гитару соло. Мотив сделать запись этого трека появился к моменту свадьбы подруги: хотелось сделать небольшой творческий подарок.
+Песня, которую я написал на акустической гитаре в Турции. Одна из самых сложных моих песен — и технически, и по структуре: в ней много тэппинга как для правой, так и для левой руки. Нужно внимательно следить за гитарной партией, поэтому я решил записать гитару соло. Мотив для записи трека появился к моменту свадьбы подруги: хотелось сделать небольшой творческий подарок.

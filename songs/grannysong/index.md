@@ -29,12 +29,12 @@ pins:
     text: "Choosing a calmer pace of life, a chance to live for yourself. Light two-handed tapping in the guitar part."
     text_ru: "Выбор более спокойного режима жизни. Возможность пожить для себя. Легкий тэппинг для двух рук в гитаре."
   - at: "2:28"
-    text: "Calm gives way to a life lived to the full: new interests and hobbies. The two-handed tapping in the guitar part gets twice as dense."
+    text: "Calm gives way to the fullness of life: new interests and hobbies. The two-handed tapping in the guitar part gets twice as dense."
     text_ru: "Спокойствие сменяется полнотой жизни. Новые интересы и хобби. Тэппинг для двух рук становится в два раза более частым в гитарной партии."
 ---
 
-A song for my grandmother's 80th birthday. My grandmother is incredible. Her life was much harder than mine or my parents'. But she is the most positive and energetic person I know.
+A song for my grandmother's 80th birthday. She is truly amazing. Despite a hard life, she remains the brightest, most energetic person I know — living proof that joy, humour and inner strength are born from overcoming challenges.
 
 <!-- ru -->
 
-Песня к юбилею моей бабушки (80 лет). Моя бабушка невероятная. Её жизнь была гораздо тяжелее, чем у меня и моих родителей. Но она самый позитивный и энергичный человек, которого я знаю. Живой пример того, что жизнерадостность, юмор и внутренняя уверенность формируются в процессе преодоления тружностей.
+Песня к восьмидесятилетию моей бабушки. Моя бабушка невероятная. Ее жизнь была достаточно тяжелой, но она самый позитивный и энергичный человек, которого я знаю. Живой пример того, что жизнерадостность, юмор и внутренняя уверенность формируются в процессе преодоления трудностей.

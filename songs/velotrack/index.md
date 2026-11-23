@@ -15,7 +15,7 @@ years:
 pins:
   - at: "0:00"
     text: "Remember how you set off on a bike: you keep your balance and pedal in slow, rhythmic strokes to pick up speed. I tried to convey that feeling with the guitar part at the start of the track."
-    text_ru: "Вспомните, как происходит начало движения на велосипеде. Вы удерживаете равновесие и совершаете медленные ритмичные движения ногами, чтобы набрать скорость. Я попытался передать это ощущение партией гитары в начале трека."
+    text_ru: "Вспомните, как начинается движение на велосипеде. Вы удерживаете равновесие и совершаете медленные ритмичные движения ногами, чтобы набрать скорость. Я попытался передать это ощущение партией гитары в начале трека."
   - at: "0:12"
     text: "Drums. We're up to speed, the ride has begun."
     text_ru: "Барабаны. Темп набран, движение началось."
@@ -33,13 +33,13 @@ pins:
     text_ru: "Снова выехали на ровную дорогу. Можно немного перевести дух. Но расслабляться рано. Финиш еще далеко."
   - at: "2:06"
     text: "Round the bend there's a very steep hill. You start to doubt you'll make it up at all… But there's no way out, so back to work."
-    text_ru: "За поворотом оказалась очень крутая горка. Возникают сомнения, что вообще заберешься на нее... Но деваться некуда, работаем."
+    text_ru: "За поворотом оказалась очень крутая горка. Возникают сомнения, что вообще заберешься на нее… Но деваться некуда, работаем."
   - at: "2:56"
     text: "At last the descent begins. Poles, road signs and roadside trees rush past."
     text_ru: "Наконец начинается спуск. Мимо проносятся столбы, дорожные знаки, деревья вдоль дороги."
   - at: "3:21"
     text: "The final stretch."
-    text_ru: "Финальный отрезок."
+    text_ru: "Финишная прямая."
 ---
 
 Memories of a bicycle trip from Antalya to Bodrum. Energy, freedom and pushing past your own limits. What else do you need to be happy?

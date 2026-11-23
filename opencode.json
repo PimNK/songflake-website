@@ -21,7 +21,7 @@
     {
       "action": "shell",
       "resource": "git commit *",
-      "effect": "ask"
+      "effect": "allow"
     },
     {
       "action": "read",

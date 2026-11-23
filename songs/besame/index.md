@@ -1,5 +1,5 @@
 ---
-title: "bésame"
+title: "besame"
 style: Alternative
 accents: [Guitar, Vox]
 complexity:
@@ -15,17 +15,17 @@ years:
 pins:
   - at: "0:00"
     text: "The beat is a guitar part recorded into a loop."
-    text_ru: "Бит — это гитарная партия, записанная в луп."
+    text_ru: "Бит — это зацикленная в лупере гитарная партия."
   - at: "1:55"
-    text: "Here is the guitar solo I came up with — and right after that I realised the melody matches Bésame Mucho note for note."
-    text_ru: "Вот гитарное соло, которое я придумал, а следом понял, что мелодия совпадает с Bésame Mucho копейка в копейку."
+    text: "Here is the guitar solo I came up with — and right after that I realised the melody matches Besame Mucho note for note."
+    text_ru: "Вот гитарное соло, которое я придумал, а следом понял, что мелодия совпадает с Besame Mucho копейка в копейку."
   - at: "2:13"
-    text: "My only experiment with slide guitar technique."
-    text_ru: "Мой единственный эксперимент с техникой игры слайдом на гитаре."
+    text: "Solo part with slide guitar technique."
+    text_ru: "Сольная партия гитары с техникой игры слайдом."
 ---
 
-By chance I realised that the melody I wrote is 100% identical to Bésame Mucho, so I decided to record a cover.
+By chance I realised that the melody I wrote is 100% identical to Besame Mucho, so I decided to record a cover.
 
 <!-- ru -->
 
-Случайно понял, что написанная мной мелодия на 100% совпадает с Bésame Mucho, и решил записать кавер.
+Случайно понял, что написанная мной мелодия на 100% совпадает с Besame Mucho, и решил записать кавер.

@@ -24,8 +24,8 @@ pins:
     text_ru: "Этот гитарный пассаж — мой любимый в этой композиции. Получилось неплохо."
 ---
 
-From 2012 to 2015 I studied guitar with a really cool teacher, Alexander Senyushin. At some point he gave me the task of writing an étude built on various pentatonic runs. I came up with a riff, and then the lead guitar part. It came out pretty well, and we decided to record it.
+From 2012 to 2015 I studied guitar with a really cool teacher, Alexander Senyushin. At some point he gave me the task of writing an étude built on various pentatonic runs. I came up with a riff, and then the lead guitar part.
 
 <!-- ru -->
 
-В 2012–2015 годах я учился игре на гитаре у очень клевого преподавателя (Александра Сенюшина). В какой-то момент он дал задание придумать этюд, в основе которого лежали бы различные ходы по пентатонике. Я сочинил рифф, а затем и партию соло-гитары. Получилось неплохо, и мы решили записать.
+В 2012–2015 годах я учился игре на гитаре у очень клевого преподавателя (Александра Сенюшина). В какой-то момент он дал задание придумать этюд, в основе которого лежали бы различные ходы по пентатонике. Я сочинил рифф, а затем и партию соло-гитары.
