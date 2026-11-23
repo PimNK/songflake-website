@@ -2,16 +2,13 @@
    level bars (render/levels.ts) in a narrow band at the bottom of the line, with the pin markers
    hanging over them like icicles — a lamp tip pointing down and a hairline into the bars — and
    their popovers, then the note of the active pin under a dashed line.
-   Wide cards keep three lines for the note; narrow ones are as high as the song's longest note,
-   show the time at the end of the line, and the markers only mark. */
-.wline {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+   Wide cards keep three lines for the note; narrow ones are as high as the song's longest note;
+   the time sits opposite the caption at every width, so below 900 px the line runs the
+   display's full width (from 900 px it stops at the snowflake). */
+/* The line's one wrapper: it fills the row (the time lives on the caption row, never after
+   the line), and is the containing block for the absolutely placed canvas and pin markers. */
 .wave-wrap {
   position: relative;
-  flex: 1;
   min-width: 0;
 }
 .wave {
@@ -43,9 +40,6 @@
   top: 50%;
   height: 1px;
   background: rgb(var(--g) / 0.25);
-}
-.wtime {
-  display: none;
 }
 .pins-layer {
   position: absolute;
@@ -159,25 +153,15 @@
   content: '· · ·';
   opacity: 0.35;
 }
-/* Narrow cards: the time follows the line, the note is as high as the longest, and the pin
-   markers only mark — no popovers; a tap on them seeks like the rest of the line. */
+/* Narrow cards: the counter stays opposite the caption on the display (the line keeps the
+   display's full width), the note is as high as the longest, and the pin markers only
+   mark — no popovers; a tap on them seeks like the rest of the line. */
 @media (max-width: 899.98px) {
-  .mscreen .ptime {
-    display: none;
-  }
   .no-audio {
     display: none;
   }
   .wline {
     margin-top: 12px;
-  }
-  .wtime {
-    font: 300 10px/1.4 var(--sans);
-    letter-spacing: 0.2em;
-    display: block;
-    flex: none;
-    white-space: nowrap;
-    opacity: 0.82;
   }
   .pnote {
     height: auto;

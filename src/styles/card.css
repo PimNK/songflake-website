@@ -193,8 +193,8 @@ body.locked {
     padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px
       calc(env(safe-area-inset-bottom, 0px) + 28px);
   }
-  /* the caption over the title, the snowflake at their right; then the line with the time at
-     its end, and the note */
+  /* the caption over the title, the snowflake at their right; then the line across the
+     display, and the note */
   .mscreen {
     grid-template-columns: minmax(0, 1fr) 96px;
     column-gap: 10px;

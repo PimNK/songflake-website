@@ -11,7 +11,7 @@
 // Picks come from domain/shuffle.ts (a shuffle bag).
 import type { Song } from '../content/parse';
 import type { Taxonomy } from '../content/taxonomy';
-import { formatTime } from '../domain/pins';
+import { formatSpan } from '../domain/pins';
 import { ShuffleHistory } from '../domain/shuffle';
 import { flakeOf } from '../domain/snowflake';
 import { paintSnowflake } from '../render/snowflake';
@@ -101,7 +101,7 @@ function render(el: HTMLElement, playback: Playback, canStart: boolean, card: bo
   }
   const d = playback.audio.duration || 0;
   const t = song ? playback.audio.currentTime : 0;
-  const time = song ? `${formatTime(t)} / ${d ? formatTime(d) : '–:––'}` : '';
+  const time = song ? formatSpan(t, d) : '';
   const bar = q('.rp-bar');
   // Nothing loaded: the line is not a control yet.
   bar.tabIndex = song ? 0 : -1;

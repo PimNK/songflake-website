@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   activePin,
+  formatSpan,
   formatTime,
   groupMarkers,
   markerFraction,
@@ -25,6 +26,29 @@ describe('time', () => {
     expect(formatTime(42)).toBe('0:42');
     expect(formatTime(725.9)).toBe('12:05');
     expect(formatTime(3723)).toBe('1:02:03');
+  });
+
+  it('formats the player readout to one constant length', () => {
+    expect(formatSpan(9, 251)).toBe('00:09 / 04:11');
+    expect(formatSpan(0, 0)).toBe('00:00 / –:––');
+    expect(formatSpan(-3, 251)).toBe('00:00 / 04:11');
+  });
+
+  it('keeps the readout one length for every second of a track', () => {
+    const minutes = new Set<number>();
+    for (let t = 0; t <= 251; t++) minutes.add(formatSpan(t, 251).length);
+    expect(minutes.size).toBe(1);
+    expect([...minutes][0]).toBe(13);
+    const hour = new Set<number>();
+    for (let t = 0; t <= 4000; t++) hour.add(formatSpan(t, 4000).length);
+    expect(hour.size).toBe(1);
+  });
+
+  it('switches both sides to h:mm:ss together from one hour', () => {
+    expect(formatSpan(3723, 4000)).toBe('1:02:03 / 1:06:40');
+    expect(formatSpan(60, 4000)).toBe('0:01:00 / 1:06:40');
+    expect(formatSpan(3599, 3600)).toBe('0:59:59 / 1:00:00');
+    expect(formatSpan(3600, 3599)).toBe('1:00:00 / 0:59:59');
   });
 
   it('round-trips', () => {

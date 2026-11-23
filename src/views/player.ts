@@ -1,13 +1,16 @@
-// The card's player (CLAUDE.md §4.6), the console's display, wider: the caption (playing /
-// paused / press play; on narrow cards playing / paused) and m:ss / m:ss at the top, the
-// level bars with pin markers that seeks (on narrow cards the time follows the line), and
-// the note of the active pin under it (pins have no list of their own: a marker shows its text on
-// hover and once reached). The note's box holds hidden copies of every pin note, so on narrow
-// cards it is as high as the song's longest one; wide cards keep three lines. The round play /
-// pause key goes between the card's skip keys.
+// The card's player (CLAUDE.md §4.6), the console's display: the caption (playing / paused /
+// press play; on narrow cards playing / paused) and the counter mm:ss / mm:ss opposite it at
+// the top, at every width (one constant length, domain/pins.ts `formatSpan` — the time never
+// changes width as it ticks), then the level bars with pin markers that seek — the line
+// spans the display's full width below 900 px, nothing after it, and stops at the snowflake
+// from 900 px — and the note of the active pin under it
+// (pins have no list of their own: a marker shows its text on hover and once reached). The
+// note's box holds hidden copies of every pin note, so on narrow cards it is as high as the
+// song's longest one; wide cards keep three lines. The round play / pause key goes between
+// the card's skip keys.
 // The <audio> element lives in views/playback.ts; time maths lives in domain/pins.ts.
 import type { Song } from '../content/parse';
-import { activePin, formatTime, type Pin } from '../domain/pins';
+import { activePin, formatSpan, formatTime, type Pin } from '../domain/pins';
 import { strings } from '../strings';
 import { esc, icon } from './html';
 import type { Playback } from './playback';
@@ -34,7 +37,6 @@ const template = (song: Song): string => `
       <div class="wave" role="slider" tabindex="0" aria-label="${p.seek}" aria-valuemin="0"><canvas></canvas></div>
       <div class="pins-layer"></div>
     </div>
-    <span class="wtime"></span>
   </div>
   <div class="pnote${song.pins.length ? '' : ' none'}">
     ${song.pins.map((pin) => `<span class="ghost" aria-hidden="true">${noteHtml(pin)}</span>`).join('')}
@@ -144,9 +146,8 @@ class CardPlayer {
     // Narrow cards have no «press play»: the key says it.
     const caption = playing ? r.nowPlaying : current || NARROW.matches ? r.paused : p.ready;
     this.write('.pstate', 'text', caption);
-    const time = `${formatTime(t)} / ${d ? formatTime(d) : '–:––'}`;
+    const time = formatSpan(t, d);
     this.write('.ptime', 'text', time);
-    this.write('.wtime', 'text', time);
     if (this.play.dataset.playing !== String(playing)) {
       this.play.dataset.playing = String(playing);
       this.play.toggleAttribute('data-on', playing);
@@ -154,7 +155,7 @@ class CardPlayer {
     }
     this.write('.wave', 'aria-valuemax', String(Math.round(d)));
     this.write('.wave', 'aria-valuenow', String(Math.round(t)));
-    this.write('.wave', 'aria-valuetext', `${formatTime(t)} / ${formatTime(d)}`);
+    this.write('.wave', 'aria-valuetext', time);
     // The note is a live region: rewrite it only when the active pin changes.
     this.write('.pnote .now', 'html', pin ? noteHtml(pin) : '');
     for (const m of this.slot.querySelectorAll<HTMLElement>('.pin')) {

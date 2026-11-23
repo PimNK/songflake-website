@@ -30,6 +30,25 @@ export function formatTime(totalSeconds: number): string {
   return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`;
 }
 
+/**
+ * The player's readout `"00:09 / 04:11"`: both sides are kept to one constant length, so the
+ * time never changes width as it ticks and nothing around it reflows (the digits are tabular,
+ * styles/base.css). An unknown duration shows the `–:––` placeholder; when either side reaches
+ * an hour both are `h:mm:ss`, hours unpadded.
+ */
+export function formatSpan(position: number, duration: number): string {
+  const hours = position >= 3600 || duration >= 3600;
+  const side = (n: number): string => {
+    const t = Math.max(0, Math.floor(n));
+    const m = Math.floor(t / 60);
+    const s = String(t % 60).padStart(2, '0');
+    return hours
+      ? `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}:${s}`
+      : `${String(m).padStart(2, '0')}:${s}`;
+  };
+  return `${side(position)} / ${duration > 0 ? side(duration) : '–:––'}`;
+}
+
 /** A likely intended time for a malformed one (`"2.15"` → `"2:15"`), or `null`. */
 export function suggestTime(value: string): string | null {
   const guess = value.trim().replace(/[.,;\s']+/g, ':');

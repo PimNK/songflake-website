@@ -25,9 +25,15 @@
 .rp-title:not(:disabled):hover {
   filter: brightness(1.15);
 }
-.rp-cap,
+.rp-cap {
+  font: inherit;
+}
+/* The counter's digits are set again here: `font: inherit` carries them over from `.vfd-top`,
+   but a real font shorthand in this place would reset font-variant-numeric (the trap that made
+   the card's time change width every second), so the rule states what it relies on. */
 .rp-time {
   font: inherit;
+  font-variant-numeric: tabular-nums;
 }
 /* The playing track's snowflake, in phosphor; its slot keeps its size while nothing is loaded. */
 .rp-flake {
