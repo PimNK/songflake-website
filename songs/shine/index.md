@@ -16,7 +16,7 @@ pins:
   - at: "0:00"
     text: "The rhythm section is a looped guitar, played slap-style."
     text_ru: "Ритм-секция — закольцованная гитара, сыгранная слэпом."
-  - at: "0:07"
+  - at: "0:14"
     text: "The main theme on guitar. Later I came to think it takes up too much of the song. But when I was recording the song, I was literally in love with this fragment."
     text_ru: "Главная тема на гитаре. Позже мне стало казаться, что она занимает в песне слишком много места. Но когда я записывал песню, я был буквально влюблен в этот фрагмент."
   - at: "1:00"
